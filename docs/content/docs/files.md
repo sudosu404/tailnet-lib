@@ -22,24 +22,24 @@ In your /config/tsdproxy.yaml, specify the files you want to use, just
 like this example where the `critical` and `media` providers are defined.
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
-Files:
+files:
   critical:
-    Filename: /config/critical.yaml
-    DefaultProxyProvider: tailscale1
-    DefaultProxyAccessLog: true
+    filename: /config/critical.yaml
+    defaultProxyProvider: tailscale1
+    defaultProxyAccessLog: true
   media:
-    Filename: /config/media.yaml
-    DefaultProxyProvider: default
-    DefaultProxyAccessLog: false
+    filename: /config/media.yaml
+    defaultProxyProvider: default
+    defaultProxyAccessLog: false
 ```
 
 ```yaml  {filename="/config/critical.yaml"}
 nas1:
   url: https://192.168.1.2:5001
-  TLSValidate: false
+  tlsValidate: false
 nas2:
   url: https://192.168.1.3:5001
-  TLSValidate: false
+  tlsValidate: false
 ```
 
 ```yaml  {filename="/config/media.yaml"}
@@ -65,28 +65,28 @@ This configuration will create two groups of proxies:
 ### Provider Configuration options
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
-Files:
+files:
   critical: # Name the target provider
-    Filename: /config/critical.yaml # file with the proxy list
-    DefaultProxyProvider: tailscale1 # (optional) default proxy provider
-    DefaultProxyAccessLog: true # (optional) Enable access logs
+    filename: /config/critical.yaml # file with the proxy list
+    defaultProxyProvider: tailscale1 # (optional) default proxy provider
+    defaultProxyAccessLog: true # (optional) Enable access logs
 ```
 
 ### Proxy list file options
 
 ```yaml  {filename="/config/filename.yaml"}
 music: # Name of the proxy
-  URL: http://192.168.1.10:3789 # url of service to proxy
-  ProxyProvider: default # (optional) name of the proxy provider
-  TLSValidate: false # (optional, default true) disable TLS validation
-  Tailscale:  # (optional) Tailscale configuration for this proxy
-    AuthKey: asdasdas # (optional) Tailscale authkey
-    Ephemeral: true # (optional) Enable ephemeral mode
-    RunWebClient: false # (optional) Run web client
-    Verbose: false # (optional) Run in verbose mode
-    Funnel: false # (optional) Run in funnel mode
-  Dashboard:
-    Visible: false # (optional) doesn't show proxy in dashboard
+  url: http://192.168.1.10:3789 # url of service to proxy
+  proxyProvider: default # (optional) name of the proxy provider
+  tlsValidate: false # (optional, default true) disable TLS validation
+  tailscale:  # (optional) Tailscale configuration for this proxy
+    authKey: asdasdas # (optional) Tailscale authkey
+    ephemeral: true # (optional) Enable ephemeral mode
+    runWebClient: false # (optional) Run web client
+    verbose: false # (optional) Run in verbose mode
+    funnel: false # (optional) Run in funnel mode
+  dashboard:
+    visible: false # (optional) doesn't show proxy in dashboard
 ```
 
 {{% /steps %}}

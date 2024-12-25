@@ -93,21 +93,21 @@ volumes:
 ## TSDProxy Configuration
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
-defaultproxyprovider: default
+defaultProxyProvider: default
 docker:
   srv1: 
     host: unix:///var/run/docker.sock
-    defaultproxyprovider: default
+    defaultProxyProvider: default
   srv2: 
     host: tcp://174.17.0.1:2376
-    targethostname: 174.17.0.1
-    defaultproxyprovider: account2
+    targetHostname: 174.17.0.1
+    defaultProxyProvider: account2
 tailscale:
   providers:
     default: 
-      authkey: "sdfsdgsdfgdfg"
+      authKey: "sdfsdgsdfgdfg"
     withtags:
-      authkey: "jujgnndvds"
+      authKey: "jujgnndvds"
     account2:
-      authkey: "nnnnnnndndnddd"
+      authKey: "nnnnnnndndnddd"
 ```

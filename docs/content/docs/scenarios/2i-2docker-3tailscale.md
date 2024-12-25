@@ -94,35 +94,35 @@ volumes:
 ## TSDProxy Configuration of SRV1
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
-defaultproxyprovider: default
+defaultProxyProvider: default
 docker:
   srv1: 
     host: unix:///var/run/docker.sock
-    defaultproxyprovider: default
+    defaultProxyProvider: default
 tailscale:
   providers:
     default: 
-      authkey: "sdfsdgsdfgdfg"
+      authKey: "sdfsdgsdfgdfg"
     withtags:
-      authkey: "jujgnndvds"
+      authKey: "jujgnndvds"
     account2:
-      authkey: "nnnnnnndndnddd"
+      authKey: "nnnnnnndndnddd"
 ```
 
 ## TSDProxy Configuration of SRV2
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
-defaultproxyprovider: default
+defaultProxyProvider: default
 docker:
   srv2: 
     host: unix:///var/run/docker.sock
-    defaultproxyprovider: account2
+    defaultProxyProvider: account2
 tailscale:
   providers:
     default: 
-      authkey: "sdfsdgsdfgdfg"
+      authKey: "sdfsdgsdfgdfg"
     withtags:
-      authkey: "jujgnndvds"
+      authKey: "jujgnndvds"
     account2:
-      authkey: "nnnnnnndndnddd"
+      authKey: "nnnnnnndndnddd"
 ```

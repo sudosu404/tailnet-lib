@@ -15,13 +15,17 @@ will be removed in the future.
 
 ### Sample configuration File
 
+{{< callout type="alert" >}}
+Configuration files are case sensitive
+{{< /callout >}}
+
 ```yaml  {filename="/config/tsdproxy.yaml"}
-defaultproxyprovider: default
+defaultProxyProvider: default
 docker:
   local: # name of the docker target provider
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
-    targethostname: 172.31.0.1 # hostname or IP of docker server
-    defaultproxyprovider: default # name of which proxy provider to use
+    targetHostname: 172.31.0.1 # hostname or IP of docker server
+    defaultProxyProvider: default # name of which proxy provider to use
 files:
   critical: # Name the target provider
     filename: /config/critical.yaml # file with the proxy list
@@ -30,20 +34,20 @@ files:
 tailscale:
   providers:
     default: # name of the provider
-      authkey: your-authkey # define authkey here
-      authkeyfile: "" # use this to load authkey from file. If this is defined, Authkey is ignored
-      controlurl: https://controlplane.tailscale.com # use this to override the default control URL
-  datadir: /data/
+      authKey: your-authkey # define authkey here
+      authKeyFile: "" # use this to load authkey from file. If this is defined, Authkey is ignored
+      controlUrl: https://controlplane.tailscale.com # use this to override the default control URL
+  dataDir: /data/
 http:
   hostname: 0.0.0.0
   port: 8080
 log:
   level: info # set logging level info, error or trace
   json: false # set to true to enable json logging
-proxyaccesslog: true # set to true to enable container access log
+proxyAccessLog: true # set to true to enable container access log
 ```
 
-### Log section
+### log section
 
 #### level
 
@@ -53,11 +57,11 @@ Define the logging level. The default is info.
 
 Set to true if what logging in json format.
 
-### Tailscale section
+### tailscale section
 
 You can use the following options to configure Tailscale:
 
-#### datadir
+#### dataDir
 
 Define the data directory used by Tailscale. The default is `/data/`.
 
@@ -68,9 +72,9 @@ with the following options:
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
    default: # name of the provider
-      authkey: your-authkey # define authkey here
-      authkeyfile: "" # use this to load authkey from file.
-      controlurl: https://controlplane.tailscale.com 
+      authKey: your-authkey # define authkey here
+      authKeyFile: "" # use this to load authkey from file.
+      controlUrl: https://controlplane.tailscale.com 
 ```
 
 Look at next example with multiple providers.
@@ -79,19 +83,19 @@ Look at next example with multiple providers.
 tailscale:
   providers:
     default:
-      authkey: your-authkey
-      authkeyfile: ""
-      controlurl: https://controlplane.tailscale.com
+      authKey: your-authkey
+      authKeyFile: ""
+      controlUrl: https://controlplane.tailscale.com
  
     server1:
-      authkey: authkey-server1
-      authkeyfile: ""
-      controlurl: http://server1
+      authKey: authkey-server1
+      authKeyFile: ""
+      controlUrl: http://server1
  
     differentkey:
-      authkey: authkey-with-diferent-tags
-      authkeyfile: ""
-      controlurl: https://controlplane.tailscale.com
+      authKey: authkey-with-diferent-tags
+      authKeyFile: ""
+      controlUrl: https://controlplane.tailscale.com
 ```
 
 TSDProxy is configured with 3 tailscale providers. Provider 'default' with tailscale
@@ -99,7 +103,7 @@ servers, Provider 'server1' with a different tailscale server and provider 'diff
 using the default tailscale server with a different authkey where you can add any
 tags.
 
-### Docker section
+### docker section
 
 TSDProxy can use multiple docker servers. Each docker server can be configured
 like this:
@@ -107,8 +111,8 @@ like this:
 ```yaml  {filename="/config/tsdproxy.yaml"}
   local: # name of the docker provider
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
-    targethostname: 172.31.0.1 # hostname or IP of docker server
-    defaultproxyprovider: default # name of which proxy provider to use
+    targetHostname: 172.31.0.1 # hostname or IP of docker server
+    defaultProxyProvider: default # name of which proxy provider to use
 ```
 
 Look at next example of using a multiple docker servers configuration.
@@ -117,11 +121,11 @@ Look at next example of using a multiple docker servers configuration.
 docker:
   local: 
     host: unix:///var/run/docker.sock 
-    defaultproxyprovider: default 
+    defaultProxyProvider: default 
   srv1: 
     host: tcp://174.17.0.1:2376
-    targethostname: 174.17.0.1
-    defaultproxyprovider: server1
+    targetHostname: 174.17.0.1
+    defaultProxyProvider: server1
 ```
 
 TSDProxy is configured with a local server and a server remote 'srv1'
@@ -130,15 +134,15 @@ TSDProxy is configured with a local server and a server remote 'srv1'
 
 host is the address of the docker socket or daemon. The default is `unix:///var/run/docker.sock`
 
-#### targethostname
+#### targetHostname
 
 Is the ip address or dns name of docker server. TSDProxy has a autodetect system
 to connect with containers, but there's some cases where it's necessary to use
 the other interfaces besides the docker internals.
 
-#### defaultproxyprovider
+#### defaultProxyProvider
 
-Defaultproxyprovider is the name of the proxy provider to use. (defined in tailscale
+defaultProxyProvider is the name of the proxy provider to use. (defined in tailscale
 providers section). Any container defined to be proxied will use this provider
 unless it has a specific provider defined label.
 

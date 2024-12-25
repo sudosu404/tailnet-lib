@@ -3,13 +3,11 @@ title: Dashboard
 prev: /docs/advanced
 ---
 
-{{< callout type="warning" >}}
-Dashboard is still in very early stages of development.
-{{< /callout >}}
-
 {{% steps %}}
 
-### TSDProxy docker compose
+### Dashboard in docker
+
+#### TSDProxy docker compose
 
 Update docker-compose.yml with the following:
 
@@ -19,10 +17,29 @@ Update docker-compose.yml with the following:
       - tsdproxy.name=dash
 ```
 
-### Restart TSDProxy
+#### Restart TSDProxy
 
 ```bash
 docker compose restart
+```
+
+### Standalone
+
+#### Configure files provider
+
+Configure a new files provider or configure it in any existing files provider.
+
+```yaml  {filename="/config/tsdproxy.yaml"}
+files:
+  proxies:
+    filename: /config/proxies.yaml
+```
+
+#### Add Dashboard entry on your files provider
+
+```yaml {filename="/config/proxies.yaml"}
+dash:
+  url: http://127.0.0.1:8080
 ```
 
 ### Test Dashboard access

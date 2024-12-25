@@ -38,27 +38,27 @@ After the TSDProxy container is started, a configuration file
 `/config/tsdproxy.yaml` is created and populated with the following:
 
 ```yaml
-defaultproxyprovider: default
+defaultProxyProvider: default
 docker:
   local: # name of the docker provider
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
-    targethostname: 172.31.0.1 # hostname or IP of docker server
-    defaultproxyprovider: default # name of which proxy provider to use
+    targetHostname: 172.31.0.1 # hostname or IP of docker server
+    defaultProxyProvider: default # name of which proxy provider to use
 file: {}
 tailscale:
   providers:
     default: # name of the provider
-      authkey: your-authkey # define authkey here
-      authkeyfile: "" # use this to load authkey from file. If this is defined, Authkey is ignored
-      controlurl: https://controlplane.tailscale.com # use this to override the default control URL
-  datadir: /data/
+      authKey: your-authkey # define authkey here
+      authKeyFile: "" # use this to load authkey from file. If this is defined, Authkey is ignored
+      controlUrl: https://controlplane.tailscale.com # use this to override the default control URL
+  dataDir: /data/
 http:
   hostname: 0.0.0.0
   port: 8080
 log:
   level: info # set logging level info, error or trace
   json: false # set to true to enable json logging
-proxyaccesslog: true # set to true to enable container access log
+proxyAccessLog: true # set to true to enable container access log
 ```
 
 #### Edit the configuration file

@@ -95,7 +95,7 @@ func (pm *ProxyManager) addTargetProviders() {
 	for name, file := range config.Config.Files {
 		p, err := files.New(pm.log, name, file)
 		if err != nil {
-			pm.log.Error().Err(err).Msg("Error creating Docker provider")
+			pm.log.Error().Err(err).Msg("Error creating Files provider")
 			continue
 		}
 

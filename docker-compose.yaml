@@ -1,24 +1,11 @@
----
 services:
   tsdproxy:
     image: almeidapaulopt/tsdproxy:latest
-    container_name: tsdproxy
-    ports:
-      - "8080:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      #- ./config:/config
       - datadir:/data
+      - <PATH_TO_YOUR_CONFIG_DIR>:/config
     restart: unless-stopped
-    environment:
-      #- TSDPROXY_AUTHKEYFILE=/run/secrets/authkey
-      - TSDPROXY_AUTHKEY=tskey-auth-is-not-actually-a-real-key
-      - TSDPROXY_DATADIR:/data
-      - DOCKER_HOST=unix:///var/run/docker.sock
 
 volumes:
   datadir:
-
-secrets:
-  authkey:
-    file: ./KEY_FILE

@@ -5,13 +5,13 @@ services:
       - 91:80
       - 92:8000
       - 93:8080
-    deploy:
-      labels:
-        - tsdproxy.enable=true
-        - tsdproxy.name=testeff
-        - tsdproxy.ephemeral=true
-        - tsdproxy.funnel=true
-        - tsdproxy.container_port=80
+    labels:
+      - tsdproxy.enable=true
+      - tsdproxy.name=testeff
+      - tsdproxy.ephemeral=true
+      - tsdproxy.funnel=true
+      - tsdproxy.container_port=80
+      - tsdproxy.dash.visible=false
     networks:
       - c1
 
@@ -19,17 +19,51 @@ services:
     image: nginx
     ports:
       - 82:80
-    deploy:
-      labels:
-        - tsdproxy.enable=true
+    labels:
+      - tsdproxy.enable=true
     networks:
       - c2
 
   c3:
     image: nginx
     network_mode: host
-    # ports:
-    #   - 83:80
+    ports:
+      - 83:80
+    labels:
+      - tsdproxy.enable=true
+
+  s1:
+    image: nginx
+    ports:
+      - 101:80
+      - 102:8000
+      - 103:8080
+    deploy:
+      labels:
+        - tsdproxy.enable=true
+        - tsdproxy.name=testeff
+        - tsdproxy.ephemeral=true
+        - tsdproxy.funnel=true
+        - tsdproxy.container_port=80
+        - tsdproxy.dash.visible=false
+    networks:
+      - c1
+
+  s2:
+    image: nginx
+    ports:
+      - 112:80
+    deploy:
+      labels:
+        - tsdproxy.enable=true
+    networks:
+      - c2
+
+  s3:
+    image: nginx
+    network_mode: host
+    ports:
+      - 113:80
     deploy:
       labels:
         - tsdproxy.enable=true

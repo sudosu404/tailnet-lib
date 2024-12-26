@@ -75,10 +75,7 @@ test/cover:
 .PHONY: build
 build:
 	@echo "GIT_TAG: ${GIT_TAG}"
-
-
 	go build -ldflags '$(LDFLAGS)' -o=./tmp/${BINARY_NAME}  ${MAIN_PACKAGE_PATH}
-
 
 ## run: run the  application
 .PHONY: run
@@ -86,27 +83,21 @@ run: build/static build
 	./tmp/${BINARY_NAME}
 
 
-## start: start dev server
-.PHONE: start 
-start: dev
-
 ## dev: start dev server
 .PHONY: dev
-dev: docker_start server_start
-
+dev: docker_start
+	make -j2 assets server_start
 
 ## server_start: start the server
 .PHONY: server_start
 server_start:
-	# TSDPROXY_DataDir=./dev/data TSDPROXY_LOG_LEVEL=debug  \
-	# 	TSDPROXY_AUTHKEYFILE=./dev/KEY_FILE \
-	# 	TSDPROXY_DASHBOARD_ENABLED=true \
-	# 	TSDPROXY_DASHBOARD_NAME=DASH1 \
-	# 	DOCKER_HOST=unix:///run/user/1000/docker.sock \
-	# 	wgo run -file=.go -file=.yaml -file=.env -file=.json -file=.toml ${MAIN_PACKAGE_PATH} -config nonefile.yaml
-		wgo run -file=.go -file=.env -file=.json ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
+	wgo run -debounce="500ms" -file=.go -file=.env -file=.json ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
+	# templ generate --proxy="http://localhost:5173" --watch --cmd="echo RELOAD" &
+	# wgo -debounce="500ms" -file=.go -file=.templ -xfile=_templ.go templ generate --notify-proxy :: go run ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
 
-
+.PHONY: assets
+assets:
+	bun run --cwd web dev
 
 ## docker_start: start the docker containers
 .PHONY: docker_start
@@ -155,21 +146,8 @@ docs:
 
 .PHONY: run_in_docker
 run_in_docker:
-	wgo -file=.go -file=.templ -xfile=_templ.go templ generate :: go run ${MAIN_PACKAGE_PATH}
-
-	# templ generate --proxy="http://localhost:8080" --watch --cmd="echo reload" &
-	# wgo -file=.go -file=.templ -file=.yaml -xfile=_templ.go templ generate --notify-proxy :: go run ${MAIN_PACKAGE_PATH}
-
-# ==================================================================================== #
-# QUALITY CONTROL
-# ==================================================================================== #
-
-## tidy: format code and tidy modfile
-.PHONY: tidy
-tidy:
-	go get -u ./...
-	go fmt ./...
-	go mod tidy -v -e -x
+	templ generate --proxy="http://localhost:5172" --watch --cmd="echo RELOAD" &
+	wgo -debounce="500ms" -file=.go -file=.templ -xfile=_templ.go templ generate --notify-proxy :: go run ${MAIN_PACKAGE_PATH}
 
 ## audit: run quality control checks
 .PHONY: audit
@@ -201,3 +179,4 @@ info:
 	 @echo "Git Tag:           ${GIT_TAG}"
 	 @echo "Git Commit:        ${GIT_COMMIT}"
 	 @echo "Git Tree State:    ${GIT_TREE_STATE}"
+

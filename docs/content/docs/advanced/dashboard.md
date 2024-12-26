@@ -48,8 +48,7 @@ dash:
 curl https://dash.FUNNY-NAME.ts.net
 ```
 
-{{< callout type="info" >}}
-Note that you need to replace `FUNNY-NAME` with the name of your network.
-{{< /callout >}}
+> [!NOTE]
+> Note that you need to replace `FUNNY-NAME` with the name of your network.
 
 {{% /steps %}}

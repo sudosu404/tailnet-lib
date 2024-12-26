@@ -14,12 +14,10 @@ list file.
 It simplifies traffic redirection to services running inside Docker containers,
 without the need for a separate Tailscale container for each service.
 
-{{< callout type="info" >}}
-TSDProxy just needs a label in your new docker service or a proxy list file and
-it will be automatically created in your Tailscale network and the proxy will be
-ready to be used.
-
-{{< /callout >}}
+> [!NOTE]
+> TSDProxy just needs a label in your new docker service or a proxy list file and
+> it will be automatically created in your Tailscale network and the proxy will be
+> ready to be used.
 
 ## Why another proxy?
 
@@ -46,10 +44,9 @@ with MagicDNS.
 
 ## Questions or Feedback?
 
-{{< callout emoji="❓" >}}
+> [!IMPORTANT]
   TSDProxy is still in active development.
   Have a question or feedback? Feel free to [open an issue](https://github.com/almeidapaulopt/tsdproxy/issues)!
-{{< /callout >}}
 
 ## Next
 

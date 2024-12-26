@@ -6,18 +6,16 @@ weight: 2
 
 TSDProxy uses the configuration file `/config/tsdproxy.yaml`
 
-{{< callout type="warning" >}}
-The environment variables configuration used until v0.6.0 is deprecated and
-will be removed in the future.
-{{< /callout >}}
+> [!IMPORTANT]
+> The environment variables configuration used until v0.6.0 is deprecated and
+> will be removed in the future.
 
 {{% steps %}}
 
 ### Sample configuration File
 
-{{< callout type="alert" >}}
-Configuration files are case sensitive
-{{< /callout >}}
+> [!WARNING]
+> Configuration files are case sensitive
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
 defaultProxyProvider: default

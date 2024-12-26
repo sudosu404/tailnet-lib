@@ -49,10 +49,9 @@ labels:
   tsdproxy.container_port: 8080
 ```
 
-{{< callout emoji="❓" >}}
+> [!NOTE]
 Note that the port used in the `tsdproxy.container_port` label is the port used
 internal in the container and not the exposed port.
-{{< /callout >}}
 
 ### tsdproxy.ephemeral
 

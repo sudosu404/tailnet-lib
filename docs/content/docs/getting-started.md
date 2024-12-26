@@ -87,14 +87,12 @@ docker run -d --name sample-nginx -p 8111:80 --label "tsdproxy.enable=true" ngin
 curl https://sample-nginx.FUNNY-NAME.ts.net
 ```
 
-{{< callout type="info" >}}
-Note that you need to replace `FUNNY-NAME` with the name of your network.
-{{< /callout >}}
+> [!NOTE]
+> Note that you need to replace `FUNNY-NAME` with the name of your network.
 
-{{< callout type="warning" >}}
-The first time you run the proxy, it will take a few seconds to start, because it
-needs to connect to the Tailscale network, generate the certificates, and start
-the proxy.
-{{< /callout >}}
+> [!IMPORTANT]
+> The first time you run the proxy, it will take a few seconds to start, because it
+> needs to connect to the Tailscale network, generate the certificates, and start
+> the proxy.
 
 {{% /steps %}}

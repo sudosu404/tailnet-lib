@@ -42,6 +42,9 @@ func (p *Proxy) Start() error {
 		return err
 	}
 
+	// Make sure the cert is generated
+	_ = p.tsServer.CertDomains()
+
 	return nil
 }
 

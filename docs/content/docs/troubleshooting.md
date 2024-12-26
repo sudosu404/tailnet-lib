@@ -25,7 +25,7 @@ toc: false
 
 ### Proxyies Files provider
 
-1. Configuration files are Case sensitive. [Verify your files](/docs/files/#proxy-list-file-options)
+1. Configuration files are case sensitive. [Verify your files](/docs/files/#proxy-list-file-options)
 
 {{% steps %}}
 

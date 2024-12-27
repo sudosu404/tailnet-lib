@@ -76,7 +76,7 @@ func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.Proxy, err
 	}
 
 	return &Proxy{
-		log:      c.log,
+		log:      c.log.With().Str("Hostname", config.Hostname).Logger(),
 		config:   config,
 		tsServer: tserver,
 	}, nil

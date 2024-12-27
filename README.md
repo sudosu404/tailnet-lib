@@ -5,7 +5,14 @@ to your Tailscale network by automatically creating Tailscale machines for each
 tagged container. This allows services to be accessible via unique, secure URLs
 without the need for complex configurations or additional Tailscale containers.
 
-## Breaking Changes in 1.0.0
+## Breaking Changes
+
+### in 1.3.0
+
+Configuration files will be case sensitive.
+If configuration files has unknown keys, they will error and tsdproxy will not run.
+
+### in 1.0.0
 
 This version changes the configuration method.
 Please read the [Documentation](https://almeidapaulopt.github.io/tsdproxy/docs)

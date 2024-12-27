@@ -79,10 +79,6 @@ func InitializeConfig() error {
 	Config.Tailscale.Providers = make(map[string]*TailscaleServerConfig)
 	Config.Docker = make(map[string]*DockerTargetProviderConfig)
 	Config.Files = make(map[string]*FilesTargetProviderConfig)
-	// load default values
-	if err := defaults.Set(Config); err != nil {
-		fmt.Printf("Error loading defaults: %v", err)
-	}
 
 	file := flag.String("config", "/config/tsdproxy.yaml", "loag configuration from file")
 	flag.Parse()
@@ -96,10 +92,22 @@ func InitializeConfig() error {
 			return err
 		}
 		println("Generating default configuration to:", *file)
+
+		if err := defaults.Set(Config); err != nil {
+			fmt.Printf("Error loading defaults: %v", err)
+		}
+
 		Config.generateDefaultProviders()
 		if err := fileConfig.Save(); err != nil {
 			return err
 		}
+	}
+
+	// Load default values.
+	// Make sure to set default values after loading from file
+	// unless defaults of map type are not loaded.
+	if err := defaults.Set(Config); err != nil {
+		fmt.Printf("Error loading defaults: %v", err)
 	}
 
 	// load auth keys from files

@@ -42,9 +42,12 @@ func (p *Proxy) Start() error {
 		return err
 	}
 
-	// Make sure the cert is generated
-	_ = p.tsServer.CertDomains()
-
+	p.log.Debug().Msg("Generating TLS certificate")
+	certDomains := p.tsServer.CertDomains()
+	if _, _, err := p.lc.CertPair(ctx, certDomains[0]); err != nil {
+		return err
+	}
+	p.log.Debug().Msg("TLS certificate generated")
 	return nil
 }
 

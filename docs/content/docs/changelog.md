@@ -6,6 +6,18 @@ weight: 200
 
 {{% steps %}}
 
+### 1.3.0
+
+#### Braking changes
+
+Configuration files are now validated and doesn't allow invalid configuration keys
+[Verify valid configuration keys](/docs/serverconfig/#sample-configuration-file).
+
+#### New features
+
+- Generate TLS certificates for containers when starting proxies.
+- Configuration files are now validated.
+
 ### 1.2.0
 
 #### New features
@@ -20,7 +32,7 @@ Reload Proxy List Files when changes.
 
 #### New features
 
-- Quicker start with diferent approach to start proxies in docker
+- Quicker start with different approach to start proxies in docker
 - Add support for targets with self-signed certificates.
 
 ### 1.1.1

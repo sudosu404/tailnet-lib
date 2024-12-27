@@ -12,6 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/almeidapaulopt/tsdproxy/internal/consts"
+
 	"github.com/fsnotify/fsnotify"
 	"github.com/rs/zerolog"
 	"gopkg.in/yaml.v3"
@@ -62,7 +64,7 @@ func (f *File) Save() error {
 		return err
 	}
 
-	err = os.WriteFile(f.filename, yaml, 0644)
+	err = os.WriteFile(f.filename, yaml, consts.PermAllRead+consts.PermOwnerWrite)
 	if err != nil {
 		return err
 	}
@@ -161,7 +163,7 @@ func keysToLowerCase(in []byte) ([]byte, error) {
 	lines := []string{}
 	for _, line := range strings.Split(string(in), "\n") {
 		if strings.Contains(line, ":") {
-			parts := strings.SplitN(line, ":", 2)
+			parts := strings.SplitN(line, ":", 2) //nolint:golint,mnd
 			line = fmt.Sprintf("%s:%s", strings.ToLower(parts[0]), parts[1])
 		}
 		lines = append(lines, line)

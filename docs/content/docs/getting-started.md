@@ -37,14 +37,14 @@ docker compose up -d
 After the TSDProxy container is started, a configuration file
 `/config/tsdproxy.yaml` is created and populated with the following:
 
-```yaml
+```yaml  {filename="/config/tsdproxy.yaml"}
 defaultProxyProvider: default
 docker:
-  local: # name of the docker provider
+  local: # name of the docker target provider
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
     targetHostname: 172.31.0.1 # hostname or IP of docker server
     defaultProxyProvider: default # name of which proxy provider to use
-file: {}
+files: {}
 tailscale:
   providers:
     default: # name of the provider

@@ -3,6 +3,7 @@
 package proxy
 
 import (
+	"context"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -10,6 +11,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
@@ -25,8 +27,9 @@ type (
 		proxyProvider  proxyproviders.Proxy
 		targetprovider targetproviders.TargetProvider
 
-		httpListener net.Listener
-		httpServer   *http.Server
+		httpListener       net.Listener
+		httpServer         *http.Server
+		redirectHTTPServer *http.Server
 
 		reverseProxy *httputil.ReverseProxy
 		Config       *proxyconfig.Config
@@ -37,8 +40,7 @@ type (
 		listener net.Listener
 		handler  http.Handler
 
-		// used to stop the proxy. Using this channel avoid several Race conditions.
-		quit chan int
+		mu sync.RWMutex
 	}
 )
 
@@ -55,7 +57,6 @@ func NewProxy(log zerolog.Logger,
 		log:            log.With().Str("proxyname", pcfg.Hostname).Logger(),
 		targetprovider: targetprovider,
 		Config:         pcfg,
-		quit:           make(chan int, 1),
 	}
 
 	log.Info().Str("hostname", pcfg.Hostname).Msg("setting up proxy")
@@ -87,7 +88,7 @@ func NewProxy(log zerolog.Logger,
 	//
 	proxy.proxyProvider, err = proxyProvider.NewProxy(pcfg)
 	if err != nil {
-		return nil, fmt.Errorf("Error initializing proxy on proxyProvider: %w", err)
+		return nil, fmt.Errorf("error initializing proxy on proxyProvider: %w", err)
 	}
 
 	// Create reverse proxy server
@@ -111,17 +112,27 @@ func NewProxy(log zerolog.Logger,
 
 // Close method is a method that initiate proxy close procedure.
 func (proxy *Proxy) Close() {
-	proxy.quit <- 1
+	proxy.mu.RLock()
+	defer proxy.mu.RUnlock()
+
+	if proxy.httpServer != nil {
+		if err := proxy.httpServer.Shutdown(context.Background()); err != nil {
+			proxy.log.Error().Err(err).Msg("Error closing proxy")
+		}
+	}
 }
 
 // close method is a method that closes all listeners ans httpServer.
 func (proxy *Proxy) close() {
+	proxy.mu.RLock()
+	defer proxy.mu.RUnlock()
+
 	var errs error
 	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("stopping proxy")
 
 	// if has http redirect server
-	if proxy.httpServer != nil {
-		errs = errors.Join(errs, proxy.httpServer.Close())
+	if proxy.redirectHTTPServer != nil {
+		errs = errors.Join(errs, proxy.redirectHTTPServer.Close())
 	}
 	if proxy.httpListener != nil {
 		errs = errors.Join(errs, proxy.httpListener.Close())
@@ -144,18 +155,14 @@ func (proxy *Proxy) close() {
 func (proxy *Proxy) Start() {
 	go func() {
 		proxy.start()
-		// wait for signal to close the proxy.
-		<-proxy.quit
 		proxy.close()
 	}()
 }
 
 func (proxy *Proxy) start() {
 	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("starting proxy")
-	var err error
-	// Create the listener
-	//
-	proxy.listener, err = proxy.proxyProvider.GetTLSListener("tcp", ":443")
+
+	ls, err := proxy.proxyProvider.GetTLSListener("tcp", ":443")
 	if err != nil {
 		proxy.log.Error().Err(err).Msg("Error Listening on TLS")
 		proxy.Close()
@@ -175,13 +182,17 @@ func (proxy *Proxy) start() {
 		proxy.log.Error().Err(err).Msg("Error starting redirect server")
 	}
 
-	// start server
-	//
-	srv := &http.Server{
+	proxy.mu.Lock()
+	proxy.listener = ls
+	proxy.httpServer = &http.Server{
 		Handler:           proxy.handler,
 		ReadHeaderTimeout: core.ReadHeaderTimeout,
 	}
-	err = srv.Serve(proxy.listener)
+	proxy.mu.Unlock()
+
+	// start server
+	//
+	err = proxy.httpServer.Serve(proxy.listener)
 	defer proxy.log.Printf("Terminating server %s", proxy.Config.Hostname)
 
 	if err != nil && !errors.Is(err, net.ErrClosed) {
@@ -197,16 +208,18 @@ func (proxy *Proxy) startRedirectServer() error {
 		return fmt.Errorf("error creating HTTP listener: %w", err)
 	}
 
-	proxy.httpServer = &http.Server{
+	proxy.mu.Lock()
+	proxy.redirectHTTPServer = &http.Server{
 		ReadHeaderTimeout: core.ReadHeaderTimeout,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			target := "https://" + r.Host + r.URL.RequestURI()
 			http.Redirect(w, r, target, http.StatusMovedPermanently)
 		}),
 	}
+	proxy.mu.Unlock()
 
 	go func() {
-		err := proxy.httpServer.Serve(proxy.httpListener)
+		err := proxy.redirectHTTPServer.Serve(proxy.httpListener)
 		if err != nil && err != http.ErrServerClosed {
 			// Log the error, but don't stop the main server
 			proxy.log.Error().Err(err).Msg("HTTP redirect server error")

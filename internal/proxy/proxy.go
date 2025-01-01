@@ -195,7 +195,7 @@ func (proxy *Proxy) start() {
 	err = proxy.httpServer.Serve(proxy.listener)
 	defer proxy.log.Printf("Terminating server %s", proxy.Config.Hostname)
 
-	if err != nil && !errors.Is(err, net.ErrClosed) {
+	if err != nil && !errors.Is(err, net.ErrClosed) && !errors.Is(err, http.ErrServerClosed) {
 		proxy.log.Error().Err(err).Str("hostname", proxy.Config.Hostname).Msg("Error starting proxy server")
 	}
 }

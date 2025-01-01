@@ -47,8 +47,8 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
-	github.com/gaissmai/bart v0.15.4 // indirect
-	github.com/go-json-experiment/json v0.0.0-20241219182419-8aae9ab3641a // indirect
+	github.com/gaissmai/bart v0.16.1 // indirect
+	github.com/go-json-experiment/json v0.0.0-20241231003004-00ed864b172e // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -65,7 +65,7 @@ require (
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hdevalence/ed25519consensus v0.2.0 // indirect
 	github.com/illarion/gonotify/v2 v2.0.8 // indirect
-	github.com/insomniacslk/dhcp v0.0.0-20241219180459-a662cc47d412 // indirect
+	github.com/insomniacslk/dhcp v0.0.0-20241224095048-b56fa0d5f25d // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/native v1.1.1-0.20230202152459-5c7d0dd6ab86 // indirect
 	github.com/jsimonetti/rtnetlink v1.4.2 // indirect

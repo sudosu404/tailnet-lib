@@ -91,7 +91,7 @@ dev: docker_start
 ## server_start: start the server
 .PHONY: server_start
 server_start:
-	wgo run -debounce="500ms" -file=.go -file=.env -file=.json ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
+	wgo run -race -debounce="500ms" -file=.go -file=.env -file=.json ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
 	# templ generate --proxy="http://localhost:5173" --watch --cmd="echo RELOAD" &
 	# wgo -debounce="500ms" -file=.go -file=.templ -xfile=_templ.go templ generate --notify-proxy :: go run ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
 

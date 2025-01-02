@@ -3,6 +3,7 @@
 package proxyproviders
 
 import (
+	"context"
 	"net"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
@@ -11,15 +12,15 @@ import (
 type (
 	// Proxy interface for each proxy provider
 	Provider interface {
-		NewProxy(cfg *proxyconfig.Config) (Proxy, error)
+		NewProxy(cfg *proxyconfig.Config) (ProxyInterface, error)
 	}
 
-	// Proxy interface for each proxy
-	Proxy interface {
-		Start() error
+	// ProxyInterface interface for each proxy
+	ProxyInterface interface {
+		Start(context.Context) error
 		Close() error
-		GetListener(network, addr string) (net.Listener, error)
-		GetTLSListener(network, addr string) (net.Listener, error)
+		NewListener(network, addr string) (net.Listener, error)
+		NewTLSListener(network, addr string) (net.Listener, error)
 		GetURL() string
 	}
 )

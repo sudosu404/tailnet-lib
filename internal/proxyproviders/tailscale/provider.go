@@ -39,7 +39,7 @@ func New(log zerolog.Logger, name string, provider *config.TailscaleServerConfig
 }
 
 // NewProxy method implements proxyprovider NewProxy method
-func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.Proxy, error) {
+func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInterface, error) {
 	c.log.Debug().
 		Str("hostname", config.Hostname).
 		Msg("Setting up tailscale server")

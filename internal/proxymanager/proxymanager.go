@@ -139,7 +139,7 @@ func (pm *ProxyManager) removeProxy(hostname string) {
 
 	delete(pm.Proxies, hostname)
 
-	pm.log.Info().Str("proxy", hostname).Msg("Removed proxy for container")
+	pm.log.Debug().Str("proxy", hostname).Msg("Removed proxy")
 }
 
 // StopAllProxies method shuts down all proxies.

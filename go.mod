@@ -3,7 +3,7 @@ module github.com/almeidapaulopt/tsdproxy
 go 1.23.4
 
 require (
-	github.com/a-h/templ v0.2.793
+	github.com/a-h/templ v0.3.819
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/docker v27.4.1+incompatible
 	github.com/fsnotify/fsnotify v1.8.0
@@ -48,7 +48,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.7 // indirect
 	github.com/gaissmai/bart v0.16.1 // indirect
-	github.com/go-json-experiment/json v0.0.0-20241231003004-00ed864b172e // indirect
+	github.com/go-json-experiment/json v0.0.0-20250102205358-f1a6735cad74 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect

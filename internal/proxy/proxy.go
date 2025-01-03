@@ -121,7 +121,9 @@ func NewProxy(log zerolog.Logger,
 
 // Close method is a method that initiate proxy close procedure.
 func (proxy *Proxy) Close() {
+	// cancel context
 	proxy.cancel()
+	// make sure all listeners are closed
 	proxy.close()
 }
 

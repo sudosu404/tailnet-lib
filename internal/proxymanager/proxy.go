@@ -1,6 +1,6 @@
 // SPDX-FileCopyrightText: 2024 Paulo Almeida <almeidapaulopt@gmail.com>
 // SPDX-License-Identifier: MIT
-package proxy
+package proxymanager
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 	"sync"
+	"sync/atomic"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
@@ -39,6 +40,8 @@ type (
 
 		ctx    context.Context
 		cancel context.CancelFunc
+
+		state atomic.Int32
 
 		mu sync.Mutex
 	}
@@ -107,7 +110,7 @@ func NewProxy(log zerolog.Logger,
 		BaseContext:       func(net.Listener) context.Context { return ctx },
 	}
 
-	return &Proxy{
+	p := &Proxy{
 		log:            log,
 		targetProvider: targetprovider,
 		Config:         pcfg,
@@ -116,15 +119,21 @@ func NewProxy(log zerolog.Logger,
 		reverseProxy:   reverseProxy,
 		providerProxy:  pProvider,
 		httpServer:     httpServer,
-	}, nil
+	}
+
+	return p, nil
 }
 
 // Close method is a method that initiate proxy close procedure.
 func (proxy *Proxy) Close() {
+	proxy.state.Store(int32(proxyconfig.ProxyStateStopping))
+
 	// cancel context
 	proxy.cancel()
 	// make sure all listeners are closed
 	proxy.close()
+
+	proxy.state.Store(int32(proxyconfig.ProxyStateStopped))
 }
 
 // close method is a method that closes all listeners ans httpServer.
@@ -161,23 +170,18 @@ func (proxy *Proxy) close() {
 
 // Start method is a method that starts the proxy.
 func (proxy *Proxy) Start() {
-	go func() {
-		proxy.start()
-	}()
-}
-
-func (proxy *Proxy) start() {
 	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("starting proxy")
+	proxy.state.Store(int32(proxyconfig.ProxyStateStarting))
+
+	if err := proxy.providerProxy.Start(proxy.ctx); err != nil {
+		proxy.log.Error().Err(err).Msg("Error starting proxy")
+		proxy.Close()
+		return
+	}
 
 	ls, err := proxy.addTLSListener("tcp", ":443")
 	if err != nil {
 		proxy.log.Error().Err(err).Msg("Error Listening on TLS")
-	}
-
-	if err = proxy.providerProxy.Start(proxy.ctx); err != nil {
-		proxy.log.Error().Err(err).Msg("Error starting proxy")
-		proxy.Close()
-		return
 	}
 
 	// Redirect http to https
@@ -186,15 +190,23 @@ func (proxy *Proxy) start() {
 		proxy.log.Error().Err(err).Msg("Error starting redirect server")
 	}
 
+	proxy.state.Store(int32(proxyconfig.ProxyStateRunning))
+
 	// start server
 	//
 	err = proxy.httpServer.Serve(ls)
 	defer proxy.log.Printf("Terminating server %s", proxy.Config.Hostname)
 
 	if err != nil && !errors.Is(err, net.ErrClosed) && !errors.Is(err, http.ErrServerClosed) {
+
+		proxy.state.Store(int32(proxyconfig.ProxyStateError))
 		proxy.log.Error().Err(err).Str("hostname", proxy.Config.Hostname).Msg("Error starting proxy server")
 		return
 	}
+}
+
+func (proxy *Proxy) GetState() proxyconfig.ProxyState {
+	return proxyconfig.ProxyState(proxy.state.Load())
 }
 
 func (proxy *Proxy) addListener(network, addr string) (net.Listener, error) {

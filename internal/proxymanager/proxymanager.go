@@ -10,7 +10,6 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxy"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders/tailscale"
@@ -20,7 +19,7 @@ import (
 )
 
 type (
-	ProxyList          map[string]*proxy.Proxy
+	ProxyList          map[string]*Proxy
 	TargetProviderList map[string]targetproviders.TargetProvider
 	ProxyProviderList  map[string]proxyproviders.Provider
 
@@ -118,7 +117,7 @@ func (pm *ProxyManager) addProxyProviders() {
 }
 
 // addProxy method adds a Proxy to the ProxyManager.
-func (pm *ProxyManager) addProxy(proxy *proxy.Proxy) {
+func (pm *ProxyManager) addProxy(proxy *Proxy) {
 	pm.mutex.Lock()
 	defer pm.mutex.Unlock()
 
@@ -161,7 +160,7 @@ func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *proxyconfig.C
 		return
 	}
 
-	p, err := proxy.NewProxy(pm.log, proxyConfig, proxyProvider, targetproviders)
+	p, err := NewProxy(pm.log, proxyConfig, proxyProvider, targetproviders)
 	if err != nil {
 		pm.log.Error().Err(err).Msg("Error creating proxy")
 		return
@@ -218,7 +217,7 @@ func (pm *ProxyManager) WatchEvents() {
 			for {
 				select {
 				case event := <-eventsChan:
-					pm.HandleContainerEvent(event)
+					go pm.HandleContainerEvent(event)
 				case err := <-errChan:
 					pm.log.Err(err).Msg("Error watching Docker events")
 					return
@@ -274,7 +273,7 @@ func (pm *ProxyManager) eventStop(event targetproviders.TargetEvent) {
 }
 
 // getProxyByTargetID method returns a Proxy by TargetID.
-func (pm *ProxyManager) getProxyByTargetID(targetID string) *proxy.Proxy {
+func (pm *ProxyManager) getProxyByTargetID(targetID string) *Proxy {
 	for _, p := range pm.Proxies {
 		if p.Config.TargetID == targetID {
 			return p

@@ -57,8 +57,8 @@ type (
 
 	// TailscaleServerConfig struct stores Tailscale Server configuration
 	TailscaleServerConfig struct {
-		AuthKey     string `default:"your-authkey" validate:"omitempty" yaml:",omitempty"`
-		AuthKeyFile string `validate:"omitempty" yaml:",omitempty"`
+		AuthKey     string `default:"" validate:"omitempty" yaml:",omitempty"`
+		AuthKeyFile string `default:"" validate:"omitempty" yaml:",omitempty"`
 		ControlURL  string `default:"https://controlplane.tailscale.com" validate:"uri"`
 	}
 
@@ -112,7 +112,7 @@ func InitializeConfig() error {
 
 	// load auth keys from files
 	for _, d := range Config.Tailscale.Providers {
-		if d.AuthKeyFile != "" {
+		if d != nil && d.AuthKeyFile != "" {
 			authkey, err := Config.getAuthKeyFromFile(d.AuthKeyFile)
 			if err != nil {
 				return err

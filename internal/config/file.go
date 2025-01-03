@@ -26,6 +26,8 @@ type File struct {
 	onChange func(fsnotify.Event)
 
 	filename string
+
+	mu sync.Mutex
 }
 
 func NewFile(log zerolog.Logger, filename string, data any) *File {
@@ -74,6 +76,9 @@ func (f *File) Save() error {
 
 // OnConfigChange sets the event handler that is called when a config file changes.
 func (f *File) OnChange(run func(in fsnotify.Event)) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	f.onChange = run
 }
 

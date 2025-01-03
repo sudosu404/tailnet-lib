@@ -10,6 +10,7 @@ import (
 )
 
 type (
+
 	// Config struct stores all the configuration for the proxy
 	Config struct {
 		Tailscale Tailscale `validate:"dive"`
@@ -45,14 +46,13 @@ func NewConfig() (*Config, error) {
 
 	err := defaults.Set(config)
 	if err != nil {
-		return nil, fmt.Errorf("Error loading defaults: %w", err)
+		return nil, fmt.Errorf("error loading defaults: %w", err)
 	}
 
 	return config, nil
 }
 
 const (
-
 	// Default values to proxyconfig
 	//
 	DefaultProxyAccessLog = true

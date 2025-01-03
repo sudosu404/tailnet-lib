@@ -44,6 +44,8 @@ func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInter
 		Str("hostname", config.Hostname).
 		Msg("Setting up tailscale server")
 
+	log := c.log.With().Str("Hostname", config.Hostname).Logger()
+
 	// If the auth key is not set, use the provider auth key
 	authKey := config.Tailscale.AuthKey
 	if authKey == "" {
@@ -59,10 +61,10 @@ func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInter
 		Ephemeral:    config.Tailscale.Ephemeral,
 		RunWebClient: config.Tailscale.RunWebClient,
 		UserLogf: func(format string, args ...any) {
-			c.log.Info().Msgf(format, args...)
+			log.Info().Msgf(format, args...)
 		},
 		Logf: func(format string, args ...any) {
-			c.log.Trace().Msgf(format, args...)
+			log.Trace().Msgf(format, args...)
 		},
 
 		ControlURL: c.getControlURL(config),
@@ -71,12 +73,12 @@ func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInter
 	// if verbose is set, use the info log level
 	if config.Tailscale.Verbose {
 		tserver.Logf = func(format string, args ...any) {
-			c.log.Info().Msgf(format, args...)
+			log.Info().Msgf(format, args...)
 		}
 	}
 
 	return &Proxy{
-		log:      c.log.With().Str("Hostname", config.Hostname).Logger(),
+		log:      log,
 		config:   config,
 		tsServer: tserver,
 	}, nil

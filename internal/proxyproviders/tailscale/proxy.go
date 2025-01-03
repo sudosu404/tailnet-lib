@@ -48,11 +48,6 @@ func (p *Proxy) Start(ctx context.Context) error {
 
 	go p.watchStatus()
 
-	_, err = p.tsServer.Up(ctx)
-	if err != nil {
-		return err
-	}
-
 	p.log.Info().Msg("Generating TLS certificate")
 	certDomains := p.tsServer.CertDomains()
 	if _, _, err := p.lc.CertPair(ctx, certDomains[0]); err != nil {

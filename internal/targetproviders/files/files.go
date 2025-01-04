@@ -225,11 +225,14 @@ func (c *Client) AddTarget(id string) (*proxyconfig.Config, error) {
 }
 
 func (c *Client) DeleteProxy(id string) error {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+
 	if _, ok := c.proxies[id]; !ok {
 		return fmt.Errorf("target %s not found", id)
 	}
 
-	c.deleteTarget(id)
+	delete(c.proxies, id)
 
 	return nil
 }
@@ -240,12 +243,4 @@ func (c *Client) addTarget(cfg proxyConfig, name string) {
 	defer c.mutex.Unlock()
 
 	c.proxies[name] = cfg
-}
-
-// deleteTarget method deletes a target from the proxies map
-func (c *Client) deleteTarget(name string) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
-
-	delete(c.proxies, name)
 }

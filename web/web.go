@@ -14,6 +14,8 @@ import (
 )
 
 //go:generate bun run build
+//go:generate cp -r node_modules/simple-icons/icons dist/
+//go:generate cp icons/tsdproxy.svg dist/icons/
 
 //go:embed dist
 var dist embed.FS

@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 
 	"github.com/rs/zerolog"
 	"tailscale.com/client/tailscale"
@@ -27,6 +28,11 @@ type Proxy struct {
 	lc       *tailscale.LocalClient
 	ctx      context.Context
 
+	events chan proxyproviders.ProxyEvent
+
+	authURL string
+	state   proxyconfig.ProxyState
+
 	mu sync.Mutex
 }
 
@@ -36,6 +42,10 @@ func (p *Proxy) Start(ctx context.Context) error {
 		err error
 		lc  *tailscale.LocalClient
 	)
+
+	if err = p.tsServer.Start(); err != nil {
+		return err
+	}
 
 	if lc, err = p.tsServer.LocalClient(); err != nil {
 		return err
@@ -48,16 +58,13 @@ func (p *Proxy) Start(ctx context.Context) error {
 
 	go p.watchStatus()
 
-	p.log.Info().Msg("Generating TLS certificate")
-	certDomains := p.tsServer.CertDomains()
-	if _, _, err := p.lc.CertPair(ctx, certDomains[0]); err != nil {
-		return err
-	}
-	p.log.Info().Msg("TLS certificate generated")
 	return nil
 }
 
 func (p *Proxy) GetURL() string {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	if p.status == nil {
 		return ""
 	}
@@ -86,6 +93,28 @@ func (p *Proxy) watchStatus() {
 		if n.ErrMessage != nil {
 			p.log.Error().Err(err).Msg("tailscale.watchStatus: backend")
 			return
+		}
+
+		switch {
+		case n.BrowseToURL != nil:
+			p.mu.Lock()
+			p.state = proxyconfig.ProxyStateAuthenticating
+			p.authURL = *n.BrowseToURL
+			p.mu.Unlock()
+
+			p.events <- proxyproviders.ProxyEvent{
+				AuthURL: *n.BrowseToURL,
+				State:   proxyconfig.ProxyStateAuthenticating,
+			}
+
+		case n.LoginFinished != nil:
+			p.mu.Lock()
+			p.state = proxyconfig.ProxyStateStarting
+			p.mu.Unlock()
+
+			p.events <- proxyproviders.ProxyEvent{
+				State: proxyconfig.ProxyStateStarting,
+			}
 		}
 
 		if s := n.State; s != nil {
@@ -121,4 +150,22 @@ func (p *Proxy) NewTLSListener(network, addr string) (net.Listener, error) {
 	}
 
 	return p.tsServer.ListenTLS(network, addr)
+}
+
+func (p *Proxy) WatchEvents() chan proxyproviders.ProxyEvent {
+	return p.events
+}
+
+func (p *Proxy) GetAuthURL() string {
+	return p.authURL
+}
+
+func (p *Proxy) getTLSCertificates() error {
+	p.log.Info().Msg("Generating TLS certificate")
+	certDomains := p.tsServer.CertDomains()
+	if _, _, err := p.lc.CertPair(p.ctx, certDomains[0]); err != nil {
+		return err
+	}
+	p.log.Info().Msg("TLS certificate generated")
+	return nil
 }

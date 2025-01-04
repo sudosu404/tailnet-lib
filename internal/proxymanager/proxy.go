@@ -168,8 +168,20 @@ func (proxy *Proxy) close() {
 	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("proxy stopped")
 }
 
-// Start method is a method that starts the proxy.
 func (proxy *Proxy) Start() {
+	go func() {
+		go proxy.start()
+		for {
+			event := <-proxy.providerProxy.WatchEvents()
+			proxy.state.Store(int32(event.State))
+
+			// TODO
+		}
+	}()
+}
+
+// Start method is a method that starts the proxy.
+func (proxy *Proxy) start() {
 	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("starting proxy")
 	proxy.state.Store(int32(proxyconfig.ProxyStateStarting))
 
@@ -259,6 +271,10 @@ func (proxy *Proxy) startRedirectServer() error {
 
 func (proxy *Proxy) GetURL() string {
 	return proxy.providerProxy.GetURL()
+}
+
+func (proxy *Proxy) GetAuthURL() string {
+	return proxy.providerProxy.GetAuthURL()
 }
 
 // reverseProxyFunc func is a method that returns a reverse proxy handler.

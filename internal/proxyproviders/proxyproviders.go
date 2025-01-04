@@ -22,5 +22,12 @@ type (
 		NewListener(network, addr string) (net.Listener, error)
 		NewTLSListener(network, addr string) (net.Listener, error)
 		GetURL() string
+		GetAuthURL() string
+		WatchEvents() chan ProxyEvent
+	}
+
+	ProxyEvent struct {
+		AuthURL string
+		State   proxyconfig.ProxyState
 	}
 )

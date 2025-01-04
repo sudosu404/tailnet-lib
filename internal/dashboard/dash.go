@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
+	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxymanager"
 	"github.com/almeidapaulopt/tsdproxy/internal/ui"
 	"github.com/almeidapaulopt/tsdproxy/internal/ui/pages"
@@ -38,11 +39,19 @@ func (dash *Dashboard) AddRoutes() {
 // index is the HandlerFunc to index page of dashboard
 func (dash *Dashboard) list() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data := make(map[string]string)
+		data := make(map[string]pages.ListData)
 
 		for name, p := range dash.proxies {
 			if p.Config.Dashboard.Visible {
-				data[name] = p.GetURL()
+				state := p.GetState()
+				url := p.GetURL()
+				if state == proxyconfig.ProxyStateAuthenticating {
+					url = p.GetAuthURL()
+				}
+				data[name] = pages.ListData{
+					URL:        url,
+					ProxyState: state,
+				}
 			}
 		}
 

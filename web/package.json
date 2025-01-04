@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "htmx-ext-sse": "^2.2.2",
-    "htmx.org": "^2.0.4"
+    "htmx.org": "^2.0.4",
+    "simple-icons": "^14.0.1"
   }
 }

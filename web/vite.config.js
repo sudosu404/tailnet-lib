@@ -1,6 +1,8 @@
-import { defineConfig } from `vite`;
+import { defineConfig, normalizePath } from `vite`;
+import { resolve } from 'path';
 import tailwindcss from '@tailwindcss/vite';
 import { compression } from 'vite-plugin-compression2'
+import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
 
@@ -12,7 +14,21 @@ export default defineConfig({
   plugins: [
     tailwindcss(),
     compression(),
-    compression({ algorithm: 'brotliCompress' })
+    compression({ algorithm: 'brotliCompress' }),
+    viteStaticCopy({
+      targets: [
+        {
+          src: normalizePath(resolve(__dirname, 'node_modules/simple-icons/icons/*')),
+          dest: 'icons/si'
+        },
+        {
+          src: normalizePath(resolve(__dirname, 'node_modules/@mdi/svg/svg/*')),
+          dest: 'icons/mdi'
+        }
+
+      ]
+    }),
+
   ],
   build: {
     rollupOptions: {

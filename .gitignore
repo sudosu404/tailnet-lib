@@ -44,3 +44,5 @@ internal/ui/static/*
 # Dependency directories
 node_modules/
 
+web/dist
+web/public/icons/sh

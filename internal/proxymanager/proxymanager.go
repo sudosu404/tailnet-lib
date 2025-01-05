@@ -15,7 +15,7 @@ import (
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders/tailscale"
 	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders"
 	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders/docker"
-	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders/files"
+	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders/list"
 )
 
 type (
@@ -92,7 +92,7 @@ func (pm *ProxyManager) addTargetProviders() {
 		pm.addTargetProvider(p, name)
 	}
 	for name, file := range config.Config.Files {
-		p, err := files.New(pm.log, name, file)
+		p, err := list.New(pm.log, name, file)
 		if err != nil {
 			pm.log.Error().Err(err).Msg("Error creating Files provider")
 			continue

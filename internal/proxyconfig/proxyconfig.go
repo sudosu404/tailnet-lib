@@ -37,7 +37,9 @@ type (
 	}
 
 	Dashboard struct {
-		Visible bool `default:"true" validate:"boolean" yaml:"visible"`
+		Label   string `validate:"string" yaml:"label"`
+		Icon    string `default:"tsdproxy" validate:"string" yaml:"icon"`
+		Visible bool   `default:"true" validate:"boolean" yaml:"visible"`
 	}
 )
 
@@ -65,4 +67,8 @@ const (
 	DefaultTailscaleVerbose      = false
 	DefaultTailscaleFunnel       = false
 	DefaultTailscaleControlURL   = ""
+
+	// Dashboard defauts
+	DefaultDashboardVisible = true
+	DefaultDashboardIcon    = "tsdproxy"
 )

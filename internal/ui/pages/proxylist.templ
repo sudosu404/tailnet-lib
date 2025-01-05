@@ -8,18 +8,19 @@ import (
 type ListData struct {
 	Icon       string
 	URL        string
+	Label      string
 	ProxyState proxyconfig.ProxyState
 }
 
 templ List(l map[string]ListData) {
 	<div class="proxy-list disabled">
-		for name, item := range l {
+		for _, item := range l {
 			<a href={ templ.URL(item.URL) }>
 				<div class="icon">
 					<img src={ components.IconURL(item.Icon) }/>
 				</div>
 				<div class="text">
-					<p>{ name }</p>
+					<p>{ item.Label }</p>
 					<span>{ proxyconfig.ProxyStateString(item.ProxyState) }</span>
 				</div>
 			</a>

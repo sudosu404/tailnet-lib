@@ -43,6 +43,8 @@ const (
 	// Dashboard config labels
 	LabelDashboardPrefix  = LabelPrefix + "dash."
 	LabelDashboardVisible = LabelDashboardPrefix + "visible"
+	LabelDashboardLabel   = LabelDashboardPrefix + "label"
+	LabelDashboardIcon    = LabelDashboardPrefix + "icon"
 
 	// docker only defaults
 	DefaultAutoDetect   = true
@@ -121,7 +123,9 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 	pcfg.ProxyProvider = c.getLabelString(LabelProxyProvider, proxyconfig.DefaultProxyProvider)
 	pcfg.ProxyAccessLog = c.getLabelBool(LabelContainerAccessLog, proxyconfig.DefaultProxyAccessLog)
 	pcfg.TLSValidate = c.getLabelBool(LabelTLSValidate, proxyconfig.DefaultTLSValidate)
-	pcfg.Dashboard.Visible = c.getLabelBool(LabelDashboardVisible, pcfg.Dashboard.Visible)
+	pcfg.Dashboard.Visible = c.getLabelBool(LabelDashboardVisible, proxyconfig.DefaultDashboardVisible)
+	pcfg.Dashboard.Label = c.getLabelString(LabelDashboardLabel, pcfg.Hostname)
+	pcfg.Dashboard.Icon = c.getLabelString(LabelDashboardIcon, proxyconfig.DefaultDashboardIcon)
 
 	return pcfg, nil
 }

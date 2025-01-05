@@ -44,13 +44,27 @@ func (dash *Dashboard) list() http.HandlerFunc {
 		for name, p := range dash.proxies {
 			if p.Config.Dashboard.Visible {
 				state := p.GetState()
+
 				url := p.GetURL()
 				if state == proxyconfig.ProxyStateAuthenticating {
 					url = p.GetAuthURL()
 				}
+
+				icon := p.Config.Dashboard.Icon
+				if icon == "" {
+					icon = proxyconfig.DefaultDashboardIcon
+				}
+
+				label := p.Config.Dashboard.Label
+				if label == "" {
+					label = name
+				}
+
 				data[name] = pages.ListData{
 					URL:        url,
 					ProxyState: state,
+					Icon:       icon,
+					Label:      label,
 				}
 			}
 		}

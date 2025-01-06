@@ -176,4 +176,26 @@ labels:
   tsdproxy.dash.visible: "false"
 ```
 
+### tsdproxy.dash.label
+
+Sets the proxy label on dashboard. Defaults to tsdproxy.name.
+
+```yaml
+labels:
+  tsdproxy.enable: "true"
+  tsdproxy.name: "nas"
+  tsdproxy.dash.label: "Files"
+```
+
+### tsdproxy.dash.icon
+
+Sets the proxy icon on dashboard. If not defined, TSDProxy will try to find a
+icon based on the image name. See available icons in [icons](/docs/advanced/icons).
+
+```yaml
+labels:
+  tsdproxy.enable: "true"
+  tsdproxy.dash.icon: "si/portainer"
+```
+
 {{% /steps %}}

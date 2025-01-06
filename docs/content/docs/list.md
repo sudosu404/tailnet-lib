@@ -85,10 +85,15 @@ music: # Name of the proxy
     funnel: false # (optional) Run in funnel mode
   dashboard:
     visible: false # (optional) doesn't show proxy in dashboard
+    label: "" # optional, label to be shown in dashboard
+    icon: "" # optional, icon to be shown in dashboard
 ```
 
 > [!TIP]
 > TSDProxy will reload the proxy list when it is updated.
 > You only need to restart TSDProxy if your changes are in /config/tsdproxy.yaml
+
+> [!NOTE]
+> See available icons in [icons](/docs/advanced/icons).
 
 {{% /steps %}}

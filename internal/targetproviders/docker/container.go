@@ -286,8 +286,14 @@ func (c *container) getTargetURL(hostname string) (*url.URL, error) {
 			time.Sleep(autoDetectSleep)
 		}
 	}
-	// auto detect failed set to defaultTargetHostname with exposed port
-	return url.Parse(c.scheme + "://" + c.defaultTargetHostname + ":" + exposedPort)
+
+	// auto detect failed or was disabled
+	port := exposedPort
+	if port == "" {
+		port = internalPort
+	}
+
+	return url.Parse(c.scheme + "://" + c.defaultTargetHostname + ":" + port)
 }
 
 // tryConnectContainer method tries to connect to the container

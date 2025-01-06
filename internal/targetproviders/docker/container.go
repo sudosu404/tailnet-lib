@@ -17,6 +17,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/web"
 )
 
 const (
@@ -125,7 +126,11 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 	pcfg.TLSValidate = c.getLabelBool(LabelTLSValidate, proxyconfig.DefaultTLSValidate)
 	pcfg.Dashboard.Visible = c.getLabelBool(LabelDashboardVisible, proxyconfig.DefaultDashboardVisible)
 	pcfg.Dashboard.Label = c.getLabelString(LabelDashboardLabel, pcfg.Hostname)
-	pcfg.Dashboard.Icon = c.getLabelString(LabelDashboardIcon, proxyconfig.DefaultDashboardIcon)
+
+	pcfg.Dashboard.Icon = c.getLabelString(LabelDashboardIcon, "")
+	if pcfg.Dashboard.Icon == "" {
+		pcfg.Dashboard.Icon = web.GessIcon(c.container.Config.Image)
+	}
 
 	return pcfg, nil
 }

@@ -129,7 +129,7 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 
 	pcfg.Dashboard.Icon = c.getLabelString(LabelDashboardIcon, "")
 	if pcfg.Dashboard.Icon == "" {
-		pcfg.Dashboard.Icon = web.GessIcon(c.container.Config.Image)
+		pcfg.Dashboard.Icon = web.GuessIcon(c.container.Config.Image)
 	}
 
 	return pcfg, nil

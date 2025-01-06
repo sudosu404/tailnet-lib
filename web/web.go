@@ -34,7 +34,7 @@ func init() {
 	Static = statigz.FileServer(staticFS.(fs.ReadDirFS), brotli.AddEncoding)
 }
 
-func GessIcon(name string) string {
+func GuessIcon(name string) string {
 	nameParts := strings.Split(name, "/")
 	lastPart := nameParts[len(nameParts)-1]
 	baseName := strings.SplitN(lastPart, ":", 2)[0]

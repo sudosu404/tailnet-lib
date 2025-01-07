@@ -63,4 +63,23 @@ labels:
   tsdproxy.container_port: 8001
 ```
 
+### Funnel doesn't work
+
+#### Cause: Funnel not enabled
+
+Visit <https://tailscale.com/kb/1223/funnel#funnel-node-attribute> to enable Funnel in ACL
+
+#### Cause: Using tags with Funnel
+
+If using tags, edit the attribute to include your tag(s), e.g.:
+
+```json
+"nodeAttrs": [
+ {
+  "target": ["autogroup:member", "tag:server"],
+  "attr":   ["funnel"],
+ },
+],
+```
+
 {{%/ steps %}}

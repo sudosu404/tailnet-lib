@@ -2,7 +2,6 @@
 title: Troubleshooting
 prev: /docs/advanced
 weight: 300
-toc: false
 ---
 
 ## How to troubleshoot TSDProxy
@@ -43,7 +42,7 @@ tsdproxy.scheme: https
 tsdproxy.tlsvalidate: false
 ```
 
-### 2024/12/06 15:17:11 http: proxy error: dial tcp 172.18.0.1:8001: i/o timeout
+### http: proxy error: dial tcp 172.18.0.1:8001: i/o timeout
 
 This error is caused by the target not being reachable. It's a network error.
 

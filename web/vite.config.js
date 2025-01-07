@@ -1,7 +1,7 @@
 import { defineConfig, normalizePath } from `vite`;
 import { resolve } from 'path';
 import tailwindcss from '@tailwindcss/vite';
-import { compression } from 'vite-plugin-compression2'
+import { compression } from 'vite-plugin-compression2';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({

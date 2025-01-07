@@ -4,9 +4,6 @@
 @variant dark (&:where(.dark, .dark *));
 
 
-
-@layer theme {}
-
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -66,9 +63,7 @@
 
   #mobile-menu {
     @apply md:hidden bg-gray-100 dark:bg-gray-800 shadow p-4;
-  }
 
-  #mobile-menu {
     a {
       @apply block py-2;
     }

@@ -10,7 +10,7 @@ toc: false
 ### Global
 
 1. Verify your tsdproxy.yaml file. Configuration files are Case sensitive.
-[Verify your files](http://localhost:1313/docs/serverconfig/#sample-configuration-file)
+[Verify your files](../serverconfig/#sample-configuration-file)
 
 ### Docker provider
 
@@ -21,11 +21,14 @@ toc: false
 5. Check if your firewall isn't blocking the traffic
 6. Add your container to the same TSDProxy docker network
 7. Disable autodetection with tsdproxy.autodetect="false" in your container
-8. Still having problems? Send a [Bug report](https://github.com/almeidapaulopt/tsdproxy/issues/new/choose)
+8. Verify if your case isn't in the next [Common errors](#common-errors)
+9. Still having problems? Send a [Bug report](https://github.com/almeidapaulopt/tsdproxy/issues/new/choose)
 
-### Proxyies Files provider
+### Proxies List provider
 
-1. Configuration files are case sensitive. [Verify your files](/docs/files/#proxy-list-file-options)
+1. Configuration files are case sensitive. [Verify your files](../list/#proxy-list-file-options)
+
+## Common Errors
 
 {{% steps %}}
 

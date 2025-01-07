@@ -223,27 +223,34 @@ func (proxy *Proxy) GetState() proxyconfig.ProxyState {
 
 func (proxy *Proxy) addListener(network, addr string) (net.Listener, error) {
 	l, err := proxy.providerProxy.NewListener(network, addr)
+	if err == nil {
+		return nil, err
+	}
 
 	proxy.mu.Lock()
 	proxy.listeners = append(proxy.listeners, l)
 	proxy.mu.Unlock()
-	return l, err
+
+	return l, nil
 }
 
 func (proxy *Proxy) addTLSListener(network, addr string) (net.Listener, error) {
 	l, err := proxy.providerProxy.NewTLSListener(network, addr)
+	if err == nil {
+		return nil, err
+	}
 
 	proxy.mu.Lock()
 	proxy.listeners = append(proxy.listeners, l)
 	proxy.mu.Unlock()
-	return l, err
+	return l, nil
 }
 
 // StartRedirectServer method is a method that starts http rediret server to https.
 func (proxy *Proxy) startRedirectServer() error {
 	lt, err := proxy.addListener("tcp", ":80")
 	if err != nil {
-		return fmt.Errorf("error creating HTTP listener: %w", err)
+		return fmt.Errorf("error creating redirect HTTP listener: %w", err)
 	}
 
 	redirectHTTPServer := &http.Server{

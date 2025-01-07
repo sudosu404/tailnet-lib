@@ -101,6 +101,9 @@ servers, Provider 'server1' with a different tailscale server and provider 'diff
 using the default tailscale server with a different authkey where you can add any
 tags.
 
+> [!TIP]
+> Visit [Tailscale page](../advanced/tailscale/) for more details.
+
 ### docker section
 
 TSDProxy can use multiple docker servers. Each docker server can be configured

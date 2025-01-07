@@ -32,7 +32,7 @@ files:
 tailscale:
   providers:
     default: # name of the provider
-      authKey: your-authkey # define authkey here
+      authKey: "" # define authkey here
       authKeyFile: "" # use this to load authkey from file. If this is defined, Authkey is ignored
       controlUrl: https://controlplane.tailscale.com # use this to override the default control URL
   dataDir: /data/

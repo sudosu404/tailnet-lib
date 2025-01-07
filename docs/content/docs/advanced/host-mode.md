@@ -1,6 +1,5 @@
 ---
 title: Service with host network_mode
-next: /docs/scenarios
 ---
 
 If you want to run a service in `network_mode: host`, TSDProxy tries to detect how

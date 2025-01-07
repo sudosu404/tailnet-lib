@@ -3,15 +3,26 @@ title: Changelog
 weight: 200 
 ---
 
-
 {{% steps %}}
+
+### 1.4.0
+
+#### New features
+
+- OAuth authentication using the Dashboard.
+- Dashboard has now proxy status.
+- Icons and Labels can be used to customize the Dashboard.
+
+#### Fixes
+
+- Error on port when autodetect is disabled.
 
 ### 1.3.0
 
 #### Braking changes
 
 Configuration files are now validated and doesn't allow invalid configuration keys
-[Verify valid configuration keys](/docs/serverconfig/#sample-configuration-file).
+[Verify valid configuration keys](../serverconfig/#sample-configuration-file).
 
 #### New features
 

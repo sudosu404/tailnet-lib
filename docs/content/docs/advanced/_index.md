@@ -11,4 +11,5 @@ weight: 5
   <!-- {{< card link="headscale" title="Headscale" icon="server" >}} -->
   {{< card link="host-mode" title="Service with Host Network Mode" icon="view-boards" >}}
   {{< card link="icons" title="Dashboard icons" icon="view-boards" >}}
+  {{< card link="tailscale" title="Tailscale" icon="key" >}}
 {{< /cards >}}

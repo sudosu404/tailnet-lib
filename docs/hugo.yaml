@@ -5,6 +5,8 @@ enableRobotsTXT: true
 enableGitInfo: true
 enableEmoji: true
 
+baseURL: https://almeidapaulopt.github.io/tsdproxy/
+
 defaultContentLanguage: en
 languages:
   en:

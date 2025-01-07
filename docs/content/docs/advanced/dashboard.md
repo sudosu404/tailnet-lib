@@ -11,7 +11,7 @@ prev: /docs/advanced
 
 Update docker-compose.yml with the following:
 
-```yaml docker-compose.yml
+```yaml  {filename="/config/tsdproxy.yaml"}
     labels:
       - tsdproxy.enable=true
       - tsdproxy.name=dash
@@ -25,7 +25,7 @@ docker compose restart
 
 ### Standalone
 
-#### Configure files provider
+#### Configure with a Proxy List provider
 
 Configure a new files provider or configure it in any existing files provider.
 
@@ -35,7 +35,7 @@ files:
     filename: /config/proxies.yaml
 ```
 
-#### Add Dashboard entry on your files provider
+#### Add Dashboard entry on your Proxy List file
 
 ```yaml {filename="/config/proxies.yaml"}
 dash:

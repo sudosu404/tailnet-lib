@@ -6,7 +6,9 @@ prev: /docs
 
 ## Quick Start
 
-Using Docker Compose, you can easily configure the proxy to your Tailscale containers. Here’s an example of how you can configure your services using Docker Compose:
+Using Docker Compose, you can easily configure the proxy to your Tailscale
+containers. Here’s an example of how you can configure your services using
+Docker Compose:
 
 {{% steps %}}
 
@@ -48,8 +50,8 @@ files: {}
 tailscale:
   providers:
     default: # name of the provider
-      authKey: your-authkey # define authkey here
-      authKeyFile: "" # use this to load authkey from file. If this is defined, Authkey is ignored
+      authKey: "" # optional, define authkey here
+      authKeyFile: "" # optional, use this to load authkey from file. If this is defined, Authkey is ignored
       controlUrl: https://controlplane.tailscale.com # use this to override the default control URL
   dataDir: /data/
 http:
@@ -63,9 +65,8 @@ proxyAccessLog: true # set to true to enable container access log
 
 #### Edit the configuration file
 
-1. Set your authkey in the file `/config/tsdproxy.yaml`.
-2. Change your docker host if you are not using the socket.
-3. restart the service.
+1. Change your docker host if you are not using the socket.
+2. Restart the service if you changed the configuration.
 
 ```bash
 docker compose restart
@@ -81,18 +82,16 @@ The container name is `sample-nginx`, expose port 8181, and add the
 docker run -d --name sample-nginx -p 8111:80 --label "tsdproxy.enable=true" nginx:latest
 ```
 
-### Test the sample service
+### Open Dashboard
 
-```bash
-curl https://sample-nginx.FUNNY-NAME.ts.net
-```
-
-> [!NOTE]
-> Note that you need to replace `FUNNY-NAME` with the name of your network.
+1. Visit the dashboard at http://<IP_ADDRESS>:8080.
+2. Sample-nginx should appear in the dashboard. Click the button and
+authenticate with Tailscale.
+3. After authentication, the proxy will be enabled.
 
 > [!IMPORTANT]
-> The first time you run the proxy, it will take a few seconds to start, because it
-> needs to connect to the Tailscale network, generate the certificates, and start
+> The first time you run the proxy, it will take a few seconds to start, because
+> it needs to connect to the Tailscale network, generate the certificates, and start
 > the proxy.
 
 {{% /steps %}}

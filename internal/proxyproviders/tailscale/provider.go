@@ -67,7 +67,7 @@ func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInter
 			log.Trace().Msgf(format, args...)
 		},
 
-		ControlURL: c.getControlURL(config),
+		ControlURL: c.getControlURL(),
 	}
 
 	// if verbose is set, use the info log level
@@ -86,9 +86,9 @@ func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInter
 }
 
 // getControlURL method returns the control URL
-func (c *Client) getControlURL(cfg *proxyconfig.Config) string {
-	if cfg.Tailscale.ControlURL == "" {
+func (c *Client) getControlURL() string {
+	if c.controlURL == "" {
 		return proxyconfig.DefaultTailscaleControlURL
 	}
-	return cfg.Tailscale.ControlURL
+	return c.controlURL
 }

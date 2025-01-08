@@ -150,8 +150,6 @@ func (c *container) getTailscaleConfig() (*proxyconfig.Tailscale, error) {
 		Verbose:      c.getLabelBool(LabelTsnetVerbose, proxyconfig.DefaultTailscaleVerbose),
 		Funnel:       c.getLabelBool(LabelFunnel, proxyconfig.DefaultTailscaleFunnel),
 		AuthKey:      authKey,
-		// TODO: add controlURL
-		// ControlURL:         c.,
 	}, nil
 }
 

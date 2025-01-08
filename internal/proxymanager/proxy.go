@@ -207,10 +207,14 @@ func (proxy *Proxy) start() {
 	// start server
 	//
 	err = proxy.httpServer.Serve(ls)
-	defer proxy.log.Printf("Terminating server %s", proxy.Config.Hostname)
+	defer func() {
+		if r := recover(); r != nil {
+			proxy.log.Error().Err(err).Msg("Panic recovered")
+		}
+	}()
+	defer proxy.log.Info().Msg("Terminating server")
 
 	if err != nil && !errors.Is(err, net.ErrClosed) && !errors.Is(err, http.ErrServerClosed) {
-
 		proxy.state.Store(int32(proxyconfig.ProxyStateError))
 		proxy.log.Error().Err(err).Str("hostname", proxy.Config.Hostname).Msg("Error starting proxy server")
 		return

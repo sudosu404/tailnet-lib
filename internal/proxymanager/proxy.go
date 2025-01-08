@@ -227,7 +227,7 @@ func (proxy *Proxy) GetState() proxyconfig.ProxyState {
 
 func (proxy *Proxy) addListener(network, addr string) (net.Listener, error) {
 	l, err := proxy.providerProxy.NewListener(network, addr)
-	if err == nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -240,7 +240,7 @@ func (proxy *Proxy) addListener(network, addr string) (net.Listener, error) {
 
 func (proxy *Proxy) addTLSListener(network, addr string) (net.Listener, error) {
 	l, err := proxy.providerProxy.NewTLSListener(network, addr)
-	if err == nil {
+	if err != nil {
 		return nil, err
 	}
 

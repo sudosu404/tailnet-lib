@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"net"
-	"strings"
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
@@ -15,7 +14,6 @@ import (
 	"github.com/rs/zerolog"
 	"tailscale.com/client/tailscale"
 	"tailscale.com/ipn"
-	"tailscale.com/ipn/ipnstate"
 	"tailscale.com/tsnet"
 )
 
@@ -24,13 +22,13 @@ type Proxy struct {
 	log      zerolog.Logger
 	config   *proxyconfig.Config
 	tsServer *tsnet.Server
-	status   *ipnstate.Status
 	lc       *tailscale.LocalClient
 	ctx      context.Context
 
 	events chan proxyproviders.ProxyEvent
 
 	authURL string
+	url     string
 	state   proxyconfig.ProxyState
 
 	mu sync.Mutex
@@ -62,19 +60,12 @@ func (p *Proxy) Start(ctx context.Context) error {
 }
 
 func (p *Proxy) GetURL() string {
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	if p.status == nil {
-		return ""
-	}
-
 	// TODO: should be configurable and not force to https
-	return "https://" + strings.TrimRight(p.status.Self.DNSName, ".")
+	return "https://" + p.url
 }
 
 func (p *Proxy) watchStatus() {
-	watcher, err := p.lc.WatchIPNBus(p.ctx, ipn.NotifyInitialState)
+	watcher, err := p.lc.WatchIPNBus(p.ctx, ipn.NotifyInitialState|ipn.NotifyNoPrivateKeys|ipn.NotifyInitialHealthState)
 	if err != nil {
 		p.log.Error().Err(err).Msg("tailscale.watchStatus")
 		return
@@ -91,41 +82,48 @@ func (p *Proxy) watchStatus() {
 		}
 
 		if n.ErrMessage != nil {
-			p.log.Error().Err(err).Msg("tailscale.watchStatus: backend")
+			p.log.Error().Str("error", *n.ErrMessage).Msg("tailscale.watchStatus: backend")
 			return
 		}
 
-		switch {
-		case n.BrowseToURL != nil:
-			p.mu.Lock()
-			p.state = proxyconfig.ProxyStateAuthenticating
-			p.authURL = *n.BrowseToURL
-			p.mu.Unlock()
-
-			p.events <- proxyproviders.ProxyEvent{
-				AuthURL: *n.BrowseToURL,
-				State:   proxyconfig.ProxyStateAuthenticating,
-			}
-
-		case n.LoginFinished != nil:
-			p.mu.Lock()
-			p.state = proxyconfig.ProxyStateStarting
-			p.mu.Unlock()
-
-			p.events <- proxyproviders.ProxyEvent{
-				State: proxyconfig.ProxyStateStarting,
-			}
+		status, err := p.lc.Status(p.ctx)
+		if err != nil && !errors.Is(err, net.ErrClosed) {
+			p.log.Error().Err(err).Msg("tailscale.watchStatus: status")
+			return
 		}
 
-		if s := n.State; s != nil {
-			status, err := p.lc.Status(p.ctx)
-			if err != nil && !errors.Is(err, net.ErrClosed) {
-				p.log.Error().Err(err).Msg("tailscale.watchStatus: status")
-				return
+		switch status.BackendState {
+		case "NeedsLogin":
+			p.setState(proxyconfig.ProxyStateAuthenticating, "", status.AuthURL)
+		case "Starting":
+			p.setState(proxyconfig.ProxyStateStarting, "", "")
+		case "Running":
+			p.setState(proxyconfig.ProxyStateRunning, status.Self.DNSName, "")
+			if p.state != proxyconfig.ProxyStateRunning {
+				p.getTLSCertificates()
 			}
-
-			p.status = status
 		}
+	}
+}
+
+func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL string) {
+	if p.state == state && p.url == url && p.authURL == authURL {
+		return
+	}
+	p.log.Debug().Str("authURL", url).Str("state", state.String()).Msg("tailscale status")
+	p.mu.Lock()
+	p.state = state
+	if url != "" {
+		p.url = url
+	}
+	if authURL != "" {
+		p.authURL = authURL
+	}
+
+	p.mu.Unlock()
+
+	p.events <- proxyproviders.ProxyEvent{
+		State: state,
 	}
 }
 
@@ -160,12 +158,12 @@ func (p *Proxy) GetAuthURL() string {
 	return p.authURL
 }
 
-func (p *Proxy) getTLSCertificates() error {
+func (p *Proxy) getTLSCertificates() {
 	p.log.Info().Msg("Generating TLS certificate")
 	certDomains := p.tsServer.CertDomains()
 	if _, _, err := p.lc.CertPair(p.ctx, certDomains[0]); err != nil {
-		return err
+		p.log.Error().Err(err).Msg("error to get TLS certificates")
+		return
 	}
 	p.log.Info().Msg("TLS certificate generated")
-	return nil
 }

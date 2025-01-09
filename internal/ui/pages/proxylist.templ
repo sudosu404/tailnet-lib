@@ -1,29 +1,29 @@
 package pages
 
 import (
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
-	"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
+"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
 )
 
 type ListData struct {
-	Icon       string
-	URL        string
-	Label      string
-	ProxyState proxyconfig.ProxyState
+Icon string
+URL string
+Label string
+ProxyState proxyconfig.ProxyState
 }
 
 templ List(l map[string]ListData) {
-	<div class="proxy-list disabled">
-		for _, item := range l {
-			<a href={ templ.URL(item.URL) }>
-				<div class="icon">
-					<img src={ components.IconURL(item.Icon) }/>
-				</div>
-				<div class="text">
-					<p>{ item.Label }</p>
-					<span>{ proxyconfig.ProxyStateString(item.ProxyState) }</span>
-				</div>
-			</a>
-		}
-	</div>
+<div class="proxy-list">
+  for _, item := range l {
+  <a href={ templ.URL(item.URL) }>
+    <div class="icon">
+      <img src={ components.IconURL(item.Icon) } />
+    </div>
+    <div class="text">
+      <p>{ item.Label }</p>
+      <span>{ item.ProxyState.String() }</span>
+    </div>
+  </a>
+  }
+</div>
 }

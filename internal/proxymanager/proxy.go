@@ -65,12 +65,10 @@ func NewProxy(log zerolog.Logger,
 		Str("proxyURL", pcfg.ProxyURL.String()).
 		Msg("initializing proxy")
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	// Create the reverse proxy
 	//
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !pcfg.TLSValidate},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: !pcfg.TLSValidate}, //nolint
 	}
 	reverseProxy := &httputil.ReverseProxy{
 		Transport: tr,
@@ -102,6 +100,8 @@ func NewProxy(log zerolog.Logger,
 	if pcfg.ProxyAccessLog {
 		handler = core.LoggerMiddleware(log, handler)
 	}
+
+	ctx, cancel := context.WithCancel(context.Background())
 
 	// main http Server
 	httpServer := &http.Server{
@@ -173,9 +173,7 @@ func (proxy *Proxy) Start() {
 		go proxy.start()
 		for {
 			event := <-proxy.providerProxy.WatchEvents()
-			proxy.state.Store(int32(event.State))
-
-			// TODO
+			proxy.state.Store(event.State.Int32())
 		}
 	}()
 }
@@ -183,7 +181,6 @@ func (proxy *Proxy) Start() {
 // Start method is a method that starts the proxy.
 func (proxy *Proxy) start() {
 	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("starting proxy")
-	proxy.state.Store(int32(proxyconfig.ProxyStateStarting))
 
 	if err := proxy.providerProxy.Start(proxy.ctx); err != nil {
 		proxy.log.Error().Err(err).Msg("Error starting proxy")
@@ -201,8 +198,6 @@ func (proxy *Proxy) start() {
 	if err != nil {
 		proxy.log.Error().Err(err).Msg("Error starting redirect server")
 	}
-
-	proxy.state.Store(int32(proxyconfig.ProxyStateRunning))
 
 	// start server
 	//

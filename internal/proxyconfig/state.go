@@ -24,6 +24,10 @@ var proxyStateStrings = []string{
 	"Error",
 }
 
-func ProxyStateString(s ProxyState) string {
-	return proxyStateStrings[s]
+func (s *ProxyState) String() string {
+	return proxyStateStrings[int(*s)]
+}
+
+func (s *ProxyState) Int32() int32 {
+	return int32(*s)
 }

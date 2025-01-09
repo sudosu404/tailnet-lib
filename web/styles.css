@@ -12,7 +12,13 @@
 
   a {
     @apply hover:text-blue-500 dark:hover:text-blue-400 rounded-md;
+
+    &.disabled {
+
+      @apply hover:text-gray-900 dark:hover:text-gray-100 pointer-events-none bg-gray-700 hover:bg-gray-700;
+    }
   }
+
 
   body {
 
@@ -100,6 +106,18 @@
     a {
       @apply flex items-center rounded-sm overflow-hidden shadow bg-gray-100 dark:bg-gray-800 dark:shadow-neutral-950 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-900;
 
+      &.disabled {
+        @apply bg-gray-700 hover:bg-gray-700;
+
+        .icon {
+          @apply bg-gray-600 hover:bg-gray-600;
+
+          img {
+            @apply fill-gray-500 hover:fill-gray-400;
+          }
+        }
+      }
+
       .icon {
         @apply p-4 bg-blue-500 dark:bg-blue-400;
 
@@ -125,6 +143,8 @@
       .icon {
         @apply bg-blue-600 dark:bg-blue-500;
       }
+
     }
+
   }
 }

@@ -60,7 +60,10 @@ func (dash *Dashboard) list() http.HandlerFunc {
 					label = name
 				}
 
+				enabled := state == proxyconfig.ProxyStateAuthenticating || state == proxyconfig.ProxyStateRunning
+
 				data[name] = pages.ListData{
+					Enabled:    enabled,
 					URL:        url,
 					ProxyState: state,
 					Icon:       icon,

@@ -37,8 +37,8 @@ func init() {
 func GuessIcon(name string) string {
 	nameParts := strings.Split(name, "/")
 	lastPart := nameParts[len(nameParts)-1]
-	baseName := strings.SplitN(lastPart, ":", 2)[0]
-	baseName = strings.SplitN(baseName, "@", 2)[0]
+	baseName := strings.SplitN(lastPart, ":", 2)[0] //nolint
+	baseName = strings.SplitN(baseName, "@", 2)[0]  //nolint
 
 	var foundFile string
 	err := fs.WalkDir(dist, ".", func(path string, d fs.DirEntry, err error) error {

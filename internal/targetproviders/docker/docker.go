@@ -37,6 +37,8 @@ type (
 	}
 )
 
+var _ targetproviders.TargetProvider = (*Client)(nil)
+
 // New function returns a new Docker TargetProvider
 func New(log zerolog.Logger, name string, provider *config.DockerTargetProviderConfig) (*Client, error) {
 	newlog := log.With().Str("docker", name).Logger()

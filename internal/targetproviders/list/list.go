@@ -41,10 +41,12 @@ type (
 		URL           string `validate:"required,uri"`
 		ProxyProvider string
 		Tailscale     proxyconfig.Tailscale
-		TLSValidate   bool                  `default:"true" validate:"boolean"`
 		Dashboard     proxyconfig.Dashboard `validate:"dive"`
+		TLSValidate   bool                  `default:"true" validate:"boolean"`
 	}
 )
+
+var _ targetproviders.TargetProvider = (*Client)(nil)
 
 func (s *proxyConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	_ = defaults.Set(s)

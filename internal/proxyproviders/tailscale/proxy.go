@@ -35,6 +35,8 @@ type Proxy struct {
 	mu sync.Mutex
 }
 
+var _ proxyproviders.ProxyInterface = (*Proxy)(nil)
+
 // Start method implements proxyconfig.Proxy Start method.
 func (p *Proxy) Start(ctx context.Context) error {
 	var (

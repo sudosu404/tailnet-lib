@@ -25,6 +25,8 @@ type Client struct {
 	datadir    string
 }
 
+var _ proxyproviders.Provider = (*Client)(nil)
+
 func New(log zerolog.Logger, name string, provider *config.TailscaleServerConfig) (*Client, error) {
 	datadir := filepath.Join(config.Config.Tailscale.DataDir, name)
 

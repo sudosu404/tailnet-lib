@@ -5,6 +5,7 @@ package proxymanager
 import (
 	"context"
 	"errors"
+	"maps"
 	"sync"
 
 	"github.com/rs/zerolog"
@@ -32,7 +33,7 @@ type (
 		TargetProviders TargetProviderList
 		ProxyProviders  ProxyProviderList
 
-		mutex sync.Mutex
+		mtx sync.RWMutex
 	}
 )
 
@@ -48,16 +49,16 @@ func NewProxyManager(logger zerolog.Logger) *ProxyManager {
 
 // addTargetProvider method adds a TargetProvider to the ProxyManager.
 func (pm *ProxyManager) addTargetProvider(provider targetproviders.TargetProvider, name string) {
-	pm.mutex.Lock()
-	defer pm.mutex.Unlock()
+	pm.mtx.Lock()
+	defer pm.mtx.Unlock()
 
 	pm.TargetProviders[name] = provider
 }
 
 // addProxyProvider method adds	a ProxyProvider to the ProxyManager.
 func (pm *ProxyManager) addProxyProvider(provider proxyproviders.Provider, name string) {
-	pm.mutex.Lock()
-	defer pm.mutex.Unlock()
+	pm.mtx.Lock()
+	defer pm.mtx.Unlock()
 
 	pm.ProxyProviders[name] = provider
 }
@@ -118,8 +119,8 @@ func (pm *ProxyManager) addProxyProviders() {
 
 // addProxy method adds a Proxy to the ProxyManager.
 func (pm *ProxyManager) addProxy(proxy *Proxy) {
-	pm.mutex.Lock()
-	defer pm.mutex.Unlock()
+	pm.mtx.Lock()
+	defer pm.mtx.Unlock()
 
 	proxy.mu.Lock()
 	defer proxy.mu.Unlock()
@@ -129,15 +130,15 @@ func (pm *ProxyManager) addProxy(proxy *Proxy) {
 
 // removeProxy method removes a Proxy from the ProxyManager.
 func (pm *ProxyManager) removeProxy(hostname string) {
-	pm.mutex.Lock()
-	defer pm.mutex.Unlock()
-
 	proxy, exists := pm.Proxies[hostname]
 	if !exists {
 		return
 	}
 
 	proxy.Close()
+
+	pm.mtx.Lock()
+	defer pm.mtx.Unlock()
 
 	delete(pm.Proxies, hostname)
 
@@ -148,9 +149,20 @@ func (pm *ProxyManager) removeProxy(hostname string) {
 func (pm *ProxyManager) StopAllProxies() {
 	pm.log.Info().Msg("Shutdown all proxies")
 
-	for id := range pm.Proxies {
-		pm.removeProxy(id)
+	// clone to avoid concurrent modification
+	pm.mtx.RLock()
+	p := maps.Clone(pm.Proxies)
+	pm.mtx.RUnlock()
+
+	wg := sync.WaitGroup{}
+	for id := range p {
+		wg.Add(1)
+		go func() {
+			pm.removeProxy(id)
+			wg.Done()
+		}()
 	}
+	wg.Wait()
 }
 
 // newAndStartProxy method creates a new proxy and starts it.
@@ -277,8 +289,8 @@ func (pm *ProxyManager) eventStop(event targetproviders.TargetEvent) {
 
 // getProxyByTargetID method returns a Proxy by TargetID.
 func (pm *ProxyManager) getProxyByTargetID(targetID string) *Proxy {
-	pm.mutex.Lock()
-	defer pm.mutex.Unlock()
+	pm.mtx.RLock()
+	defer pm.mtx.RUnlock()
 	for _, p := range pm.Proxies {
 		if p.Config.TargetID == targetID {
 			return p

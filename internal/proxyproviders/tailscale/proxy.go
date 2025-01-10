@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"strings"
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
@@ -98,7 +99,7 @@ func (p *Proxy) watchStatus() {
 		case "Starting":
 			p.setState(proxyconfig.ProxyStateStarting, "", "")
 		case "Running":
-			p.setState(proxyconfig.ProxyStateRunning, status.Self.DNSName, "")
+			p.setState(proxyconfig.ProxyStateRunning, strings.TrimRight(status.Self.DNSName, "."), "")
 			if p.state != proxyconfig.ProxyStateRunning {
 				p.getTLSCertificates()
 			}

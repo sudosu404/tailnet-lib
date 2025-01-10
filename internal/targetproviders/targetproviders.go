@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ActionStart ActionType = iota
+	ActionStart ActionType = iota + 1
 	ActionStop
 	ActionRestart
 )

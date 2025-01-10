@@ -32,7 +32,7 @@ type (
 
 		name string
 
-		mutex sync.Mutex
+		mtx sync.Mutex
 	}
 
 	configProxiesList map[string]proxyConfig
@@ -227,8 +227,8 @@ func (c *Client) AddTarget(id string) (*proxyconfig.Config, error) {
 }
 
 func (c *Client) DeleteProxy(id string) error {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
 
 	if _, ok := c.proxies[id]; !ok {
 		return fmt.Errorf("target %s not found", id)
@@ -241,8 +241,8 @@ func (c *Client) DeleteProxy(id string) error {
 
 // addTarget method add a target the proxies map
 func (c *Client) addTarget(cfg proxyConfig, name string) {
-	c.mutex.Lock()
-	defer c.mutex.Unlock()
+	c.mtx.Lock()
+	defer c.mtx.Unlock()
 
 	c.proxies[name] = cfg
 }

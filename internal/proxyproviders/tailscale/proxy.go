@@ -32,7 +32,7 @@ type Proxy struct {
 	url     string
 	state   proxyconfig.ProxyState
 
-	mu sync.Mutex
+	mtx sync.RWMutex
 }
 
 var _ proxyproviders.ProxyInterface = (*Proxy)(nil)
@@ -52,10 +52,10 @@ func (p *Proxy) Start(ctx context.Context) error {
 		return err
 	}
 
-	p.mu.Lock()
+	p.mtx.Lock()
 	p.ctx = ctx
 	p.lc = lc
-	p.mu.Unlock()
+	p.mtx.Unlock()
 
 	go p.watchStatus()
 
@@ -113,8 +113,10 @@ func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL strin
 	if p.state == state && p.url == url && p.authURL == authURL {
 		return
 	}
+
 	p.log.Debug().Str("authURL", url).Str("state", state.String()).Msg("tailscale status")
-	p.mu.Lock()
+
+	p.mtx.Lock()
 	p.state = state
 	if url != "" {
 		p.url = url
@@ -122,8 +124,7 @@ func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL strin
 	if authURL != "" {
 		p.authURL = authURL
 	}
-
-	p.mu.Unlock()
+	p.mtx.Unlock()
 
 	p.events <- proxyproviders.ProxyEvent{
 		State: state,

@@ -121,9 +121,6 @@ func (pm *ProxyManager) addProxy(proxy *Proxy) {
 	pm.mtx.Lock()
 	defer pm.mtx.Unlock()
 
-	proxy.mu.Lock()
-	defer proxy.mu.Unlock()
-
 	pm.Proxies[proxy.Config.Hostname] = proxy
 }
 
@@ -288,6 +285,7 @@ func (pm *ProxyManager) eventStop(event targetproviders.TargetEvent) {
 func (pm *ProxyManager) getProxyByTargetID(targetID string) *Proxy {
 	pm.mtx.RLock()
 	defer pm.mtx.RUnlock()
+
 	for _, p := range pm.Proxies {
 		if p.Config.TargetID == targetID {
 			return p

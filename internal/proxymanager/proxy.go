@@ -43,7 +43,7 @@ type (
 
 		state atomic.Int32
 
-		mu sync.Mutex
+		mtx sync.RWMutex
 	}
 )
 
@@ -226,9 +226,10 @@ func (proxy *Proxy) addListener(network, addr string) (net.Listener, error) {
 		return nil, err
 	}
 
-	proxy.mu.Lock()
+	proxy.mtx.Lock()
+	defer proxy.mtx.Unlock()
+
 	proxy.listeners = append(proxy.listeners, l)
-	proxy.mu.Unlock()
 
 	return l, nil
 }
@@ -239,9 +240,11 @@ func (proxy *Proxy) addTLSListener(network, addr string) (net.Listener, error) {
 		return nil, err
 	}
 
-	proxy.mu.Lock()
+	proxy.mtx.Lock()
+	defer proxy.mtx.Unlock()
+
 	proxy.listeners = append(proxy.listeners, l)
-	proxy.mu.Unlock()
+
 	return l, nil
 }
 
@@ -260,9 +263,9 @@ func (proxy *Proxy) startRedirectServer() error {
 		}),
 	}
 
-	proxy.mu.Lock()
+	proxy.mtx.Lock()
 	proxy.redirectHTTPServer = redirectHTTPServer
-	proxy.mu.Unlock()
+	proxy.mtx.Unlock()
 
 	go func() {
 		err := proxy.redirectHTTPServer.Serve(lt)

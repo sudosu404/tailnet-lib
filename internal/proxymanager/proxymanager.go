@@ -5,7 +5,6 @@ package proxymanager
 import (
 	"context"
 	"errors"
-	"maps"
 	"sync"
 
 	"github.com/rs/zerolog"
@@ -148,20 +147,18 @@ func (pm *ProxyManager) removeProxy(hostname string) {
 // StopAllProxies method shuts down all proxies.
 func (pm *ProxyManager) StopAllProxies() {
 	pm.log.Info().Msg("Shutdown all proxies")
-
-	// clone to avoid concurrent modification
-	pm.mtx.RLock()
-	p := maps.Clone(pm.Proxies)
-	pm.mtx.RUnlock()
-
 	wg := sync.WaitGroup{}
-	for id := range p {
+
+	pm.mtx.RLock()
+	for id := range pm.Proxies {
 		wg.Add(1)
 		go func() {
 			pm.removeProxy(id)
 			wg.Done()
 		}()
 	}
+	pm.mtx.RUnlock()
+
 	wg.Wait()
 }
 

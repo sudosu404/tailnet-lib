@@ -18,7 +18,7 @@ templ List(l map[string]ListData) {
 		for _, item := range l {
 			<a href={ templ.URL(item.URL) } class={ templ.KV("disabled", !item.Enabled) }>
 				<div class="icon">
-					<img src={ components.IconURL(item.Icon) }/>
+					@templ.Raw(components.EmbededSVGIcon(item.Icon))
 				</div>
 				<div class="text">
 					<p>{ item.Label }</p>

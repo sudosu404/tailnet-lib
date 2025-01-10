@@ -5,6 +5,7 @@ package web
 
 import (
 	"embed"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"strings"
@@ -58,4 +59,13 @@ func GuessIcon(name string) string {
 	}
 	icon := strings.TrimPrefix(foundFile, "dist/icons/")
 	return strings.TrimSuffix(icon, ".svg")
+}
+
+func GetFile(name string) string {
+	a, err := dist.ReadFile("dist/" + name)
+	if err != nil {
+		return fmt.Sprintf("Error reading file %s: %v", name, err)
+	}
+
+	return string(a)
 }

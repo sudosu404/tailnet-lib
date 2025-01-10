@@ -14,7 +14,6 @@
     @apply hover:text-blue-500 dark:hover:text-blue-400 rounded-md;
 
     &.disabled {
-
       @apply hover:text-gray-900 dark:hover:text-gray-100 pointer-events-none bg-gray-700 hover:bg-gray-700;
     }
   }
@@ -112,8 +111,8 @@
         .icon {
           @apply bg-gray-600 hover:bg-gray-600;
 
-          img {
-            @apply fill-gray-500 hover:fill-gray-400;
+          svg {
+            @apply fill-gray-500 dark:fill-gray-500 stroke-gray-500 dark:stroke-gray-500 filter grayscale contrast-50;
           }
         }
       }
@@ -121,7 +120,7 @@
       .icon {
         @apply p-4 bg-blue-500 dark:bg-blue-400;
 
-        img {
+        svg {
           @apply h-12 w-12 text-white;
         }
       }
@@ -137,14 +136,13 @@
           @apply text-xl;
         }
       }
-    }
 
-    a:hover {
-      .icon {
-        @apply bg-blue-600 dark:bg-blue-500;
+      &:hover {
+        .icon {
+          @apply bg-blue-600 dark:bg-blue-500;
+        }
+
       }
-
     }
-
   }
 }

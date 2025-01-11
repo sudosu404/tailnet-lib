@@ -140,15 +140,13 @@ func (c *Client) WatchEvents(_ context.Context, eventsChan chan targetproviders.
 	c.file.OnChange(c.onFileChange)
 
 	// start initial proxies
-	go func() {
-		for k := range c.configProxies {
-			eventsChan <- targetproviders.TargetEvent{
-				ID:             k,
-				TargetProvider: c,
-				Action:         targetproviders.ActionStart,
-			}
+	for k := range c.configProxies {
+		eventsChan <- targetproviders.TargetEvent{
+			ID:             k,
+			TargetProvider: c,
+			Action:         targetproviders.ActionStart,
 		}
-	}()
+	}
 }
 
 func (c *Client) onFileChange(e fsnotify.Event) {

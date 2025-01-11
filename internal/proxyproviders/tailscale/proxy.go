@@ -133,6 +133,7 @@ func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL strin
 
 // Close method implements proxyconfig.Proxy Close method.
 func (p *Proxy) Close() error {
+	close(p.events)
 	if p.tsServer != nil {
 		return p.tsServer.Close()
 	}

@@ -208,6 +208,9 @@ func (c *Client) Close() {
 			Action:         targetproviders.ActionStop,
 		}
 	}
+
+	close(c.eventsChan)
+	close(c.eventsChan)
 }
 
 func (c *Client) AddTarget(id string) (*proxyconfig.Config, error) {

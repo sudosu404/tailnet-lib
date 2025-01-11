@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2024 Paulo Almeida <almeidapaulopt@gmail.com>
+// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
 // SPDX-License-Identifier: MIT
+
 package components
 
 func IconURL(name string) string {

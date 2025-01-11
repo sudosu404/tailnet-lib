@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2024 Paulo Almeida <almeidapaulopt@gmail.com>
+// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
 // SPDX-License-Identifier: MIT
+
 package proxymanager
 
 import (
@@ -25,25 +26,19 @@ import (
 type (
 	// Proxy struct is a struct that contains all the information needed to run a proxy.
 	Proxy struct {
-		providerProxy  proxyproviders.ProxyInterface
-		targetProvider targetproviders.TargetProvider
-
-		httpServer         *http.Server
+		log                zerolog.Logger
+		targetProvider     targetproviders.TargetProvider
+		ctx                context.Context
+		providerProxy      proxyproviders.ProxyInterface
 		redirectHTTPServer *http.Server
+		Config             *proxyconfig.Config
+		URL                *url.URL
 		reverseProxy       *httputil.ReverseProxy
+		httpServer         *http.Server
+		cancel             context.CancelFunc
 		listeners          []net.Listener
-
-		Config *proxyconfig.Config
-		URL    *url.URL
-
-		log zerolog.Logger
-
-		ctx    context.Context
-		cancel context.CancelFunc
-
-		state atomic.Int32
-
-		mtx sync.RWMutex
+		mtx                sync.RWMutex
+		state              atomic.Int32
 	}
 )
 

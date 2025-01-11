@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2024 Paulo Almeida <almeidapaulopt@gmail.com>
+// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
 // SPDX-License-Identifier: MIT
+
 package list
 
 import (
@@ -23,16 +24,13 @@ type (
 	Client struct {
 		log           zerolog.Logger
 		file          *config.File
-		config        config.FilesTargetProviderConfig
 		configProxies configProxiesList
 		proxies       configProxiesList
-
-		eventsChan chan targetproviders.TargetEvent
-		errChan    chan error
-
-		name string
-
-		mtx sync.Mutex
+		eventsChan    chan targetproviders.TargetEvent
+		errChan       chan error
+		name          string
+		config        config.FilesTargetProviderConfig
+		mtx           sync.Mutex
 	}
 
 	configProxiesList map[string]proxyConfig

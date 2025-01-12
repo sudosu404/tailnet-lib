@@ -18,7 +18,6 @@ import (
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
-	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders"
 
 	"github.com/rs/zerolog"
 )
@@ -27,7 +26,6 @@ type (
 	// Proxy struct is a struct that contains all the information needed to run a proxy.
 	Proxy struct {
 		log                zerolog.Logger
-		targetProvider     targetproviders.TargetProvider
 		ctx                context.Context
 		providerProxy      proxyproviders.ProxyInterface
 		redirectHTTPServer *http.Server
@@ -46,7 +44,6 @@ type (
 func NewProxy(log zerolog.Logger,
 	pcfg *proxyconfig.Config,
 	proxyProvider proxyproviders.Provider,
-	targetprovider targetproviders.TargetProvider,
 ) (*Proxy, error) {
 	//
 	var err error
@@ -106,14 +103,14 @@ func NewProxy(log zerolog.Logger,
 	}
 
 	p := &Proxy{
-		log:            log,
-		targetProvider: targetprovider,
-		Config:         pcfg,
-		ctx:            ctx,
-		cancel:         cancel,
-		reverseProxy:   reverseProxy,
-		providerProxy:  pProvider,
-		httpServer:     httpServer,
+		log: log,
+		// targetProvider: targetprovider,
+		Config:        pcfg,
+		ctx:           ctx,
+		cancel:        cancel,
+		reverseProxy:  reverseProxy,
+		providerProxy: pProvider,
+		httpServer:    httpServer,
 	}
 
 	return p, nil

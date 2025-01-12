@@ -161,7 +161,7 @@ func (pm *ProxyManager) StopAllProxies() {
 }
 
 // newAndStartProxy method creates a new proxy and starts it.
-func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *proxyconfig.Config, targetproviders targetproviders.TargetProvider) {
+func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *proxyconfig.Config) {
 	pm.log.Debug().Str("proxy", name).Msg("Creating proxy")
 
 	proxyProvider, err := pm.getProxyProvider(proxyConfig)
@@ -170,7 +170,7 @@ func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *proxyconfig.C
 		return
 	}
 
-	p, err := NewProxy(pm.log, proxyConfig, proxyProvider, targetproviders)
+	p, err := NewProxy(pm.log, proxyConfig, proxyProvider)
 	if err != nil {
 		pm.log.Error().Err(err).Msg("Error creating proxy")
 		return
@@ -260,7 +260,7 @@ func (pm *ProxyManager) eventStart(event targetproviders.TargetEvent) {
 		return
 	}
 
-	pm.newAndStartProxy(pcfg.Hostname, pcfg, event.TargetProvider)
+	pm.newAndStartProxy(pcfg.Hostname, pcfg)
 }
 
 // eventStop method stops a Proxy from a event trigger

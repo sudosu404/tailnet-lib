@@ -16,6 +16,8 @@ import (
 	"github.com/almeidapaulopt/tsdproxy/internal/config"
 )
 
+var ErrHijackNotSupported = errors.New("hijack not supported")
+
 func NewLog() zerolog.Logger {
 	println("Setting up logger")
 
@@ -65,7 +67,7 @@ func (r *LogRecord) Write(data []byte) (int, error) {
 func (r *LogRecord) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	h, ok := r.ResponseWriter.(http.Hijacker)
 	if !ok {
-		return nil, nil, errors.New("hijack not supported")
+		return nil, nil, ErrHijackNotSupported
 	}
 	return h.Hijack()
 }

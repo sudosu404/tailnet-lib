@@ -70,6 +70,20 @@ type container struct {
 	autodetect            bool
 }
 
+type NoValidTargetFoundError struct {
+	containerName string
+}
+
+func (n *NoValidTargetFoundError) Error() string {
+	return "no valid target found for " + n.containerName
+}
+
+var (
+	ErrNoPortFoundInContainer             = errors.New("no port found in container")
+	ErrNoValidTargetFoundForInternalPorts = errors.New("no valid target found for internal ports ")
+	ErrNoValidTargetFoundForExposedPorts  = errors.New("no valid target found for exposed ports ")
+)
+
 // newContainer function returns a new container.
 func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageInfo types.ImageInspect,
 	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string,
@@ -265,7 +279,7 @@ func (c *container) getTargetURL(hostname string) (*url.URL, error) {
 	imagePort := c.getImagePort()
 
 	if exposedPort == "" && internalPort == "" && imagePort == "" {
-		return nil, errors.New("no port found in container")
+		return nil, ErrNoPortFoundInContainer
 	}
 
 	// return localhost if container same as host to serve the dashboard
@@ -329,7 +343,7 @@ func (c *container) tryConnectContainer(hostname, internalPort, exposedPort, ima
 		c.log.Debug().Err(err).Msg("Error to connect using image port")
 	}
 
-	return nil, errors.New("no valid target found for " + c.container.Name)
+	return nil, &NoValidTargetFoundError{containerName: c.container.Name}
 }
 
 // tryInternalPort method tries to connect to the container internal ip and internal port
@@ -359,7 +373,7 @@ func (c *container) tryInternalPort(hostname, port string) (*url.URL, error) {
 		c.log.Debug().Str("address", c.defaultBridgeAddress).Str("port", port).Msg("Failed to connect")
 	}
 
-	return nil, errors.New("no valid target found for internal ports ")
+	return nil, ErrNoValidTargetFoundForInternalPorts
 }
 
 // tryExposedPort method tries to connect to the container internal ip and exposed port
@@ -380,7 +394,7 @@ func (c *container) tryExposedPort(hostname, port string) (*url.URL, error) {
 	}
 
 	c.log.Debug().Str("address", hostname).Str("port", port).Msg("Failed to connect")
-	return nil, errors.New("no valid target found for exposed ports ")
+	return nil, ErrNoValidTargetFoundForExposedPorts
 }
 
 // dial method tries to connect to a host and port

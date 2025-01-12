@@ -37,6 +37,11 @@ type (
 	}
 )
 
+var (
+	ErrProxyProviderNotFound  = errors.New("proxyProvider not found")
+	ErrTargetProviderNotFound = errors.New("targetProvider not found")
+)
+
 // NewProxyManager function creates a new ProxyManager.
 func NewProxyManager(logger zerolog.Logger) *ProxyManager {
 	return &ProxyManager{
@@ -187,15 +192,15 @@ func (pm *ProxyManager) getProxyProvider(proxy *proxyconfig.Config) (proxyprovid
 	if proxy.ProxyProvider != "" {
 		p, ok := pm.ProxyProviders[proxy.ProxyProvider]
 		if !ok {
-			return nil, errors.New("ProxyProvider not found")
+			return nil, ErrProxyProviderNotFound
 		}
 		return p, nil
 	}
 
-	// return defaul ProxyProvider defined in TargetProvider
+	// return default ProxyProvider defined in TargetProvider
 	targetProvider, ok := pm.TargetProviders[proxy.TargetProvider]
 	if !ok {
-		return nil, errors.New("TargetProvider not found")
+		return nil, ErrTargetProviderNotFound
 	}
 	if p, ok := pm.ProxyProviders[targetProvider.GetDefaultProxyProviderName()]; ok {
 		return p, nil
@@ -209,7 +214,7 @@ func (pm *ProxyManager) getProxyProvider(proxy *proxyconfig.Config) (proxyprovid
 
 	// return the first ProxyProvider
 	//
-	return nil, errors.New("proxyprovider not found")
+	return nil, ErrProxyProviderNotFound
 }
 
 // WatchEvents method watches for events from all target providers.

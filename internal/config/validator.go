@@ -11,6 +11,16 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
+type DefaultProxyProviderNotFoundError struct {
+	ProviderName string
+}
+
+func (e *DefaultProxyProviderNotFoundError) Error() string {
+	return "Default proxy provider " + e.ProviderName + " not found"
+}
+
+var ErrNoDefaultProxyProvider = errors.New("no default proxy provider")
+
 // validate method  Validate configurations.
 func (c *config) validate() error {
 	println("Validating configuration...")
@@ -35,7 +45,7 @@ func (c *config) validate() error {
 	//
 	if c.DefaultProxyProvider != "" {
 		if !c.hasProxyProvider(c.DefaultProxyProvider) {
-			return errors.New("Default proxy " + c.DefaultProxyProvider + " provider not found")
+			return &DefaultProxyProviderNotFoundError{ProviderName: c.DefaultProxyProvider}
 		}
 	} else {
 		var temp string
@@ -61,7 +71,7 @@ func (c *config) addDefaultProxyProviderToDockerProviders() error {
 			p.DefaultProxyProvider = c.DefaultProxyProvider
 		} else {
 			if !c.hasProxyProvider(p.DefaultProxyProvider) {
-				return errors.New("Default proxy provider " + p.DefaultProxyProvider + " not found")
+				return &DefaultProxyProviderNotFoundError{ProviderName: p.DefaultProxyProvider}
 			}
 		}
 	}
@@ -72,7 +82,7 @@ func (c *config) getDefaultProxyProvider() (string, error) {
 	for name := range c.Tailscale.Providers {
 		return strings.ToLower(name), nil
 	}
-	return "", errors.New("No default proxy provider")
+	return "", ErrNoDefaultProxyProvider
 }
 
 func (c *config) hasProxyProvider(name string) bool {

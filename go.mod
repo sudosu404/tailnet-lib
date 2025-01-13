@@ -7,7 +7,7 @@ require (
 	github.com/creasty/defaults v1.8.0
 	github.com/docker/docker v27.4.1+incompatible
 	github.com/fsnotify/fsnotify v1.8.0
-	github.com/go-playground/validator/v10 v10.23.0
+	github.com/go-playground/validator/v10 v10.24.0
 	github.com/rs/zerolog v1.33.0
 	github.com/vearutop/statigz v1.4.3
 	go.opentelemetry.io/otel v1.33.0

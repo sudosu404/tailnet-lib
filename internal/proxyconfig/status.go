@@ -5,7 +5,7 @@ package proxyconfig
 type ProxyState int32
 
 const (
-	ProxyStateInitializing ProxyState = iota + 1
+	ProxyStateInitializing ProxyState = iota
 	ProxyStateStarting
 	ProxyStateAuthenticating
 	ProxyStateRunning

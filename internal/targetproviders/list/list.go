@@ -208,7 +208,7 @@ func (c *Client) Close() {
 	}
 
 	close(c.eventsChan)
-	close(c.eventsChan)
+	close(c.errChan)
 }
 
 func (c *Client) AddTarget(id string) (*proxyconfig.Config, error) {

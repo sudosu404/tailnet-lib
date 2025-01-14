@@ -1,6 +1,5 @@
 // SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
 // SPDX-License-Identifier: MIT
-
 package proxyconfig
 
 import (
@@ -20,10 +19,11 @@ type (
 		TargetID       string
 		ProxyProvider  string
 		Hostname       string
-		Dashboard      Dashboard `validate:"dive"`
-		Tailscale      Tailscale `validate:"dive"`
-		ProxyAccessLog bool      `default:"true" validate:"boolean"`
-		TLSValidate    bool      `default:"true" validate:"boolean"`
+		Dashboard      Dashboard             `validate:"dive"`
+		Tailscale      Tailscale             `validate:"dive"`
+		ProxyAccessLog bool                  `default:"true" validate:"boolean"`
+		TLSValidate    bool                  `default:"true" validate:"boolean"`
+		Ports          map[string]PortConfig `validate:"dive"`
 	}
 
 	// Tailscale struct stores the configuration for tailscale ProxyProvider

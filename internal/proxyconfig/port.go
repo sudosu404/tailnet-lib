@@ -4,71 +4,154 @@
 package proxyconfig
 
 import (
+	"errors"
 	"fmt"
+	"net/url"
 	"strconv"
 	"strings"
-
-	"github.com/creasty/defaults"
 )
 
 type (
 	PortConfig struct {
-		ProxyProtocol  string        `validate:"string" default:"https" yaml:"proxyProtocol"`
-		TargetProtocol string        `validate:"string" default:"http" yaml:"targetProtocol"`
-		ProxyPort      int           `validate:"hostname_port" default:"443" yaml:"proxyPort"`
-		TargetPort     int           `validate:"hostname_port" default:"80" yaml:"targetPort"`
-		IsRedirect     bool          `validate:"boolean" default:"false" yaml:"isRedirect"`
-		TLSValidate    bool          `validate:"boolean" default:"true" yaml:"tlsValidate"`
+		ProxyProtocol  string        `validate:"string" yaml:"proxyProtocol"`
+		TargetURL      *url.URL      `yaml:"targetUrl"`
+		TargetProtocol string        `validate:"string" yaml:"targetProtocol"`
+		ProxyPort      int           `validate:"hostname_port" yaml:"proxyPort"`
+		TargetPort     int           `validate:"hostname_port" yaml:"targetPort"`
+		IsRedirect     bool          `validate:"boolean" yaml:"isRedirect"`
+		TLSValidate    bool          `validate:"boolean" yaml:"tlsValidate"`
 		Tailscale      TailscalePort `validate:"dive" yaml:"tailscale"`
 	}
 
 	TailscalePort struct {
-		Funnel bool `validate:"boolean" default:"false" yaml:"funnel"`
+		Funnel bool `validate:"boolean" yaml:"funnel"`
 	}
 )
 
 const (
-	redirectDelimiter = "->"
-	proxyDelimiter    = ":"
-	protocolDelimiter = "/"
+	redirectSeparator = "->"
+	proxySeparator    = ":"
+	protocolSeparator = "/"
 )
 
+var (
+	ErrInvalidPortFormat   = errors.New("invalid format, missing '" + protocolSeparator + "' or '" + redirectSeparator + "'")
+	ErrInvalidProxyConfig  = errors.New("invalid proxy configuration")
+	ErrInvalidTargetConfig = errors.New("invalid target configuration")
+)
+
+// NewPort parses a port configuration string and returns a PortConfig struct.
+//
+// The input string `s` must follow one of these formats:
+// 1. "<proxy port>/<proxy protocol>:<target port>/<target protocol>"
+//   - Example: "443/https:80/http"
+//
+// 2. "<proxy port>:<target port>"
+//   - Example: "443:80"
+//   - Defaults: "https" for `proxy protocol` and "http" for `target protocol`.
+//
+// 3. "<proxy port>/<proxy protocol>-><target URL>"
+//   - Example: "443/https->https://example.com"
+//   - This format indicates a redirect, setting `IsRedirect` to true and TargetURL.
+//
+// Returns:
+// - PortConfig: A struct containing parsed proxy and target configurations.
+// - error: An error if the input string is invalid.
+//
+// Examples:
+// 1. "443/https:80/http" -> ProxyPort=443, ProxyProtocol="https", TargetPort=80, TargetProtocol="http"
+// 2. "443:80" -> ProxyPort=443, ProxyProtocol="https", TargetPort=80, TargetProtocol="http"
+// 3. "443/https->https://example.com" -> ProxyPort=443, ProxyProtocol="https", IsRedirect=true, TargetURL=https://example.com
 func NewPort(s string) (PortConfig, error) {
-	var port PortConfig
+	config := defaultPortConfig()
 
-	if err := defaults.Set(&port); err != nil {
-		return port, fmt.Errorf("error loading defaults: %w", err)
+	separator, isRedirect := detectSeparator(s)
+	config.IsRedirect = isRedirect
+
+	parts := strings.Split(s, separator)
+	if len(parts) != 2 { //nolint:mnd
+		return config, ErrInvalidProxyConfig
 	}
 
-	port.IsRedirect = strings.Contains(s, redirectDelimiter)
-
-	delimiter := proxyDelimiter
-	if port.IsRedirect {
-		delimiter = redirectDelimiter
+	err := parseProxySegment(parts[0], &config)
+	if err != nil {
+		return config, err
 	}
-	parts := strings.Split(s, delimiter)
 
-	// Parse proxy port and protocol
-	proxyParts := strings.Split(parts[0], protocolDelimiter)
+	if config.IsRedirect {
+		err = parseRedirectTarget(parts[1], &config)
+	} else {
+		err = parseTargetSegment(parts[1], &config)
+	}
+
+	return config, err
+}
+
+// defaultPortConfig initializes a PortConfig with default values.
+func defaultPortConfig() PortConfig {
+	return PortConfig{
+		ProxyProtocol:  "https",
+		TargetProtocol: "http",
+		ProxyPort:      443, //nolint:mnd
+		TargetPort:     80,  //nolint:mnd
+		IsRedirect:     false,
+	}
+}
+
+// detectSeparator determines the separator used in the configuration string and whether it's a redirect.
+func detectSeparator(s string) (string, bool) {
+	if strings.Contains(s, redirectSeparator) {
+		return redirectSeparator, true
+	}
+	return proxySeparator, false
+}
+
+// parseProxySegment parses the proxy segment of the configuration string.
+func parseProxySegment(segment string, config *PortConfig) error {
+	proxyParts := strings.Split(segment, protocolSeparator)
+	if len(proxyParts) > 2 { //nolint:mnd
+		return ErrInvalidProxyConfig
+	}
+
 	proxyPort, err := strconv.Atoi(proxyParts[0])
 	if err != nil {
-		return port, fmt.Errorf("invalid proxy port: %w", err)
+		return fmt.Errorf("invalid proxy port: %w", err)
 	}
-	port.ProxyPort = proxyPort
-	if len(proxyParts) > 1 {
-		port.ProxyProtocol = proxyParts[1]
+	config.ProxyPort = proxyPort
+
+	if len(proxyParts) == 2 { //nolint:mnd
+		config.ProxyProtocol = proxyParts[1]
 	}
 
-	// Parse target port and protocol
-	targetParts := strings.Split(parts[1], protocolDelimiter)
+	return nil
+}
+
+func parseTargetSegment(segment string, config *PortConfig) error {
+	targetParts := strings.Split(segment, protocolSeparator)
+	if len(targetParts) > 2 { //nolint:mnd
+		return ErrInvalidTargetConfig
+	}
+
 	targetPort, err := strconv.Atoi(targetParts[0])
 	if err != nil {
-		return port, fmt.Errorf("invalid target port: %w", err)
+		return fmt.Errorf("invalid target port: %w", err)
 	}
-	port.TargetPort = targetPort
-	if len(targetParts) > 1 {
-		port.TargetProtocol = targetParts[1]
+	config.TargetPort = targetPort
+
+	if len(targetParts) == 2 { //nolint:mnd
+		config.TargetProtocol = targetParts[1]
 	}
 
-	return port, nil
+	return nil
+}
+
+func parseRedirectTarget(segment string, config *PortConfig) error {
+	targetURL, err := url.Parse(segment)
+	if err != nil || targetURL.Scheme == "" || targetURL.Host == "" {
+		return fmt.Errorf("invalid target URL: %v", segment)
+	}
+	config.TargetURL = targetURL
+	config.TargetProtocol = ""
+	config.TargetPort = 0
+	return nil
 }

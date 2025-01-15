@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"maps"
 	"net/url"
+	"reflect"
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/config"
@@ -36,11 +37,17 @@ type (
 	configProxiesList map[string]proxyConfig
 
 	proxyConfig struct {
-		URL           string `validate:"required,uri"`
-		ProxyProvider string
-		Tailscale     proxyconfig.Tailscale
-		Dashboard     proxyconfig.Dashboard `validate:"dive"`
-		TLSValidate   bool                  `default:"true" validate:"boolean"`
+		Ports         map[string]port       `yaml:"ports"`
+		URL           string                `validate:"required,uri" yaml:"url"`
+		ProxyProvider string                `yaml:"proxyProvider"`
+		Dashboard     proxyconfig.Dashboard `validate:"dive" yaml:"dashboard"`
+		Tailscale     proxyconfig.Tailscale `yaml:"tailscale"`
+		TLSValidate   bool                  `validate:"boolean" default:"true" yaml:"tlsValidate"`
+	}
+
+	port struct {
+		TLSValidate bool                      `validate:"boolean" default:"true" yaml:"tlsValidate"`
+		Tailscale   proxyconfig.TailscalePort `validate:"dive" yaml:"tailscale"`
 	}
 )
 
@@ -88,40 +95,6 @@ func New(log zerolog.Logger, name string, provider *config.FilesTargetProviderCo
 	return c, nil
 }
 
-// newProxyConfig method returns a new proxyconfig.Config
-func (c *Client) newProxyConfig(name string, p proxyConfig) (*proxyconfig.Config, error) {
-	targetURL, err := url.Parse(p.URL)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing target URL: %w", err)
-	}
-
-	proxyProvider := c.config.DefaultProxyProvider
-	if p.ProxyProvider != "" {
-		proxyProvider = p.ProxyProvider
-	}
-
-	proxyAccessLog := proxyconfig.DefaultProxyAccessLog
-
-	pcfg, err := proxyconfig.NewConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	pcfg.TargetID = name
-	pcfg.TargetURL = targetURL
-	pcfg.Hostname = name
-	pcfg.TargetProvider = c.name
-	pcfg.Tailscale = p.Tailscale
-	pcfg.ProxyProvider = proxyProvider
-	pcfg.ProxyAccessLog = proxyAccessLog
-	pcfg.TLSValidate = p.TLSValidate
-	pcfg.Dashboard = p.Dashboard
-
-	c.addTarget(p, name)
-
-	return pcfg, nil
-}
-
 func (c *Client) WatchEvents(_ context.Context, eventsChan chan targetproviders.TargetEvent, errChan chan error) {
 	c.log.Debug().Msg("Start WatchEvents")
 
@@ -141,53 +114,6 @@ func (c *Client) WatchEvents(_ context.Context, eventsChan chan targetproviders.
 			}
 		}
 	}()
-}
-
-func (c *Client) onFileChange(e fsnotify.Event) {
-	if !e.Op.Has(fsnotify.Write) {
-		return
-	}
-	c.log.Info().Str("filename", e.Name).Msg("config changed, reloading")
-	oldConfigProxies := maps.Clone(c.configProxies)
-
-	// Delete all entries because it's not deleted when loading from file
-	for k := range c.configProxies {
-		delete(c.configProxies, k)
-	}
-	if err := c.file.Load(); err != nil {
-		c.log.Error().Err(err).Msg("error loading config")
-	}
-
-	// delete proxies that don't exist in new config
-	for name := range oldConfigProxies {
-		if _, ok := c.configProxies[name]; !ok {
-			c.eventsChan <- targetproviders.TargetEvent{
-				ID:             name,
-				TargetProvider: c,
-				Action:         targetproviders.ActionStop,
-			}
-		}
-	}
-
-	for name := range c.configProxies {
-		// start new proxies
-		if _, ok := oldConfigProxies[name]; !ok {
-			c.eventsChan <- targetproviders.TargetEvent{
-				ID:             name,
-				TargetProvider: c,
-				Action:         targetproviders.ActionStart,
-			}
-			continue
-		}
-		// restart if the proxy configuration changed
-		if oldConfigProxies[name] != c.configProxies[name] {
-			c.eventsChan <- targetproviders.TargetEvent{
-				ID:             name,
-				TargetProvider: c,
-				Action:         targetproviders.ActionRestart,
-			}
-		}
-	}
 }
 
 func (c *Client) GetDefaultProxyProviderName() string {
@@ -234,10 +160,107 @@ func (c *Client) DeleteProxy(id string) error {
 	return nil
 }
 
+// newProxyConfig method returns a new proxyconfig.Config
+func (c *Client) newProxyConfig(name string, p proxyConfig) (*proxyconfig.Config, error) {
+	targetURL, err := url.Parse(p.URL)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing target URL: %w", err)
+	}
+
+	proxyProvider := c.config.DefaultProxyProvider
+	if p.ProxyProvider != "" {
+		proxyProvider = p.ProxyProvider
+	}
+
+	proxyAccessLog := proxyconfig.DefaultProxyAccessLog
+
+	pcfg, err := proxyconfig.NewConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	pcfg.TargetID = name
+	pcfg.TargetURL = targetURL
+	pcfg.Hostname = name
+	pcfg.TargetProvider = c.name
+	pcfg.Tailscale = p.Tailscale
+	pcfg.ProxyProvider = proxyProvider
+	pcfg.ProxyAccessLog = proxyAccessLog
+	pcfg.Ports = c.getPorts(p.Ports)
+	// TODO:
+	// pcfg.TLSValidate = p.TLSValidate
+	pcfg.Dashboard = p.Dashboard
+
+	c.addTarget(p, name)
+
+	return pcfg, nil
+}
+
+func (c *Client) onFileChange(e fsnotify.Event) {
+	if !e.Op.Has(fsnotify.Write) {
+		return
+	}
+	c.log.Info().Str("filename", e.Name).Msg("config changed, reloading")
+	oldConfigProxies := maps.Clone(c.configProxies)
+
+	// Delete all entries because it's not deleted when loading from file
+	for k := range c.configProxies {
+		delete(c.configProxies, k)
+	}
+	if err := c.file.Load(); err != nil {
+		c.log.Error().Err(err).Msg("error loading config")
+	}
+
+	// delete proxies that don't exist in new config
+	for name := range oldConfigProxies {
+		if _, ok := c.configProxies[name]; !ok {
+			c.eventsChan <- targetproviders.TargetEvent{
+				ID:             name,
+				TargetProvider: c,
+				Action:         targetproviders.ActionStop,
+			}
+		}
+	}
+
+	for name := range c.configProxies {
+		// start new proxies
+		if _, ok := oldConfigProxies[name]; !ok {
+			c.eventsChan <- targetproviders.TargetEvent{
+				ID:             name,
+				TargetProvider: c,
+				Action:         targetproviders.ActionStart,
+			}
+			continue
+		}
+		// restart if the proxy configuration changed
+		if reflect.DeepEqual(c.configProxies[name], oldConfigProxies[name]) {
+			c.eventsChan <- targetproviders.TargetEvent{
+				ID:             name,
+				TargetProvider: c,
+				Action:         targetproviders.ActionRestart,
+			}
+		}
+	}
+}
+
 // addTarget method add a target the proxies map
 func (c *Client) addTarget(cfg proxyConfig, name string) {
 	c.mtx.Lock()
 	defer c.mtx.Unlock()
 
 	c.proxies[name] = cfg
+}
+
+func (c *Client) getPorts(l map[string]port) map[string]proxyconfig.PortConfig {
+	ports := make(map[string]proxyconfig.PortConfig)
+	for k, v := range l {
+		port, err := proxyconfig.NewPort(k)
+		if err != nil {
+			c.log.Error().Err(err).Str("port", k).Msg("error creating port config")
+		}
+		ports[k] = port
+		port.TLSValidate = v.TLSValidate
+		port.Tailscale = v.Tailscale
+	}
+	return ports
 }

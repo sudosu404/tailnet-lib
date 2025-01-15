@@ -54,7 +54,6 @@ func NewProxy(log zerolog.Logger,
 	log.Debug().
 		Str("hostname", pcfg.Hostname).
 		Str("targetURL", pcfg.TargetURL.String()).
-		Str("proxyURL", pcfg.ProxyURL.String()).
 		Msg("initializing proxy")
 
 	// Create the reverse proxy

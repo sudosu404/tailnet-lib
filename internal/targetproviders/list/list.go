@@ -95,11 +95,6 @@ func (c *Client) newProxyConfig(name string, p proxyConfig) (*proxyconfig.Config
 		return nil, fmt.Errorf("error parsing target URL: %w", err)
 	}
 
-	proxyURL, err := url.Parse(name)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing proxy URL: %w", err)
-	}
-
 	proxyProvider := c.config.DefaultProxyProvider
 	if p.ProxyProvider != "" {
 		proxyProvider = p.ProxyProvider
@@ -114,7 +109,6 @@ func (c *Client) newProxyConfig(name string, p proxyConfig) (*proxyconfig.Config
 
 	pcfg.TargetID = name
 	pcfg.TargetURL = targetURL
-	pcfg.ProxyURL = proxyURL
 	pcfg.Hostname = name
 	pcfg.TargetProvider = c.name
 	pcfg.Tailscale = p.Tailscale

@@ -14,7 +14,6 @@ type (
 	// Config struct stores all the configuration for the proxy
 	Config struct {
 		TargetURL      *url.URL
-		ProxyURL       *url.URL
 		TargetProvider string
 		TargetID       string
 		ProxyProvider  string

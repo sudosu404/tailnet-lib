@@ -132,7 +132,6 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 
 	pcfg.TargetID = c.container.ID
 	pcfg.TargetURL = targetURL
-	pcfg.ProxyURL = proxyURL
 	pcfg.Hostname = proxyURL.Hostname()
 	pcfg.TargetProvider = c.targetProviderName
 	pcfg.Tailscale = *tailscale

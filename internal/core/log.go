@@ -35,9 +35,12 @@ func NewLog() zerolog.Logger {
 		logger.Fatal().Err(err).Msg("Could not parse log level")
 	}
 
+	if logLevel == zerolog.DebugLevel || logLevel == zerolog.TraceLevel {
+		logger = logger.With().Caller().Logger()
+	}
+
 	zerolog.SetGlobalLevel(logLevel)
 	logger.Info().Str("Log level", config.Config.Log.Level).Msg("Log Settings")
-	// l := &Logger{Logger: logger}
 
 	return logger
 }

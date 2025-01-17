@@ -6,11 +6,9 @@ package config
 import (
 	"bytes"
 	"errors"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/consts"
@@ -148,10 +146,6 @@ func (f *File) Watch() {
 }
 
 func unmarshalStrict(data []byte, out any) error {
-	data, err := keysToLowerCase(data)
-	if err != nil {
-		return err
-	}
 	dec := yaml.NewDecoder(bytes.NewReader(data))
 	dec.KnownFields(true)
 
@@ -160,19 +154,4 @@ func unmarshalStrict(data []byte, out any) error {
 	}
 
 	return nil
-}
-
-// keysToLowerCase function set all keys in yaml to lower case
-// this is a temporary solution until most users upgrade their yaml to camel case
-// TODO: Disable keysToLowerCase()
-func keysToLowerCase(in []byte) ([]byte, error) {
-	lines := []string{}
-	for _, line := range strings.Split(string(in), "\n") {
-		if strings.Contains(line, ":") {
-			parts := strings.SplitN(line, ":", 2) //nolint:golint,mnd
-			line = fmt.Sprintf("%s:%s", strings.ToLower(parts[0]), parts[1])
-		}
-		lines = append(lines, line)
-	}
-	return []byte(strings.Join(lines, "\n")), nil
 }

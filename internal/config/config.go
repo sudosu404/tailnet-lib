@@ -18,55 +18,55 @@ type (
 	// config stores complete configuration.
 	//
 	config struct {
-		DefaultProxyProvider string `validate:"required" default:"default"`
+		DefaultProxyProvider string `validate:"required" default:"default" yaml:"defaultProxyProvider"`
 
-		Docker    map[string]*DockerTargetProviderConfig `validate:"dive,required"`
-		Files     map[string]*FilesTargetProviderConfig  `validate:"dive,required"`
-		Tailscale TailscaleProxyProviderConfig
+		Docker    map[string]*DockerTargetProviderConfig `validate:"dive,required" yaml:"docker"`
+		Files     map[string]*FilesTargetProviderConfig  `validate:"dive,required" yaml:"files"`
+		Tailscale TailscaleProxyProviderConfig           `yaml:"tailscale"`
 
-		HTTP HTTPConfig
-		Log  LogConfig
+		HTTP HTTPConfig `yaml:"http"`
+		Log  LogConfig  `yaml:"log"`
 
-		ProxyAccessLog bool `validate:"boolean" default:"true"`
+		ProxyAccessLog bool `validate:"boolean" default:"true" yaml:"proxyAccessLog"`
 	}
 
 	// LogConfig stores logging configuration.
 	LogConfig struct {
-		Level string `validate:"required,oneof=debug info warn error fatal panic trace" default:"info"`
-		JSON  bool   `validate:"boolean" default:"false"`
+		Level string `validate:"required,oneof=debug info warn error fatal panic trace" default:"info" yaml:"level"`
+		JSON  bool   `validate:"boolean" default:"false" yaml:"json"`
 	}
 
 	// HTTPConfig stores HTTP configuration.
 	HTTPConfig struct {
-		Hostname string `validate:"ip|hostname,required" default:"0.0.0.0"`
-		Port     uint16 `validate:"numeric,min=1,max=65535,required" default:"8080"`
+		Hostname string `validate:"ip|hostname,required" default:"0.0.0.0" yaml:"hostname"`
+		Port     uint16 `validate:"numeric,min=1,max=65535,required" default:"8080" yaml:"port"`
 	}
 
 	// DockerTargetProviderConfig struct stores Docker target provider configuration.
 	DockerTargetProviderConfig struct {
-		Host                 string `validate:"required,uri" default:"unix:///var/run/docker.sock"`
-		TargetHostname       string `validate:"ip|hostname" default:"172.31.0.1"`
-		DefaultProxyProvider string `validate:"omitempty" yaml:",omitempty"`
+		Host                 string `validate:"required,uri" default:"unix:///var/run/docker.sock" yaml:"host"`
+		TargetHostname       string `validate:"ip|hostname" default:"172.31.0.1" yaml:"targetHostname"`
+		DefaultProxyProvider string `validate:"omitempty" yaml:"defaultProxyProvider,omitempty"`
 	}
 
 	// TailscaleProxyProviderConfig struct stores Tailscale ProxyProvider configuration
 	TailscaleProxyProviderConfig struct {
-		Providers map[string]*TailscaleServerConfig `validate:"dive,required"`
-		DataDir   string                            `validate:"dir" default:"/data/"`
+		Providers map[string]*TailscaleServerConfig `validate:"dive,required" yaml:"providers"`
+		DataDir   string                            `validate:"dir" default:"/data/" yaml:"dataDir"`
 	}
 
 	// TailscaleServerConfig struct stores Tailscale Server configuration
 	TailscaleServerConfig struct {
-		AuthKey     string `default:"" validate:"omitempty" yaml:",omitempty"`
-		AuthKeyFile string `default:"" validate:"omitempty" yaml:",omitempty"`
-		ControlURL  string `default:"https://controlplane.tailscale.com" validate:"uri"`
+		AuthKey     string `default:"" validate:"omitempty" yaml:"authKey,omitempty"`
+		AuthKeyFile string `default:"" validate:"omitempty" yaml:"authKeyFile,omitempty"`
+		ControlURL  string `default:"https://controlplane.tailscale.com" validate:"uri" yaml:"controlUrl"`
 	}
 
 	// filesConfig struct stores File target provider configuration.
 	FilesTargetProviderConfig struct {
-		Filename              string `validate:"required,file"`
-		DefaultProxyProvider  string `validate:"omitempty" yaml:",omitempty"`
-		DefaultProxyAccessLog bool   `default:"true" validate:"boolean"`
+		Filename              string `validate:"required,file" yaml:"filename"`
+		DefaultProxyProvider  string `validate:"omitempty" yaml:"defaultProxyProvider,omitempty"`
+		DefaultProxyAccessLog bool   `default:"true" validate:"boolean" yaml:"defaultProxyAccessLog"`
 	}
 )
 

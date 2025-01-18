@@ -109,9 +109,10 @@ func (app *WebApp) Start() {
 	//
 	app.ProxyManager.WatchEvents()
 
-	// Start Dashboard
+	// Add Routes
 	//
 	app.Dashboard.AddRoutes()
+	core.PprofAddRoutes(app.HTTP)
 }
 
 func (app *WebApp) Stop() {

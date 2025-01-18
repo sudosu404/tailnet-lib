@@ -110,7 +110,7 @@ func (c *Client) WatchEvents(_ context.Context, eventsChan chan targetproviders.
 			eventsChan <- targetproviders.TargetEvent{
 				ID:             k,
 				TargetProvider: c,
-				Action:         targetproviders.ActionStart,
+				Action:         targetproviders.ActionStartProxy,
 			}
 		}
 	}()
@@ -125,7 +125,7 @@ func (c *Client) Close() {
 		c.eventsChan <- targetproviders.TargetEvent{
 			ID:             name,
 			TargetProvider: c,
-			Action:         targetproviders.ActionStop,
+			Action:         targetproviders.ActionStopProxy,
 		}
 	}
 
@@ -217,7 +217,7 @@ func (c *Client) onFileChange(e fsnotify.Event) {
 			c.eventsChan <- targetproviders.TargetEvent{
 				ID:             name,
 				TargetProvider: c,
-				Action:         targetproviders.ActionStop,
+				Action:         targetproviders.ActionStopProxy,
 			}
 		}
 	}
@@ -228,7 +228,7 @@ func (c *Client) onFileChange(e fsnotify.Event) {
 			c.eventsChan <- targetproviders.TargetEvent{
 				ID:             name,
 				TargetProvider: c,
-				Action:         targetproviders.ActionStart,
+				Action:         targetproviders.ActionStartProxy,
 			}
 			continue
 		}
@@ -237,7 +237,7 @@ func (c *Client) onFileChange(e fsnotify.Event) {
 			c.eventsChan <- targetproviders.TargetEvent{
 				ID:             name,
 				TargetProvider: c,
-				Action:         targetproviders.ActionRestart,
+				Action:         targetproviders.ActionRestartProxy,
 			}
 		}
 	}

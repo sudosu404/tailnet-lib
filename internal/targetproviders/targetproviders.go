@@ -9,12 +9,6 @@ import (
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
 )
 
-const (
-	ActionStart ActionType = iota + 1
-	ActionStop
-	ActionRestart
-)
-
 type (
 	// TargetProvider interface to be implemented by all target providers
 	TargetProvider interface {
@@ -24,7 +18,18 @@ type (
 		AddTarget(id string) (*proxyconfig.Config, error)
 		DeleteProxy(id string) error
 	}
+)
 
+const (
+	ActionStartProxy ActionType = iota + 1
+	ActionStopProxy
+	ActionRestartProxy
+	ActionStartProt
+	ActionStopPrort
+	ActionRestartPort
+)
+
+type (
 	ActionType int
 
 	TargetEvent struct {

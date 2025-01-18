@@ -245,11 +245,11 @@ func (pm *ProxyManager) WatchEvents() {
 // HandleContainerEvent method handles events from a targetprovider
 func (pm *ProxyManager) HandleContainerEvent(event targetproviders.TargetEvent) {
 	switch event.Action {
-	case targetproviders.ActionStart:
+	case targetproviders.ActionStartProxy:
 		pm.eventStart(event)
-	case targetproviders.ActionStop:
+	case targetproviders.ActionStopProxy:
 		pm.eventStop(event)
-	case targetproviders.ActionRestart:
+	case targetproviders.ActionRestartProxy:
 		pm.eventStop(event)
 		pm.eventStart(event)
 	}

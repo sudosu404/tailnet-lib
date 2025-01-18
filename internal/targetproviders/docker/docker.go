@@ -180,7 +180,7 @@ func (c *Client) getStartEvent(id string) targetproviders.TargetEvent {
 	return targetproviders.TargetEvent{
 		TargetProvider: c,
 		ID:             id,
-		Action:         targetproviders.ActionStart,
+		Action:         targetproviders.ActionStartProxy,
 	}
 }
 
@@ -191,7 +191,7 @@ func (c *Client) getStopEvent(id string) targetproviders.TargetEvent {
 	return targetproviders.TargetEvent{
 		TargetProvider: c,
 		ID:             id,
-		Action:         targetproviders.ActionStop,
+		Action:         targetproviders.ActionStopProxy,
 	}
 }
 

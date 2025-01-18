@@ -1,8 +1,11 @@
-nas1:
-  url: https://192.168.1.72:5001
 nas2:
-  url: https://google.com
+  ports:
+    "444/https":
+      targets:
+        - "http://google.com"
+    "80/http":
+      redirectUrl: "https://google.com"
+      tlsValidate: false
 nas3:
-  url: http://dev-c1-1:81
   dashboard:
-    visible: false
+    visible: true

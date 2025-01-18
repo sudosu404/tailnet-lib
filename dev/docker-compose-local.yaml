@@ -1,6 +1,6 @@
 services:
   c1:
-    image: nginx
+    image: nginx:latest
     ports:
       - 91:80
       - 92:8000
@@ -11,12 +11,12 @@ services:
       - tsdproxy.ephemeral=true
       - tsdproxy.funnel=true
       - tsdproxy.container_port=80
-      - tsdproxy.dash.visible=false
+      - tsdproxy.dash.visible=true
     networks:
       - c1
 
   c2:
-    image: nginx
+    image: nginx:1.27
     ports:
       - 82:80
     labels:
@@ -25,10 +25,9 @@ services:
       - c2
 
   c3:
-    image: nginx
-    network_mode: host
+    image: nginxinc/nginx-unprivileged:latest
     ports:
-      - 83:80
+      - 83:8080
     labels:
       - tsdproxy.enable=true
 
@@ -45,7 +44,7 @@ services:
         - tsdproxy.ephemeral=true
         - tsdproxy.funnel=true
         - tsdproxy.container_port=80
-        - tsdproxy.dash.visible=false
+        - tsdproxy.dash.visible=true
     networks:
       - c1
 

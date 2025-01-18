@@ -137,7 +137,8 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 	pcfg.Tailscale = *tailscale
 	pcfg.ProxyProvider = c.getLabelString(LabelProxyProvider, proxyconfig.DefaultProxyProvider)
 	pcfg.ProxyAccessLog = c.getLabelBool(LabelContainerAccessLog, proxyconfig.DefaultProxyAccessLog)
-	pcfg.TLSValidate = c.getLabelBool(LabelTLSValidate, proxyconfig.DefaultTLSValidate)
+	// TODO: TLSValidate may be removed
+	// pcfg.TLSValidate = c.getLabelBool(LabelTLSValidate, proxyconfig.DefaultTLSValidate)
 	pcfg.Dashboard.Visible = c.getLabelBool(LabelDashboardVisible, proxyconfig.DefaultDashboardVisible)
 	pcfg.Dashboard.Label = c.getLabelString(LabelDashboardLabel, pcfg.Hostname)
 

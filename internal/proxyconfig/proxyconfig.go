@@ -22,7 +22,6 @@ type (
 		Dashboard      Dashboard `validate:"dive"`
 		Tailscale      Tailscale `validate:"dive"`
 		ProxyAccessLog bool      `default:"true" validate:"boolean"`
-		TLSValidate    bool      `default:"true" validate:"boolean"` // TODO: Moved to Ports
 	}
 
 	// Tailscale struct stores the configuration for tailscale ProxyProvider

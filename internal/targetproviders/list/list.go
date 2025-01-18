@@ -25,8 +25,8 @@ type (
 	Client struct {
 		log           zerolog.Logger
 		file          *config.File
-		configProxies configProxiesList
-		proxies       configProxiesList
+		configProxies configProxyList
+		proxies       configProxyList
 		eventsChan    chan targetproviders.TargetEvent
 		errChan       chan error
 		name          string
@@ -34,21 +34,20 @@ type (
 		mtx           sync.Mutex
 	}
 
-	configProxiesList map[string]proxyConfig
+	configProxyList map[string]proxyConfig
 
 	proxyConfig struct {
 		Ports         map[string]port       `yaml:"ports"`
-		URL           string                `validate:"required,uri" yaml:"url"`
 		ProxyProvider string                `yaml:"proxyProvider"`
 		Dashboard     proxyconfig.Dashboard `validate:"dive" yaml:"dashboard"`
 		Tailscale     proxyconfig.Tailscale `yaml:"tailscale"`
-		TLSValidate   bool                  `validate:"boolean" default:"true" yaml:"tlsValidate"`
 	}
 
 	port struct {
-		TLSValidate bool                      `validate:"boolean" default:"true" yaml:"tlsValidate"`
 		RedirectURL string                    `yaml:"redirectUrl,omitempty"`
+		Targets     []string                  `yaml:"targets,omitempty"`
 		Tailscale   proxyconfig.TailscalePort `validate:"dive" yaml:"tailscale"`
+		TLSValidate bool                      `validate:"boolean" default:"true" yaml:"tlsValidate"`
 	}
 )
 
@@ -69,7 +68,7 @@ func (s *proxyConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 func New(log zerolog.Logger, name string, provider *config.FilesTargetProviderConfig) (*Client, error) {
 	newlog := log.With().Str("file", name).Logger()
 
-	proxiesList := configProxiesList{}
+	proxiesList := configProxyList{}
 
 	file := config.NewFile(newlog, provider.Filename, proxiesList)
 	err := file.Load()
@@ -129,9 +128,6 @@ func (c *Client) Close() {
 			Action:         targetproviders.ActionStopProxy,
 		}
 	}
-
-	close(c.eventsChan)
-	close(c.errChan)
 }
 
 func (c *Client) AddTarget(id string) (*proxyconfig.Config, error) {
@@ -163,11 +159,6 @@ func (c *Client) DeleteProxy(id string) error {
 
 // newProxyConfig method returns a new proxyconfig.Config
 func (c *Client) newProxyConfig(name string, p proxyConfig) (*proxyconfig.Config, error) {
-	targetURL, err := url.Parse(p.URL)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing target URL: %w", err)
-	}
-
 	proxyProvider := c.config.DefaultProxyProvider
 	if p.ProxyProvider != "" {
 		proxyProvider = p.ProxyProvider
@@ -181,15 +172,12 @@ func (c *Client) newProxyConfig(name string, p proxyConfig) (*proxyconfig.Config
 	}
 
 	pcfg.TargetID = name
-	pcfg.TargetURL = targetURL
 	pcfg.Hostname = name
 	pcfg.TargetProvider = c.name
 	pcfg.Tailscale = p.Tailscale
 	pcfg.ProxyProvider = proxyProvider
 	pcfg.ProxyAccessLog = proxyAccessLog
 	pcfg.Ports = c.getPorts(p.Ports)
-	// TODO:
-	// pcfg.TLSValidate = p.TLSValidate
 	pcfg.Dashboard = p.Dashboard
 
 	c.addTarget(p, name)
@@ -234,7 +222,8 @@ func (c *Client) onFileChange(e fsnotify.Event) {
 			continue
 		}
 		// restart if the proxy configuration changed
-		if reflect.DeepEqual(c.configProxies[name], oldConfigProxies[name]) {
+		//
+		if !reflect.DeepEqual(c.configProxies[name], oldConfigProxies[name]) {
 			c.eventsChan <- targetproviders.TargetEvent{
 				ID:             name,
 				TargetProvider: c,
@@ -252,16 +241,32 @@ func (c *Client) addTarget(cfg proxyConfig, name string) {
 	c.proxies[name] = cfg
 }
 
+// getPorts returns a map of PortConfig from the config
 func (c *Client) getPorts(l map[string]port) map[string]proxyconfig.PortConfig {
 	ports := make(map[string]proxyconfig.PortConfig)
 	for k, v := range l {
-		port, err := proxyconfig.NewPort(k)
+		port, err := proxyconfig.NewPortShortLabel(k)
 		if err != nil {
 			c.log.Error().Err(err).Str("port", k).Msg("error creating port config")
 		}
-		ports[k] = port
+
+		if v.RedirectURL != "" {
+			port.IsRedirect = true
+
+			targetURL, err := url.Parse(v.RedirectURL)
+			if err != nil || targetURL.Scheme == "" || targetURL.Host == "" {
+				c.log.Error().Err(err).Str("port", k).Str("redirectUrl", v.RedirectURL).Msg("Invalid redirect URL")
+				// don't add this port and continue with others
+				continue
+			}
+
+			port.RedirectURL = targetURL
+		}
+
 		port.TLSValidate = v.TLSValidate
 		port.Tailscale = v.Tailscale
+
+		ports[k] = port
 	}
 	return ports
 }

@@ -5,17 +5,14 @@ package proxymanager
 
 import (
 	"context"
-	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
-	"net/http"
-	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"sync"
 	"sync/atomic"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/core"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 
@@ -25,18 +22,15 @@ import (
 type (
 	// Proxy struct is a struct that contains all the information needed to run a proxy.
 	Proxy struct {
-		log                zerolog.Logger
-		ctx                context.Context
-		providerProxy      proxyproviders.ProxyInterface
-		redirectHTTPServer *http.Server
-		Config             *proxyconfig.Config
-		URL                *url.URL
-		reverseProxy       *httputil.ReverseProxy
-		httpServer         *http.Server
-		cancel             context.CancelFunc
-		listeners          []net.Listener
-		mtx                sync.RWMutex
-		state              atomic.Int32
+		log           zerolog.Logger
+		ctx           context.Context
+		providerProxy proxyproviders.ProxyInterface
+		Config        *proxyconfig.Config
+		URL           *url.URL
+		cancel        context.CancelFunc
+		ports         map[string]*port
+		mtx           sync.Mutex
+		state         atomic.Int32
 	}
 )
 
@@ -51,25 +45,8 @@ func NewProxy(log zerolog.Logger,
 	log = log.With().Str("proxyname", pcfg.Hostname).Logger()
 	log.Info().Str("hostname", pcfg.Hostname).Msg("setting up proxy")
 
-	log.Debug().
-		Str("hostname", pcfg.Hostname).
-		Str("targetURL", pcfg.TargetURL.String()).
+	log.Debug().Str("hostname", pcfg.Hostname).
 		Msg("initializing proxy")
-
-	// Create the reverse proxy
-	//
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: !pcfg.TLSValidate}, //nolint
-	}
-	reverseProxy := &httputil.ReverseProxy{
-		Transport: tr,
-		Rewrite: func(r *httputil.ProxyRequest) {
-			r.SetURL(pcfg.TargetURL)
-			r.Out.Host = r.In.Host
-			r.Out.Header["X-Forwarded-For"] = r.In.Header["X-Forwarded-For"]
-			r.SetXForwarded()
-		},
-	}
 
 	// Create the proxyProvider proxy
 	//
@@ -78,28 +55,11 @@ func NewProxy(log zerolog.Logger,
 		return nil, fmt.Errorf("error initializing proxy on proxyProvider: %w", err)
 	}
 
-	// Create reverse proxy server
-	//
-	handler := reverseProxyFunc(reverseProxy)
-
 	log.Debug().
 		Str("hostname", pcfg.Hostname).
 		Msg("Proxy server created successfully")
 
-	// add logger to proxy
-	//
-	if pcfg.ProxyAccessLog {
-		handler = core.LoggerMiddleware(log, handler)
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
-
-	// main http Server
-	httpServer := &http.Server{
-		Handler:           handler,
-		ReadHeaderTimeout: core.ReadHeaderTimeout,
-		BaseContext:       func(net.Listener) context.Context { return ctx },
-	}
 
 	p := &Proxy{
 		log: log,
@@ -107,12 +67,23 @@ func NewProxy(log zerolog.Logger,
 		Config:        pcfg,
 		ctx:           ctx,
 		cancel:        cancel,
-		reverseProxy:  reverseProxy,
 		providerProxy: pProvider,
-		httpServer:    httpServer,
+		ports:         make(map[string]*port),
 	}
 
+	p.initPorts()
+
 	return p, nil
+}
+
+func (proxy *Proxy) Start() {
+	go func() {
+		proxy.start()
+		for {
+			event := <-proxy.providerProxy.WatchEvents()
+			proxy.state.Store(event.State.Int32())
+		}
+	}()
 }
 
 // Close method is a method that initiate proxy close procedure.
@@ -127,146 +98,8 @@ func (proxy *Proxy) Close() {
 	proxy.state.Store(int32(proxyconfig.ProxyStateStopped))
 }
 
-// close method is a method that closes all listeners ans httpServer.
-func (proxy *Proxy) close() {
-	var errs error
-	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("stopping proxy")
-
-	if proxy.httpServer != nil {
-		if err := proxy.httpServer.Shutdown(proxy.ctx); err != nil {
-			proxy.log.Error().Err(err).Msg("Error closing proxy")
-		}
-	}
-
-	// if has http redirect server
-	if proxy.redirectHTTPServer != nil {
-		errs = errors.Join(errs, proxy.redirectHTTPServer.Close())
-	}
-	if proxy.redirectHTTPServer != nil {
-		errs = errors.Join(errs, proxy.redirectHTTPServer.Close())
-	}
-	for _, ls := range proxy.listeners {
-		errs = errors.Join(errs, ls.Close())
-	}
-	if proxy.providerProxy != nil {
-		errs = errors.Join(proxy.providerProxy.Close())
-	}
-
-	if errs != nil {
-		proxy.log.Error().Err(errs).Msg("Error stopping proxy")
-	}
-
-	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("proxy stopped")
-}
-
-func (proxy *Proxy) Start() {
-	go func() {
-		go proxy.start()
-		for {
-			event := <-proxy.providerProxy.WatchEvents()
-			proxy.state.Store(event.State.Int32())
-		}
-	}()
-}
-
-// Start method is a method that starts the proxy.
-func (proxy *Proxy) start() {
-	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("starting proxy")
-
-	if err := proxy.providerProxy.Start(proxy.ctx); err != nil {
-		proxy.log.Error().Err(err).Msg("Error starting proxy")
-		proxy.Close()
-		return
-	}
-
-	ls, err := proxy.addTLSListener("tcp", ":443")
-	if err != nil {
-		proxy.log.Error().Err(err).Msg("Error Listening on TLS")
-	}
-
-	// Redirect http to https
-	err = proxy.startRedirectServer()
-	if err != nil {
-		proxy.log.Error().Err(err).Msg("Error starting redirect server")
-	}
-
-	// start server
-	//
-	err = proxy.httpServer.Serve(ls)
-	defer func() {
-		if r := recover(); r != nil {
-			proxy.log.Error().Err(err).Msg("Panic recovered")
-		}
-	}()
-	defer proxy.log.Info().Msg("Terminating server")
-
-	if err != nil && !errors.Is(err, net.ErrClosed) && !errors.Is(err, http.ErrServerClosed) {
-		proxy.state.Store(int32(proxyconfig.ProxyStateError))
-		proxy.log.Error().Err(err).Str("hostname", proxy.Config.Hostname).Msg("Error starting proxy server")
-		return
-	}
-}
-
 func (proxy *Proxy) GetState() proxyconfig.ProxyState {
 	return proxyconfig.ProxyState(proxy.state.Load())
-}
-
-func (proxy *Proxy) addListener(network, addr string) (net.Listener, error) {
-	l, err := proxy.providerProxy.NewListener(network, addr)
-	if err != nil {
-		return nil, err
-	}
-
-	proxy.mtx.Lock()
-	defer proxy.mtx.Unlock()
-
-	proxy.listeners = append(proxy.listeners, l)
-
-	return l, nil
-}
-
-func (proxy *Proxy) addTLSListener(network, addr string) (net.Listener, error) {
-	l, err := proxy.providerProxy.NewTLSListener(network, addr)
-	if err != nil {
-		return nil, err
-	}
-
-	proxy.mtx.Lock()
-	defer proxy.mtx.Unlock()
-
-	proxy.listeners = append(proxy.listeners, l)
-
-	return l, nil
-}
-
-// StartRedirectServer method is a method that starts http rediret server to https.
-func (proxy *Proxy) startRedirectServer() error {
-	lt, err := proxy.addListener("tcp", ":80")
-	if err != nil {
-		return fmt.Errorf("error creating redirect HTTP listener: %w", err)
-	}
-
-	redirectHTTPServer := &http.Server{
-		ReadHeaderTimeout: core.ReadHeaderTimeout,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			target := "https://" + r.Host + r.URL.RequestURI()
-			http.Redirect(w, r, target, http.StatusMovedPermanently)
-		}),
-	}
-
-	proxy.mtx.Lock()
-	proxy.redirectHTTPServer = redirectHTTPServer
-	proxy.mtx.Unlock()
-
-	go func() {
-		err := proxy.redirectHTTPServer.Serve(lt)
-		if err != nil && err != http.ErrServerClosed {
-			// Log the error, but don't stop the main server
-			proxy.log.Error().Err(err).Msg("HTTP redirect server error")
-		}
-	}()
-
-	return nil
 }
 
 func (proxy *Proxy) GetURL() string {
@@ -277,9 +110,111 @@ func (proxy *Proxy) GetAuthURL() string {
 	return proxy.providerProxy.GetAuthURL()
 }
 
-// reverseProxyFunc func is a method that returns a reverse proxy handler.
-func reverseProxyFunc(p *httputil.ReverseProxy) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		p.ServeHTTP(w, r)
-	})
+func (proxy *Proxy) initPorts() {
+	var newPort *port
+	for k, v := range proxy.Config.Ports {
+		log := proxy.log.With().Str("port", k).Logger()
+		if v.IsRedirect {
+			newPort = newPortRedirect(proxy.ctx, v, log)
+		} else {
+			newPort = newPortProxy(proxy.ctx, v, log, proxy.Config.ProxyAccessLog)
+		}
+
+		proxy.log.Debug().Any("port", newPort).Msg("newport")
+
+		proxy.mtx.Lock()
+		proxy.ports[k] = newPort
+		proxy.mtx.Unlock()
+	}
+}
+
+func (proxy *Proxy) getListener(protocol string, port int) (net.Listener, error) {
+	proto := protocol
+	if protocol == "http" || protocol == "https" {
+		proto = "tcp"
+	}
+
+	addr := ":" + strconv.Itoa(port)
+
+	var l net.Listener
+	var err error
+
+	if protocol == "https" {
+		l, err = proxy.providerProxy.NewTLSListener(proto, addr)
+	} else {
+		l, err = proxy.providerProxy.NewListener(proto, addr)
+	}
+	return l, err
+}
+
+// Start method is a method that starts the proxy.
+func (proxy *Proxy) start() {
+	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("starting proxy")
+
+	proxy.mtx.Lock()
+	portsConfig := proxy.Config.Ports
+	portsCount := len(proxy.ports)
+	proxy.mtx.Unlock()
+
+	if portsCount == 0 {
+		proxy.log.Warn().Msg("No ports configured")
+		proxy.state.Store(int32(proxyconfig.ProxyStateError))
+
+		return
+	}
+
+	if err := proxy.providerProxy.Start(proxy.ctx); err != nil {
+		proxy.log.Error().Err(err).Msg("Error starting with proxy provider")
+		proxy.Close()
+		return
+	}
+
+	var l net.Listener
+	var err error
+
+	for k, v := range portsConfig {
+		proxy.log.Debug().Str("port", k).Msg("Starting proxy port")
+
+		l, err = proxy.getListener(v.ProxyProtocol, v.ProxyPort)
+		if err != nil {
+			proxy.log.Error().Err(err).Str("port", k).Msg("Error adding listener")
+		}
+
+		if err := proxy.startPort(k, l); err != nil {
+			proxy.log.Error().Err(err).Str("port", k).Msg("Error starting proxy port")
+			continue
+		}
+	}
+}
+
+func (proxy *Proxy) startPort(name string, l net.Listener) error {
+	proxy.mtx.Lock()
+	defer proxy.mtx.Unlock()
+
+	if p, ok := proxy.ports[name]; ok {
+		go func() {
+			p.setListener(l)
+			p.start()
+		}()
+	}
+	return nil
+}
+
+// close method is a method that closes all listeners ans httpServer.
+func (proxy *Proxy) close() {
+	var errs error
+	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("stopping proxy")
+
+	for _, p := range proxy.ports {
+		errs = errors.Join(errs, p.close())
+	}
+	if proxy.providerProxy != nil {
+		errs = errors.Join(proxy.providerProxy.Close())
+	}
+
+	if errs != nil {
+		proxy.log.Error().Err(errs).Msg("Error stopping proxy")
+	}
+
+	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("proxy stopped")
 }

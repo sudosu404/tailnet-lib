@@ -13,13 +13,14 @@ import (
 
 type (
 	PortConfig struct {
+		name           string        `validate:"string" yaml:"name"`
 		ProxyProtocol  string        `validate:"string" yaml:"proxyProtocol"`
 		RedirectURL    *url.URL      `yaml:"redirectUrl"`
 		TargetProtocol string        `validate:"string" yaml:"targetProtocol"`
 		ProxyPort      int           `validate:"hostname_port" yaml:"proxyPort"`
 		TargetPort     int           `validate:"hostname_port" yaml:"targetPort"`
-		IsRedirect     bool          `validate:"boolean" yaml:"isRedirect"`
 		TLSValidate    bool          `validate:"boolean" yaml:"tlsValidate"`
+		IsRedirect     bool          `validate:"boolean" yaml:"isRedirect"`
 		Tailscale      TailscalePort `validate:"dive" yaml:"tailscale"`
 	}
 
@@ -40,7 +41,7 @@ var (
 	ErrInvalidTargetConfig = errors.New("invalid target configuration")
 )
 
-// NewPort parses a port configuration string and returns a PortConfig struct.
+// NewPortLongLabel parses a port configuration string and returns a PortConfig struct.
 //
 // The input string `s` must follow one of these formats:
 // 1. "<proxy port>/<proxy protocol>:<target port>/<target protocol>"
@@ -62,11 +63,11 @@ var (
 // 1. "443/https:80/http" -> ProxyPort=443, ProxyProtocol="https", TargetPort=80, TargetProtocol="http"
 // 2. "443:80" -> ProxyPort=443, ProxyProtocol="https", TargetPort=80, TargetProtocol="http"
 // 3. "443/https->https://example.com" -> ProxyPort=443, ProxyProtocol="https", IsRedirect=true, TargetURL=https://example.com
-func NewPort(s string) (PortConfig, error) {
-	config := defaultPortConfig()
 
-	separator, isRedirect := detectSeparator(s)
-	config.IsRedirect = isRedirect
+func NewPortLongLabel(s string) (PortConfig, error) {
+	config := defaultPortConfig(s)
+
+	separator := detectSeparator(s)
 
 	parts := strings.Split(s, separator)
 	if len(parts) != 2 { //nolint:mnd
@@ -78,7 +79,8 @@ func NewPort(s string) (PortConfig, error) {
 		return config, err
 	}
 
-	if config.IsRedirect {
+	if separator == redirectSeparator {
+		config.IsRedirect = true
 		err = parseRedirectTarget(parts[1], &config)
 	} else {
 		err = parseTargetSegment(parts[1], &config)
@@ -87,9 +89,30 @@ func NewPort(s string) (PortConfig, error) {
 	return config, err
 }
 
+// NewPortShortLabel parses a port configuration string and returns a PortConfig struct.
+//
+// The input string `s` must follow one of these formats:
+// 1. "<proxy port>/<proxy protocol>"
+//   - Example: "443/https"
+func NewPortShortLabel(s string) (PortConfig, error) {
+	config := defaultPortConfig(s)
+
+	err := parseProxySegment(s, &config)
+	if err != nil {
+		return config, err
+	}
+
+	return config, nil
+}
+
+func (p *PortConfig) String() string {
+	return p.name
+}
+
 // defaultPortConfig initializes a PortConfig with default values.
-func defaultPortConfig() PortConfig {
+func defaultPortConfig(name string) PortConfig {
 	return PortConfig{
+		name:           name,
 		ProxyProtocol:  "https",
 		TargetProtocol: "http",
 		ProxyPort:      443, //nolint:mnd
@@ -99,11 +122,11 @@ func defaultPortConfig() PortConfig {
 }
 
 // detectSeparator determines the separator used in the configuration string and whether it's a redirect.
-func detectSeparator(s string) (string, bool) {
+func detectSeparator(s string) string {
 	if strings.Contains(s, redirectSeparator) {
-		return redirectSeparator, true
+		return redirectSeparator
 	}
-	return proxySeparator, false
+	return proxySeparator
 }
 
 // parseProxySegment parses the proxy segment of the configuration string.
@@ -154,5 +177,6 @@ func parseRedirectTarget(segment string, config *PortConfig) error {
 	config.RedirectURL = targetURL
 	config.TargetProtocol = ""
 	config.TargetPort = 0
+
 	return nil
 }

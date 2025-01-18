@@ -47,6 +47,7 @@ type (
 
 	port struct {
 		TLSValidate bool                      `validate:"boolean" default:"true" yaml:"tlsValidate"`
+		RedirectURL string                    `yaml:"redirectUrl,omitempty"`
 		Tailscale   proxyconfig.TailscalePort `validate:"dive" yaml:"tailscale"`
 	}
 )

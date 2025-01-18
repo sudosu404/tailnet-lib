@@ -14,7 +14,7 @@ import (
 type (
 	PortConfig struct {
 		ProxyProtocol  string        `validate:"string" yaml:"proxyProtocol"`
-		TargetURL      *url.URL      `yaml:"targetUrl"`
+		RedirectURL    *url.URL      `yaml:"redirectUrl"`
 		TargetProtocol string        `validate:"string" yaml:"targetProtocol"`
 		ProxyPort      int           `validate:"hostname_port" yaml:"proxyPort"`
 		TargetPort     int           `validate:"hostname_port" yaml:"targetPort"`
@@ -150,7 +150,8 @@ func parseRedirectTarget(segment string, config *PortConfig) error {
 	if err != nil || targetURL.Scheme == "" || targetURL.Host == "" {
 		return fmt.Errorf("invalid target URL: %v", segment)
 	}
-	config.TargetURL = targetURL
+
+	config.RedirectURL = targetURL
 	config.TargetProtocol = ""
 	config.TargetPort = 0
 	return nil

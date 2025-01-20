@@ -33,7 +33,7 @@ type Proxy struct {
 	url     string
 	state   proxyconfig.ProxyState
 
-	mtx sync.RWMutex
+	mtx sync.Mutex
 }
 
 var _ proxyproviders.ProxyInterface = (*Proxy)(nil)

@@ -77,7 +77,7 @@ func NewProxy(log zerolog.Logger,
 
 func (proxy *Proxy) Start() {
 	go func() {
-		proxy.start()
+		go proxy.start()
 		for {
 			event := <-proxy.providerProxy.WatchEvents()
 			proxy.setStatus(event.Status)
@@ -187,24 +187,18 @@ func (proxy *Proxy) start() {
 			proxy.log.Error().Err(err).Str("port", k).Msg("Error adding listener")
 		}
 
-		if err := proxy.startPort(k, l); err != nil {
-			proxy.log.Error().Err(err).Str("port", k).Msg("Error starting proxy port")
-			continue
-		}
+		proxy.startPort(k, l)
 	}
 }
 
-func (proxy *Proxy) startPort(name string, l net.Listener) error {
+func (proxy *Proxy) startPort(name string, l net.Listener) {
 	proxy.mtx.Lock()
 	defer proxy.mtx.Unlock()
 
+	// make sure port exists
 	if p, ok := proxy.ports[name]; ok {
-		go func() {
-			p.setListener(l)
-			p.start()
-		}()
+		go p.startWithListener(l)
 	}
-	return nil
 }
 
 // close method is a method that closes all listeners ans httpServer.

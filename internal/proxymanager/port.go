@@ -96,8 +96,12 @@ func newPortRedirect(ctx context.Context, pconfig proxyconfig.PortConfig, log ze
 	}
 }
 
-func (p *port) start() {
-	err := p.httpServer.Serve(p.listener)
+func (p *port) startWithListener(l net.Listener) {
+	p.mtx.Lock()
+	p.listener = l
+	p.mtx.Unlock()
+
+	err := p.httpServer.Serve(l)
 	defer func() {
 		if r := recover(); r != nil {
 			p.log.Error().Err(err).Msg("Panic recovered")
@@ -110,13 +114,6 @@ func (p *port) start() {
 		// p.state.Store(int32(proxyconfig.ProxyStateError))
 		p.log.Error().Err(err).Msg("Error starting proxy server")
 	}
-}
-
-func (p *port) setListener(l net.Listener) {
-	p.mtx.Lock()
-	defer p.mtx.Unlock()
-
-	p.listener = l
 }
 
 func (p *port) close() error {

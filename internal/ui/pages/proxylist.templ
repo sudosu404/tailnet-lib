@@ -10,7 +10,7 @@ Enabled bool
 Icon string
 URL string
 Label string
-ProxyState proxyconfig.ProxyState
+ProxyStatus proxyconfig.ProxyStatus
 }
 
 templ List(l map[string]ListData) {
@@ -22,7 +22,7 @@ templ List(l map[string]ListData) {
     </div>
     <div class="text">
       <p>{ item.Label }</p>
-      <span>{ item.ProxyState.String() }</span>
+      <span>{ item.ProxyStatus.String() }</span>
     </div>
   </a>
   }

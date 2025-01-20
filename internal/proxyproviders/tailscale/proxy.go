@@ -31,7 +31,7 @@ type Proxy struct {
 
 	authURL string
 	url     string
-	state   proxyconfig.ProxyState
+	status  proxyconfig.ProxyStatus
 
 	mtx sync.Mutex
 }
@@ -98,27 +98,27 @@ func (p *Proxy) watchStatus() {
 
 		switch status.BackendState {
 		case "NeedsLogin":
-			p.setState(proxyconfig.ProxyStateAuthenticating, "", status.AuthURL)
+			p.setStatus(proxyconfig.ProxyStatusAuthenticating, "", status.AuthURL)
 		case "Starting":
-			p.setState(proxyconfig.ProxyStateStarting, "", "")
+			p.setStatus(proxyconfig.ProxyStatusStarting, "", "")
 		case "Running":
-			p.setState(proxyconfig.ProxyStateRunning, strings.TrimRight(status.Self.DNSName, "."), "")
-			if p.state != proxyconfig.ProxyStateRunning {
+			p.setStatus(proxyconfig.ProxyStatusRunning, strings.TrimRight(status.Self.DNSName, "."), "")
+			if p.status != proxyconfig.ProxyStatusRunning {
 				p.getTLSCertificates()
 			}
 		}
 	}
 }
 
-func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL string) {
-	if p.state == state && p.url == url && p.authURL == authURL {
+func (p *Proxy) setStatus(status proxyconfig.ProxyStatus, url string, authURL string) {
+	if p.status == status && p.url == url && p.authURL == authURL {
 		return
 	}
 
-	p.log.Debug().Str("authURL", url).Str("state", state.String()).Msg("tailscale status")
+	p.log.Debug().Str("authURL", url).Str("status", status.String()).Msg("tailscale status")
 
 	p.mtx.Lock()
-	p.state = state
+	p.status = status
 	if url != "" {
 		p.url = url
 	}
@@ -128,7 +128,7 @@ func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL strin
 	p.mtx.Unlock()
 
 	p.events <- proxyproviders.ProxyEvent{
-		State: state,
+		Status: status,
 	}
 }
 

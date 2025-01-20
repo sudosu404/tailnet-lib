@@ -11,7 +11,6 @@ import (
 	"net/url"
 	"strconv"
 	"sync"
-	"sync/atomic"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
@@ -30,7 +29,7 @@ type (
 		cancel        context.CancelFunc
 		ports         map[string]*port
 		mtx           sync.Mutex
-		state         atomic.Int32
+		status        proxyconfig.ProxyStatus
 	}
 )
 
@@ -81,25 +80,33 @@ func (proxy *Proxy) Start() {
 		proxy.start()
 		for {
 			event := <-proxy.providerProxy.WatchEvents()
-			proxy.state.Store(event.State.Int32())
+			proxy.setStatus(event.Status)
 		}
 	}()
 }
 
 // Close method is a method that initiate proxy close procedure.
 func (proxy *Proxy) Close() {
-	proxy.state.Store(int32(proxyconfig.ProxyStateStopping))
+	proxy.setStatus(proxyconfig.ProxyStatusStopping)
 
 	// cancel context
 	proxy.cancel()
 	// make sure all listeners are closed
 	proxy.close()
 
-	proxy.state.Store(int32(proxyconfig.ProxyStateStopped))
+	proxy.setStatus(proxyconfig.ProxyStatusStopped)
 }
 
-func (proxy *Proxy) GetState() proxyconfig.ProxyState {
-	return proxyconfig.ProxyState(proxy.state.Load())
+func (proxy *Proxy) setStatus(status proxyconfig.ProxyStatus) {
+	proxy.mtx.Lock()
+	defer proxy.mtx.Unlock()
+	proxy.status = status
+}
+
+func (proxy *Proxy) GetStatus() proxyconfig.ProxyStatus {
+	proxy.mtx.Lock()
+	defer proxy.mtx.Unlock()
+	return proxy.status
 }
 
 func (proxy *Proxy) GetURL() string {
@@ -158,7 +165,7 @@ func (proxy *Proxy) start() {
 
 	if portsCount == 0 {
 		proxy.log.Warn().Msg("No ports configured")
-		proxy.state.Store(int32(proxyconfig.ProxyStateError))
+		proxy.setStatus(proxyconfig.ProxyStatusError)
 
 		return
 	}

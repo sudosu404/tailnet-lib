@@ -43,10 +43,10 @@ func (dash *Dashboard) list() http.HandlerFunc {
 
 		for name, p := range dash.proxies {
 			if p.Config.Dashboard.Visible {
-				state := p.GetState()
+				status := p.GetStatus()
 
 				url := p.GetURL()
-				if state == proxyconfig.ProxyStateAuthenticating {
+				if status == proxyconfig.ProxyStatusAuthenticating {
 					url = p.GetAuthURL()
 				}
 
@@ -60,14 +60,14 @@ func (dash *Dashboard) list() http.HandlerFunc {
 					label = name
 				}
 
-				enabled := state == proxyconfig.ProxyStateAuthenticating || state == proxyconfig.ProxyStateRunning
+				enabled := status == proxyconfig.ProxyStatusAuthenticating || status == proxyconfig.ProxyStatusRunning
 
 				data[name] = pages.ListData{
-					Enabled:    enabled,
-					URL:        url,
-					ProxyState: state,
-					Icon:       icon,
-					Label:      label,
+					Enabled:     enabled,
+					URL:         url,
+					ProxyStatus: status,
+					Icon:        icon,
+					Label:       label,
 				}
 			}
 		}

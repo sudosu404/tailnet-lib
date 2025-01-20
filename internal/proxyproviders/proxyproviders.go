@@ -29,6 +29,6 @@ type (
 
 	ProxyEvent struct {
 		AuthURL string
-		State   proxyconfig.ProxyState
+		Status  proxyconfig.ProxyStatus
 	}
 )

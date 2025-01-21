@@ -98,7 +98,9 @@ func (p *Proxy) watchStatus() {
 
 		switch status.BackendState {
 		case "NeedsLogin":
-			p.setStatus(proxyconfig.ProxyStatusAuthenticating, "", status.AuthURL)
+			if status.AuthURL != "" {
+				p.setStatus(proxyconfig.ProxyStatusAuthenticating, "", status.AuthURL)
+			}
 		case "Starting":
 			p.setStatus(proxyconfig.ProxyStatusStarting, "", "")
 		case "Running":

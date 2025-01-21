@@ -7,6 +7,7 @@ import (
 	"context"
 	"crypto/tls"
 	"errors"
+	"fmt"
 	"net"
 	"net/http"
 	"net/http/httputil"
@@ -96,24 +97,18 @@ func newPortRedirect(ctx context.Context, pconfig proxyconfig.PortConfig, log ze
 	}
 }
 
-func (p *port) startWithListener(l net.Listener) {
+func (p *port) startWithListener(l net.Listener) error {
 	p.mtx.Lock()
 	p.listener = l
 	p.mtx.Unlock()
 
 	err := p.httpServer.Serve(l)
-	defer func() {
-		if r := recover(); r != nil {
-			p.log.Error().Err(err).Msg("Panic recovered")
-		}
-	}()
 	defer p.log.Info().Msg("Terminating server")
 
 	if err != nil && !errors.Is(err, net.ErrClosed) && !errors.Is(err, http.ErrServerClosed) {
-		// TODO: Manager port errors
-		// p.state.Store(int32(proxyconfig.ProxyStateError))
-		p.log.Error().Err(err).Msg("Error starting proxy server")
+		return fmt.Errorf("error starting port %w", err)
 	}
+	return nil
 }
 
 func (p *port) close() error {

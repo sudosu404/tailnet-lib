@@ -197,7 +197,12 @@ func (proxy *Proxy) startPort(name string, l net.Listener) {
 
 	// make sure port exists
 	if p, ok := proxy.ports[name]; ok {
-		go p.startWithListener(l)
+		go func() {
+			if err := p.startWithListener(l); err != nil {
+				proxy.log.Error().Err(err).Msg("error starting port")
+				proxy.setStatus(proxyconfig.ProxyStatusError)
+			}
+		}()
 	}
 }
 

@@ -30,7 +30,7 @@ type port struct {
 func newPortProxy(ctx context.Context, pconfig proxyconfig.PortConfig, log zerolog.Logger, accessLog bool) *port {
 	log = log.With().Str("port", pconfig.String()).Logger()
 
-	ctx1, cancel := context.WithCancel(ctx)
+	ctxPort, cancel := context.WithCancel(ctx)
 
 	// Create the reverse proxy
 	//
@@ -57,12 +57,12 @@ func newPortProxy(ctx context.Context, pconfig proxyconfig.PortConfig, log zerol
 	httpServer := &http.Server{
 		Handler:           handler,
 		ReadHeaderTimeout: core.ReadHeaderTimeout,
-		BaseContext:       func(net.Listener) context.Context { return ctx1 },
+		BaseContext:       func(net.Listener) context.Context { return ctxPort },
 	}
 
 	return &port{
 		log:        log,
-		ctx:        ctx1,
+		ctx:        ctxPort,
 		cancel:     cancel,
 		httpServer: httpServer,
 	}
@@ -78,7 +78,7 @@ func reverseProxyFunc(p *httputil.ReverseProxy) http.Handler {
 func newPortRedirect(ctx context.Context, pconfig proxyconfig.PortConfig, log zerolog.Logger) *port {
 	log = log.With().Str("port", pconfig.String()).Logger()
 
-	ctx1, cancel := context.WithCancel(ctx)
+	ctxPort, cancel := context.WithCancel(ctx)
 
 	redirectHTTPServer := &http.Server{
 		ReadHeaderTimeout: core.ReadHeaderTimeout,
@@ -90,7 +90,7 @@ func newPortRedirect(ctx context.Context, pconfig proxyconfig.PortConfig, log ze
 
 	return &port{
 		log:        log,
-		ctx:        ctx1,
+		ctx:        ctxPort,
 		cancel:     cancel,
 		httpServer: redirectHTTPServer,
 	}

@@ -18,7 +18,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/models"
 	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders"
 )
 
@@ -97,7 +97,7 @@ func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetprov
 }
 
 // newProxyConfig method returns a new proxyconfig.Config
-func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*proxyconfig.Config, error) {
+func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*models.Config, error) {
 	imageInfo, _, err := c.docker.ImageInspectWithRaw(context.Background(), dcontainer.Config.Image)
 	if err != nil {
 		return nil, fmt.Errorf("error getting image info: %w", err)
@@ -113,7 +113,7 @@ func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*proxyconfig.Co
 }
 
 // AddTarget method implements TargetProvider AddTarget method
-func (c *Client) AddTarget(id string) (*proxyconfig.Config, error) {
+func (c *Client) AddTarget(id string) (*models.Config, error) {
 	dcontainer, err := c.docker.ContainerInspect(context.Background(), id)
 	if err != nil {
 		return nil, fmt.Errorf("error inspecting container: %w", err)

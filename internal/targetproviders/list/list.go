@@ -12,7 +12,7 @@ import (
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/models"
 	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders"
 
 	"github.com/creasty/defaults"
@@ -37,17 +37,17 @@ type (
 	configProxyList map[string]proxyConfig
 
 	proxyConfig struct {
-		Ports         map[string]port       `yaml:"ports"`
-		ProxyProvider string                `yaml:"proxyProvider"`
-		Dashboard     proxyconfig.Dashboard `validate:"dive" yaml:"dashboard"`
-		Tailscale     proxyconfig.Tailscale `yaml:"tailscale"`
+		Ports         map[string]port  `yaml:"ports"`
+		ProxyProvider string           `yaml:"proxyProvider"`
+		Dashboard     models.Dashboard `validate:"dive" yaml:"dashboard"`
+		Tailscale     models.Tailscale `yaml:"tailscale"`
 	}
 
 	port struct {
-		RedirectURL string                    `yaml:"redirectUrl,omitempty"`
-		Targets     []string                  `yaml:"targets,omitempty"`
-		Tailscale   proxyconfig.TailscalePort `validate:"dive" yaml:"tailscale"`
-		TLSValidate bool                      `validate:"boolean" default:"true" yaml:"tlsValidate"`
+		RedirectURL string               `yaml:"redirectUrl,omitempty"`
+		Targets     []string             `yaml:"targets,omitempty"`
+		Tailscale   models.TailscalePort `validate:"dive" yaml:"tailscale"`
+		TLSValidate bool                 `validate:"boolean" default:"true" yaml:"tlsValidate"`
 	}
 )
 
@@ -130,7 +130,7 @@ func (c *Client) Close() {
 	}
 }
 
-func (c *Client) AddTarget(id string) (*proxyconfig.Config, error) {
+func (c *Client) AddTarget(id string) (*models.Config, error) {
 	proxy, ok := c.configProxies[id]
 	if !ok {
 		return nil, fmt.Errorf("target %s not found", id)
@@ -158,15 +158,15 @@ func (c *Client) DeleteProxy(id string) error {
 }
 
 // newProxyConfig method returns a new proxyconfig.Config
-func (c *Client) newProxyConfig(name string, p proxyConfig) (*proxyconfig.Config, error) {
+func (c *Client) newProxyConfig(name string, p proxyConfig) (*models.Config, error) {
 	proxyProvider := c.config.DefaultProxyProvider
 	if p.ProxyProvider != "" {
 		proxyProvider = p.ProxyProvider
 	}
 
-	proxyAccessLog := proxyconfig.DefaultProxyAccessLog
+	proxyAccessLog := models.DefaultProxyAccessLog
 
-	pcfg, err := proxyconfig.NewConfig()
+	pcfg, err := models.NewConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -242,10 +242,10 @@ func (c *Client) addTarget(cfg proxyConfig, name string) {
 }
 
 // getPorts returns a map of PortConfig from the config
-func (c *Client) getPorts(l map[string]port) map[string]proxyconfig.PortConfig {
-	ports := make(map[string]proxyconfig.PortConfig)
+func (c *Client) getPorts(l map[string]port) map[string]models.PortConfig {
+	ports := make(map[string]models.PortConfig)
 	for k, v := range l {
-		port, err := proxyconfig.NewPortShortLabel(k)
+		port, err := models.NewPortShortLabel(k)
 		if err != nil {
 			c.log.Error().Err(err).Str("port", k).Msg("error creating port config")
 		}

@@ -6,7 +6,7 @@ package targetproviders
 import (
 	"context"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/models"
 )
 
 type (
@@ -15,7 +15,7 @@ type (
 		WatchEvents(ctx context.Context, eventsChan chan TargetEvent, errChan chan error)
 		GetDefaultProxyProviderName() string
 		Close()
-		AddTarget(id string) (*proxyconfig.Config, error)
+		AddTarget(id string) (*models.Config, error)
 		DeleteProxy(id string) error
 	}
 )

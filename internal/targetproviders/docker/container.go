@@ -17,7 +17,7 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/models"
 	"github.com/almeidapaulopt/tsdproxy/web"
 )
 
@@ -105,7 +105,7 @@ func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageIn
 }
 
 // newProxyConfig method returns a new proxyconfig.Config.
-func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
+func (c *container) newProxyConfig() (*models.Config, error) {
 	// Get the proxy URL
 	//
 	proxyURL, err := c.getProxyURL()
@@ -125,7 +125,7 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 		return nil, err
 	}
 
-	pcfg, err := proxyconfig.NewConfig()
+	pcfg, err := models.NewConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -135,11 +135,11 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 	pcfg.Hostname = proxyURL.Hostname()
 	pcfg.TargetProvider = c.targetProviderName
 	pcfg.Tailscale = *tailscale
-	pcfg.ProxyProvider = c.getLabelString(LabelProxyProvider, proxyconfig.DefaultProxyProvider)
-	pcfg.ProxyAccessLog = c.getLabelBool(LabelContainerAccessLog, proxyconfig.DefaultProxyAccessLog)
+	pcfg.ProxyProvider = c.getLabelString(LabelProxyProvider, models.DefaultProxyProvider)
+	pcfg.ProxyAccessLog = c.getLabelBool(LabelContainerAccessLog, models.DefaultProxyAccessLog)
 	// TODO: TLSValidate may be removed
 	// pcfg.TLSValidate = c.getLabelBool(LabelTLSValidate, proxyconfig.DefaultTLSValidate)
-	pcfg.Dashboard.Visible = c.getLabelBool(LabelDashboardVisible, proxyconfig.DefaultDashboardVisible)
+	pcfg.Dashboard.Visible = c.getLabelBool(LabelDashboardVisible, models.DefaultDashboardVisible)
 	pcfg.Dashboard.Label = c.getLabelString(LabelDashboardLabel, pcfg.Hostname)
 
 	pcfg.Dashboard.Icon = c.getLabelString(LabelDashboardIcon, "")
@@ -151,7 +151,7 @@ func (c *container) newProxyConfig() (*proxyconfig.Config, error) {
 }
 
 // getTailscaleConfig method returns the tailscale configuration.
-func (c *container) getTailscaleConfig() (*proxyconfig.Tailscale, error) {
+func (c *container) getTailscaleConfig() (*models.Tailscale, error) {
 	authKey := c.getLabelString(LabelAuthKey, "")
 
 	authKey, err := c.getAuthKeyFromAuthFile(authKey)
@@ -159,11 +159,11 @@ func (c *container) getTailscaleConfig() (*proxyconfig.Tailscale, error) {
 		return nil, fmt.Errorf("error setting auth key from file : %w", err)
 	}
 
-	return &proxyconfig.Tailscale{
-		Ephemeral:    c.getLabelBool(LabelEphemeral, proxyconfig.DefaultTailscaleEphemeral),
-		RunWebClient: c.getLabelBool(LabelRunWebClient, proxyconfig.DefaultTailscaleRunWebClient),
-		Verbose:      c.getLabelBool(LabelTsnetVerbose, proxyconfig.DefaultTailscaleVerbose),
-		Funnel:       c.getLabelBool(LabelFunnel, proxyconfig.DefaultTailscaleFunnel),
+	return &models.Tailscale{
+		Ephemeral:    c.getLabelBool(LabelEphemeral, models.DefaultTailscaleEphemeral),
+		RunWebClient: c.getLabelBool(LabelRunWebClient, models.DefaultTailscaleRunWebClient),
+		Verbose:      c.getLabelBool(LabelTsnetVerbose, models.DefaultTailscaleVerbose),
+		Funnel:       c.getLabelBool(LabelFunnel, models.DefaultTailscaleFunnel),
 		AuthKey:      authKey,
 	}, nil
 }

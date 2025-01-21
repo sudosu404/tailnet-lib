@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/models"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxymanager"
 	"github.com/almeidapaulopt/tsdproxy/internal/ui"
 	"github.com/almeidapaulopt/tsdproxy/internal/ui/pages"
@@ -46,13 +46,13 @@ func (dash *Dashboard) list() http.HandlerFunc {
 				status := p.GetStatus()
 
 				url := p.GetURL()
-				if status == proxyconfig.ProxyStatusAuthenticating {
+				if status == models.ProxyStatusAuthenticating {
 					url = p.GetAuthURL()
 				}
 
 				icon := p.Config.Dashboard.Icon
 				if icon == "" {
-					icon = proxyconfig.DefaultDashboardIcon
+					icon = models.DefaultDashboardIcon
 				}
 
 				label := p.Config.Dashboard.Label
@@ -60,7 +60,7 @@ func (dash *Dashboard) list() http.HandlerFunc {
 					label = name
 				}
 
-				enabled := status == proxyconfig.ProxyStatusAuthenticating || status == proxyconfig.ProxyStatusRunning
+				enabled := status == models.ProxyStatusAuthenticating || status == models.ProxyStatusRunning
 
 				data[name] = pages.ListData{
 					Enabled:     enabled,

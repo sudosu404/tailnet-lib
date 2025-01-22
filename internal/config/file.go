@@ -97,41 +97,14 @@ func (f *File) Watch() {
 
 		file := filepath.Clean(f.filename)
 		dir, _ := filepath.Split(file)
-		realFile, _ := filepath.EvalSymlinks(f.filename)
 
 		eventsWG := sync.WaitGroup{}
 		eventsWG.Add(1)
+
 		// Start listening for events.
 		go func() {
-			for {
-				select {
-				case event, ok := <-watcher.Events:
-					if !ok {
-						eventsWG.Done()
-						return
-					}
-
-					currentFile, _ := filepath.EvalSymlinks(f.filename)
-					if (filepath.Clean(event.Name) == file &&
-						(event.Has(fsnotify.Write) || event.Has(fsnotify.Create))) ||
-						(currentFile != "" && currentFile != realFile) {
-						realFile = currentFile
-
-						if f.onChange != nil {
-							f.onChange(event)
-						}
-					} else if filepath.Clean(event.Name) == file && event.Has(fsnotify.Remove) {
-						eventsWG.Done()
-						return
-					}
-				case err1, ok := <-watcher.Errors:
-					if ok {
-						f.log.Error().Err(err1).Msg("watching config file error")
-					}
-					eventsWG.Done()
-					return
-				}
-			}
+			defer eventsWG.Done()
+			f.watchEvents(watcher, file, &eventsWG)
 		}()
 
 		err = watcher.Add(dir)
@@ -143,6 +116,39 @@ func (f *File) Watch() {
 		eventsWG.Wait()
 	}()
 	initWG.Wait()
+}
+
+func (f *File) watchEvents(watcher *fsnotify.Watcher, file string, eventsWG *sync.WaitGroup) {
+	realFile, _ := filepath.EvalSymlinks(f.filename)
+	for {
+		select {
+		case event, ok := <-watcher.Events:
+			if !ok {
+				return
+			}
+			f.handleEvent(event, file, &realFile, eventsWG)
+		case err, ok := <-watcher.Errors:
+			if ok {
+				f.log.Error().Err(err).Msg("watching config file error")
+			}
+			return
+		}
+	}
+}
+
+func (f *File) handleEvent(event fsnotify.Event, file string, realFile *string, eventsWG *sync.WaitGroup) {
+	currentFile, _ := filepath.EvalSymlinks(f.filename)
+	if (filepath.Clean(event.Name) == file &&
+		(event.Has(fsnotify.Write) || event.Has(fsnotify.Create))) ||
+		(currentFile != "" && currentFile != *realFile) {
+		*realFile = currentFile
+
+		if f.onChange != nil {
+			f.onChange(event)
+		}
+	} else if filepath.Clean(event.Name) == file && event.Has(fsnotify.Remove) {
+		eventsWG.Done()
+	}
 }
 
 func unmarshalStrict(data []byte, out any) error {

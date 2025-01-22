@@ -6,13 +6,7 @@ package targetproviders
 import (
 	"context"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
-)
-
-const (
-	ActionStart ActionType = iota + 1
-	ActionStop
-	ActionRestart
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 )
 
 type (
@@ -21,10 +15,21 @@ type (
 		WatchEvents(ctx context.Context, eventsChan chan TargetEvent, errChan chan error)
 		GetDefaultProxyProviderName() string
 		Close()
-		AddTarget(id string) (*proxyconfig.Config, error)
+		AddTarget(id string) (*model.Config, error)
 		DeleteProxy(id string) error
 	}
+)
 
+const (
+	ActionStartProxy ActionType = iota + 1
+	ActionStopProxy
+	ActionRestartProxy
+	ActionStartProt
+	ActionStopPrort
+	ActionRestartPort
+)
+
+type (
 	ActionType int
 
 	TargetEvent struct {

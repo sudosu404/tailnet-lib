@@ -1,30 +1,30 @@
 package pages
 
 import (
-"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
-"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
+	"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
 )
 
 type ListData struct {
-Enabled bool
-Icon string
-URL string
-Label string
-ProxyState proxyconfig.ProxyState
+	Enabled     bool
+	Icon        string
+	URL         string
+	Label       string
+	ProxyStatus model.ProxyStatus
 }
 
 templ List(l map[string]ListData) {
-<div class="proxy-list">
-  for _, item := range l {
-  <a href={ templ.URL(item.URL) } class={ templ.KV("disabled", !item.Enabled) }>
-    <div class="icon">
-      <img src={ components.IconURL(item.Icon) } />
-    </div>
-    <div class="text">
-      <p>{ item.Label }</p>
-      <span>{ item.ProxyState.String() }</span>
-    </div>
-  </a>
-  }
-</div>
+	<div class="proxy-list">
+		for _, item := range l {
+			<a href={ templ.URL(item.URL) } class={ templ.KV("disabled", !item.Enabled) }>
+				<div class="icon">
+					<img src={ components.IconURL(item.Icon) }/>
+				</div>
+				<div class="text">
+					<p>{ item.Label }</p>
+					<span>{ item.ProxyStatus.String() }</span>
+				</div>
+			</a>
+		}
+	</div>
 }

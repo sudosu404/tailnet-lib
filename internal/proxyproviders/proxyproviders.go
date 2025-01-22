@@ -7,21 +7,20 @@ import (
 	"context"
 	"net"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 )
 
 type (
 	// Proxy interface for each proxy provider
 	Provider interface {
-		NewProxy(cfg *proxyconfig.Config) (ProxyInterface, error)
+		NewProxy(cfg *model.Config) (ProxyInterface, error)
 	}
 
 	// ProxyInterface interface for each proxy
 	ProxyInterface interface {
 		Start(context.Context) error
 		Close() error
-		NewListener(network, addr string) (net.Listener, error)
-		NewTLSListener(network, addr string) (net.Listener, error)
+		GetListener(port string) (net.Listener, error)
 		GetURL() string
 		GetAuthURL() string
 		WatchEvents() chan ProxyEvent
@@ -29,6 +28,6 @@ type (
 
 	ProxyEvent struct {
 		AuthURL string
-		State   proxyconfig.ProxyState
+		Status  model.ProxyStatus
 	}
 )

@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
 // SPDX-License-Identifier: MIT
-
-package proxyconfig
+package model
 
 import (
 	"fmt"
@@ -14,8 +13,8 @@ type (
 
 	// Config struct stores all the configuration for the proxy
 	Config struct {
+		Ports          map[string]PortConfig `validate:"dive"`
 		TargetURL      *url.URL
-		ProxyURL       *url.URL
 		TargetProvider string
 		TargetID       string
 		ProxyProvider  string
@@ -23,16 +22,14 @@ type (
 		Dashboard      Dashboard `validate:"dive"`
 		Tailscale      Tailscale `validate:"dive"`
 		ProxyAccessLog bool      `default:"true" validate:"boolean"`
-		TLSValidate    bool      `default:"true" validate:"boolean"`
 	}
 
 	// Tailscale struct stores the configuration for tailscale ProxyProvider
 	Tailscale struct {
-		AuthKey      string
-		Ephemeral    bool `default:"true" validate:"boolean"`
-		RunWebClient bool `default:"false" validate:"boolean"`
-		Verbose      bool `default:"false" validate:"boolean"`
-		Funnel       bool `default:"false" validate:"boolean"`
+		AuthKey      string `yaml:"authKey"`
+		Ephemeral    bool   `default:"true" validate:"boolean" yaml:"ephemeral"`
+		RunWebClient bool   `default:"false" validate:"boolean" yaml:"runWebClient"`
+		Verbose      bool   `default:"false" validate:"boolean" yaml:"verbose"`
 	}
 
 	Dashboard struct {
@@ -52,22 +49,3 @@ func NewConfig() (*Config, error) {
 
 	return config, nil
 }
-
-const (
-	// Default values to proxyconfig
-	//
-	DefaultProxyAccessLog = true
-	DefaultProxyProvider  = ""
-	DefaultTLSValidate    = true
-
-	// tailscale defaults
-	DefaultTailscaleEphemeral    = true
-	DefaultTailscaleRunWebClient = false
-	DefaultTailscaleVerbose      = false
-	DefaultTailscaleFunnel       = false
-	DefaultTailscaleControlURL   = ""
-
-	// Dashboard defauts
-	DefaultDashboardVisible = true
-	DefaultDashboardIcon    = "tsdproxy"
-)

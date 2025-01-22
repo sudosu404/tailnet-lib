@@ -7,10 +7,11 @@ import (
 	"context"
 	"errors"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 
 	"github.com/rs/zerolog"
@@ -22,7 +23,7 @@ import (
 // Proxy struct implements proxyconfig.Proxy.
 type Proxy struct {
 	log      zerolog.Logger
-	config   *proxyconfig.Config
+	config   *model.Config
 	tsServer *tsnet.Server
 	lc       *tailscale.LocalClient
 	ctx      context.Context
@@ -31,12 +32,16 @@ type Proxy struct {
 
 	authURL string
 	url     string
-	state   proxyconfig.ProxyState
+	status  model.ProxyStatus
 
-	mtx sync.RWMutex
+	mtx sync.Mutex
 }
 
-var _ proxyproviders.ProxyInterface = (*Proxy)(nil)
+var (
+	_ proxyproviders.ProxyInterface = (*Proxy)(nil)
+
+	ErrProxyPortNotFound = errors.New("proxy port not found")
+)
 
 // Start method implements proxyconfig.Proxy Start method.
 func (p *Proxy) Start(ctx context.Context) error {
@@ -98,27 +103,29 @@ func (p *Proxy) watchStatus() {
 
 		switch status.BackendState {
 		case "NeedsLogin":
-			p.setState(proxyconfig.ProxyStateAuthenticating, "", status.AuthURL)
+			if status.AuthURL != "" {
+				p.setStatus(model.ProxyStatusAuthenticating, "", status.AuthURL)
+			}
 		case "Starting":
-			p.setState(proxyconfig.ProxyStateStarting, "", "")
+			p.setStatus(model.ProxyStatusStarting, "", "")
 		case "Running":
-			p.setState(proxyconfig.ProxyStateRunning, strings.TrimRight(status.Self.DNSName, "."), "")
-			if p.state != proxyconfig.ProxyStateRunning {
+			p.setStatus(model.ProxyStatusRunning, strings.TrimRight(status.Self.DNSName, "."), "")
+			if p.status != model.ProxyStatusRunning {
 				p.getTLSCertificates()
 			}
 		}
 	}
 }
 
-func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL string) {
-	if p.state == state && p.url == url && p.authURL == authURL {
+func (p *Proxy) setStatus(status model.ProxyStatus, url string, authURL string) {
+	if p.status == status && p.url == url && p.authURL == authURL {
 		return
 	}
 
-	p.log.Debug().Str("authURL", url).Str("state", state.String()).Msg("tailscale status")
+	p.log.Debug().Str("authURL", url).Str("status", status.String()).Msg("tailscale status")
 
 	p.mtx.Lock()
-	p.state = state
+	p.status = status
 	if url != "" {
 		p.url = url
 	}
@@ -128,13 +135,12 @@ func (p *Proxy) setState(state proxyconfig.ProxyState, url string, authURL strin
 	p.mtx.Unlock()
 
 	p.events <- proxyproviders.ProxyEvent{
-		State: state,
+		Status: status,
 	}
 }
 
 // Close method implements proxyconfig.Proxy Close method.
 func (p *Proxy) Close() error {
-	close(p.events)
 	if p.tsServer != nil {
 		return p.tsServer.Close()
 	}
@@ -142,18 +148,25 @@ func (p *Proxy) Close() error {
 	return nil
 }
 
-// NewListener method implements proxyconfig.Proxy NewListener method.
-func (p *Proxy) NewListener(network, addr string) (net.Listener, error) {
-	return p.tsServer.Listen(network, addr)
-}
-
-// NewTLSListener method implements proxyconfig.Proxy NewTLSListener method.
-func (p *Proxy) NewTLSListener(network, addr string) (net.Listener, error) {
-	if p.config.Tailscale.Funnel {
-		return p.tsServer.ListenFunnel(network, addr)
+func (p *Proxy) GetListener(port string) (net.Listener, error) {
+	portCfg, ok := p.config.Ports[port]
+	if !ok {
+		return nil, ErrProxyPortNotFound
 	}
 
-	return p.tsServer.ListenTLS(network, addr)
+	network := portCfg.ProxyProtocol
+	if portCfg.ProxyProtocol == "http" || portCfg.ProxyProtocol == "https" {
+		network = "tcp"
+	}
+	addr := ":" + strconv.Itoa(portCfg.ProxyPort)
+
+	if portCfg.Tailscale.Funnel {
+		return p.tsServer.ListenFunnel(network, addr)
+	}
+	if portCfg.ProxyProtocol == "https" {
+		return p.tsServer.ListenTLS(network, addr)
+	}
+	return p.tsServer.Listen(network, addr)
 }
 
 func (p *Proxy) WatchEvents() chan proxyproviders.ProxyEvent {

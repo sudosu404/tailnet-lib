@@ -11,7 +11,7 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders/tailscale"
 	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders"
@@ -166,7 +166,7 @@ func (pm *ProxyManager) StopAllProxies() {
 }
 
 // newAndStartProxy method creates a new proxy and starts it.
-func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *proxyconfig.Config) {
+func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *model.Config) {
 	pm.log.Debug().Str("proxy", name).Msg("Creating proxy")
 
 	proxyProvider, err := pm.getProxyProvider(proxyConfig)
@@ -186,7 +186,7 @@ func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *proxyconfig.C
 }
 
 // getProxyProvider method returns a ProxyProvider.
-func (pm *ProxyManager) getProxyProvider(proxy *proxyconfig.Config) (proxyproviders.Provider, error) {
+func (pm *ProxyManager) getProxyProvider(proxy *model.Config) (proxyproviders.Provider, error) {
 	// return ProxyProvider defined in configurtion
 	//
 	if proxy.ProxyProvider != "" {
@@ -245,11 +245,11 @@ func (pm *ProxyManager) WatchEvents() {
 // HandleContainerEvent method handles events from a targetprovider
 func (pm *ProxyManager) HandleContainerEvent(event targetproviders.TargetEvent) {
 	switch event.Action {
-	case targetproviders.ActionStart:
+	case targetproviders.ActionStartProxy:
 		pm.eventStart(event)
-	case targetproviders.ActionStop:
+	case targetproviders.ActionStopProxy:
 		pm.eventStop(event)
-	case targetproviders.ActionRestart:
+	case targetproviders.ActionRestartProxy:
 		pm.eventStop(event)
 		pm.eventStart(event)
 	}

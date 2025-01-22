@@ -12,7 +12,7 @@ import (
 	"tailscale.com/tsnet"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyconfig"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 )
 
@@ -42,7 +42,7 @@ func New(log zerolog.Logger, name string, provider *config.TailscaleServerConfig
 }
 
 // NewProxy method implements proxyprovider NewProxy method
-func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInterface, error) {
+func (c *Client) NewProxy(config *model.Config) (proxyproviders.ProxyInterface, error) {
 	c.log.Debug().
 		Str("hostname", config.Hostname).
 		Msg("Setting up tailscale server")
@@ -91,7 +91,7 @@ func (c *Client) NewProxy(config *proxyconfig.Config) (proxyproviders.ProxyInter
 // getControlURL method returns the control URL
 func (c *Client) getControlURL() string {
 	if c.controlURL == "" {
-		return proxyconfig.DefaultTailscaleControlURL
+		return model.DefaultTailscaleControlURL
 	}
 	return c.controlURL
 }

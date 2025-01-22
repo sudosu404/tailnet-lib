@@ -128,7 +128,7 @@ docker_stop:
 
 ## stop: stop the dev server
 .PHONY: stop
-stop: dev_kill docker_stop
+stop: docker_stop
 
 
 ## docker_image: Create docker image
@@ -146,7 +146,7 @@ docs:
 
 .PHONY: run_in_docker
 run_in_docker:
-	templ generate --proxy="http://localhost:5172" --watch --cmd="echo RELOAD" &
+	templ generate --proxy="http://localhost:5173" --watch --cmd="echo RELOAD" &
 	wgo -debounce="500ms" -file=.go -file=.templ -xfile=_templ.go templ generate --notify-proxy :: go run ${MAIN_PACKAGE_PATH}
 
 ## audit: run quality control checks

@@ -44,9 +44,9 @@ type (
 	}
 
 	port struct {
-		RedirectURL string              `yaml:"redirectUrl,omitempty"`
 		Targets     []string            `yaml:"targets,omitempty"`
 		Tailscale   model.TailscalePort `validate:"dive" yaml:"tailscale"`
+		IsRedirect  bool                `default:"false" validate:"boolean" yaml:"isRedirect,omitempty"`
 		TLSValidate bool                `validate:"boolean" default:"true" yaml:"tlsValidate"`
 	}
 )
@@ -250,17 +250,22 @@ func (c *Client) getPorts(l map[string]port) map[string]model.PortConfig {
 			c.log.Error().Err(err).Str("port", k).Msg("error creating port config")
 		}
 
-		if v.RedirectURL != "" {
-			port.IsRedirect = true
+		port.IsRedirect = v.IsRedirect
 
-			targetURL, err := url.Parse(v.RedirectURL)
+		for _, target := range v.Targets {
+			targetURL, err := url.Parse(target)
 			if err != nil || targetURL.Scheme == "" || targetURL.Host == "" {
-				c.log.Error().Err(err).Str("port", k).Str("redirectUrl", v.RedirectURL).Msg("Invalid redirect URL")
-				// don't add this port and continue with others
+				c.log.Error().Err(err).Str("port", k).Str("targetUrl", target).Msg("Invalid target URL")
+				// don't add this port and continue with other targets
 				continue
 			}
 
-			port.RedirectURL = targetURL
+			port.AddTarget(targetURL)
+		}
+
+		if len(port.GetTargets()) == 0 {
+			c.log.Error().Str("port", k).Msg("no targets found for port")
+			continue
 		}
 
 		port.TLSValidate = v.TLSValidate

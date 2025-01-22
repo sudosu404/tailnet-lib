@@ -13,15 +13,13 @@ import (
 
 type (
 	PortConfig struct {
-		name           string        `validate:"string" yaml:"name"`
-		ProxyProtocol  string        `validate:"string" yaml:"proxyProtocol"`
-		RedirectURL    *url.URL      `yaml:"redirectUrl"`
-		TargetProtocol string        `validate:"string" yaml:"targetProtocol"`
-		ProxyPort      int           `validate:"hostname_port" yaml:"proxyPort"`
-		TargetPort     int           `validate:"hostname_port" yaml:"targetPort"`
-		TLSValidate    bool          `validate:"boolean" yaml:"tlsValidate"`
-		IsRedirect     bool          `validate:"boolean" yaml:"isRedirect"`
-		Tailscale      TailscalePort `validate:"dive" yaml:"tailscale"`
+		name          string `validate:"string" yaml:"name"`
+		ProxyProtocol string `validate:"string" yaml:"proxyProtocol"`
+		ProxyPort     int    `validate:"hostname_port" yaml:"proxyPort"`
+		targets       []*url.URL
+		TLSValidate   bool          `validate:"boolean" yaml:"tlsValidate"`
+		IsRedirect    bool          `validate:"boolean" yaml:"isRedirect"`
+		Tailscale     TailscalePort `validate:"dive" yaml:"tailscale"`
 	}
 
 	TailscalePort struct {
@@ -112,12 +110,10 @@ func (p *PortConfig) String() string {
 // defaultPortConfig initializes a PortConfig with default values.
 func defaultPortConfig(name string) PortConfig {
 	return PortConfig{
-		name:           name,
-		ProxyProtocol:  "https",
-		TargetProtocol: "http",
-		ProxyPort:      443, //nolint:mnd
-		TargetPort:     80,  //nolint:mnd
-		IsRedirect:     false,
+		name:          name,
+		ProxyProtocol: "https",
+		ProxyPort:     443, //nolint:mnd
+		IsRedirect:    false,
 	}
 }
 
@@ -155,14 +151,15 @@ func parseTargetSegment(segment string, config *PortConfig) error {
 		return ErrInvalidTargetConfig
 	}
 
-	targetPort, err := strconv.Atoi(targetParts[0])
-	if err != nil {
-		return fmt.Errorf("invalid target port: %w", err)
-	}
-	config.TargetPort = targetPort
+	// TODO: Add support for target port
+	// targetPort, err := strconv.Atoi(targetParts[0])
+	// if err != nil {
+	// 	return fmt.Errorf("invalid target port: %w", err)
+	// }
+	// config.TargetPort = targetPort
 
 	if len(targetParts) == 2 { //nolint:mnd
-		config.TargetProtocol = targetParts[1]
+		// config.TargetProtocol = targetParts[1]
 	}
 
 	return nil
@@ -174,9 +171,22 @@ func parseRedirectTarget(segment string, config *PortConfig) error {
 		return fmt.Errorf("invalid target URL: %v", segment)
 	}
 
-	config.RedirectURL = targetURL
-	config.TargetProtocol = ""
-	config.TargetPort = 0
+	config.AddTarget(targetURL)
 
 	return nil
+}
+
+func (p *PortConfig) GetTargets() []*url.URL {
+	return p.targets
+}
+
+func (p *PortConfig) GetFirstTarget() *url.URL {
+	if len(p.GetTargets()) > 0 {
+		return p.GetTargets()[0]
+	}
+	return &url.URL{}
+}
+
+func (p *PortConfig) AddTarget(target *url.URL) {
+	p.targets = append(p.targets, target)
 }

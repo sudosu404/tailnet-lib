@@ -41,7 +41,7 @@ func newPortProxy(ctx context.Context, pconfig model.PortConfig, log zerolog.Log
 	reverseProxy := &httputil.ReverseProxy{
 		Transport: tr,
 		Rewrite: func(r *httputil.ProxyRequest) {
-			r.SetURL(pconfig.RedirectURL)
+			r.SetURL(pconfig.GetFirstTarget())
 			r.Out.Host = r.In.Host
 			r.Out.Header["X-Forwarded-For"] = r.In.Header["X-Forwarded-For"]
 			r.SetXForwarded()
@@ -84,8 +84,7 @@ func newPortRedirect(ctx context.Context, pconfig model.PortConfig, log zerolog.
 	redirectHTTPServer := &http.Server{
 		ReadHeaderTimeout: core.ReadHeaderTimeout,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			target := "https://" + r.Host + r.URL.RequestURI()
-			http.Redirect(w, r, target, http.StatusMovedPermanently)
+			http.Redirect(w, r, pconfig.GetFirstTarget().String(), http.StatusMovedPermanently)
 		}),
 	}
 

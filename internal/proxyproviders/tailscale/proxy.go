@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/models"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 
 	"github.com/rs/zerolog"
@@ -22,7 +22,7 @@ import (
 // Proxy struct implements proxyconfig.Proxy.
 type Proxy struct {
 	log      zerolog.Logger
-	config   *models.Config
+	config   *model.Config
 	tsServer *tsnet.Server
 	lc       *tailscale.LocalClient
 	ctx      context.Context
@@ -31,7 +31,7 @@ type Proxy struct {
 
 	authURL string
 	url     string
-	status  models.ProxyStatus
+	status  model.ProxyStatus
 
 	mtx sync.Mutex
 }
@@ -99,20 +99,20 @@ func (p *Proxy) watchStatus() {
 		switch status.BackendState {
 		case "NeedsLogin":
 			if status.AuthURL != "" {
-				p.setStatus(models.ProxyStatusAuthenticating, "", status.AuthURL)
+				p.setStatus(model.ProxyStatusAuthenticating, "", status.AuthURL)
 			}
 		case "Starting":
-			p.setStatus(models.ProxyStatusStarting, "", "")
+			p.setStatus(model.ProxyStatusStarting, "", "")
 		case "Running":
-			p.setStatus(models.ProxyStatusRunning, strings.TrimRight(status.Self.DNSName, "."), "")
-			if p.status != models.ProxyStatusRunning {
+			p.setStatus(model.ProxyStatusRunning, strings.TrimRight(status.Self.DNSName, "."), "")
+			if p.status != model.ProxyStatusRunning {
 				p.getTLSCertificates()
 			}
 		}
 	}
 }
 
-func (p *Proxy) setStatus(status models.ProxyStatus, url string, authURL string) {
+func (p *Proxy) setStatus(status model.ProxyStatus, url string, authURL string) {
 	if p.status == status && p.url == url && p.authURL == authURL {
 		return
 	}

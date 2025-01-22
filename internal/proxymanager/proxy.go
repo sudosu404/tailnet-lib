@@ -12,7 +12,7 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/models"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 
 	"github.com/rs/zerolog"
@@ -24,18 +24,18 @@ type (
 		log           zerolog.Logger
 		ctx           context.Context
 		providerProxy proxyproviders.ProxyInterface
-		Config        *models.Config
+		Config        *model.Config
 		URL           *url.URL
 		cancel        context.CancelFunc
 		ports         map[string]*port
 		mtx           sync.Mutex
-		status        models.ProxyStatus
+		status        model.ProxyStatus
 	}
 )
 
 // NewProxy function is a function that creates a new proxy.
 func NewProxy(log zerolog.Logger,
-	pcfg *models.Config,
+	pcfg *model.Config,
 	proxyProvider proxyproviders.Provider,
 ) (*Proxy, error) {
 	//
@@ -87,23 +87,23 @@ func (proxy *Proxy) Start() {
 
 // Close method is a method that initiate proxy close procedure.
 func (proxy *Proxy) Close() {
-	proxy.setStatus(models.ProxyStatusStopping)
+	proxy.setStatus(model.ProxyStatusStopping)
 
 	// cancel context
 	proxy.cancel()
 	// make sure all listeners are closed
 	proxy.close()
 
-	proxy.setStatus(models.ProxyStatusStopped)
+	proxy.setStatus(model.ProxyStatusStopped)
 }
 
-func (proxy *Proxy) setStatus(status models.ProxyStatus) {
+func (proxy *Proxy) setStatus(status model.ProxyStatus) {
 	proxy.mtx.Lock()
 	defer proxy.mtx.Unlock()
 	proxy.status = status
 }
 
-func (proxy *Proxy) GetStatus() models.ProxyStatus {
+func (proxy *Proxy) GetStatus() model.ProxyStatus {
 	proxy.mtx.Lock()
 	defer proxy.mtx.Unlock()
 	return proxy.status
@@ -165,7 +165,7 @@ func (proxy *Proxy) start() {
 
 	if portsCount == 0 {
 		proxy.log.Warn().Msg("No ports configured")
-		proxy.setStatus(models.ProxyStatusError)
+		proxy.setStatus(model.ProxyStatusError)
 
 		return
 	}
@@ -200,7 +200,7 @@ func (proxy *Proxy) startPort(name string, l net.Listener) {
 		go func() {
 			if err := p.startWithListener(l); err != nil {
 				proxy.log.Error().Err(err).Msg("error starting port")
-				proxy.setStatus(models.ProxyStatusError)
+				proxy.setStatus(model.ProxyStatusError)
 			}
 		}()
 	}

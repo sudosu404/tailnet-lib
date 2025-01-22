@@ -14,7 +14,7 @@ import (
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
-	"github.com/almeidapaulopt/tsdproxy/internal/models"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
 
 	"github.com/rs/zerolog"
 )
@@ -28,7 +28,7 @@ type port struct {
 	mtx        sync.Mutex
 }
 
-func newPortProxy(ctx context.Context, pconfig models.PortConfig, log zerolog.Logger, accessLog bool) *port {
+func newPortProxy(ctx context.Context, pconfig model.PortConfig, log zerolog.Logger, accessLog bool) *port {
 	log = log.With().Str("port", pconfig.String()).Logger()
 
 	ctxPort, cancel := context.WithCancel(ctx)
@@ -76,7 +76,7 @@ func reverseProxyFunc(p *httputil.ReverseProxy) http.Handler {
 	})
 }
 
-func newPortRedirect(ctx context.Context, pconfig models.PortConfig, log zerolog.Logger) *port {
+func newPortRedirect(ctx context.Context, pconfig model.PortConfig, log zerolog.Logger) *port {
 	log = log.With().Str("port", pconfig.String()).Logger()
 
 	ctxPort, cancel := context.WithCancel(ctx)

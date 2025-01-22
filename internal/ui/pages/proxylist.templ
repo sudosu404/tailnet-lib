@@ -16,7 +16,12 @@ type ListData struct {
 templ List(l map[string]ListData) {
 	<div class="proxy-list">
 		for _, item := range l {
-			<a href={ templ.URL(item.URL) } class={ templ.KV("disabled", !item.Enabled) }>
+			<a
+				href={ templ.URL(item.URL) }
+				class={ templ.KV("disabled", !item.Enabled) }
+				target="_blank"
+				rel="noopener noreferrer"
+			>
 				<div class="icon">
 					<img src={ components.IconURL(item.Icon) }/>
 				</div>

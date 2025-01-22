@@ -51,21 +51,3 @@ func NewConfig() (*Config, error) {
 	return config, nil
 }
 
-const (
-	// Default values to proxyconfig
-	//
-	DefaultProxyAccessLog = true
-	DefaultProxyProvider  = ""
-	DefaultTLSValidate    = true
-
-	// tailscale defaults
-	DefaultTailscaleEphemeral    = true
-	DefaultTailscaleRunWebClient = false
-	DefaultTailscaleVerbose      = false
-	DefaultTailscaleFunnel       = false
-	DefaultTailscaleControlURL   = ""
-
-	// Dashboard defauts
-	DefaultDashboardVisible = true
-	DefaultDashboardIcon    = "tsdproxy"
-)

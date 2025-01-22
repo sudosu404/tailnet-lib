@@ -20,8 +20,7 @@ type (
 	ProxyInterface interface {
 		Start(context.Context) error
 		Close() error
-		NewListener(network, addr string) (net.Listener, error)
-		NewTLSListener(network, addr string) (net.Listener, error)
+		GetListener(port string) (net.Listener, error)
 		GetURL() string
 		GetAuthURL() string
 		WatchEvents() chan ProxyEvent

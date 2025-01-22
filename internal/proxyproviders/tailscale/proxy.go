@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -36,7 +37,11 @@ type Proxy struct {
 	mtx sync.Mutex
 }
 
-var _ proxyproviders.ProxyInterface = (*Proxy)(nil)
+var (
+	_ proxyproviders.ProxyInterface = (*Proxy)(nil)
+
+	ErrProxyPortNotFound = errors.New("proxy port not found")
+)
 
 // Start method implements proxyconfig.Proxy Start method.
 func (p *Proxy) Start(ctx context.Context) error {
@@ -143,18 +148,25 @@ func (p *Proxy) Close() error {
 	return nil
 }
 
-// NewListener method implements proxyconfig.Proxy NewListener method.
-func (p *Proxy) NewListener(network, addr string) (net.Listener, error) {
-	return p.tsServer.Listen(network, addr)
-}
-
-// NewTLSListener method implements proxyconfig.Proxy NewTLSListener method.
-func (p *Proxy) NewTLSListener(network, addr string) (net.Listener, error) {
-	if p.config.Tailscale.Funnel {
-		return p.tsServer.ListenFunnel(network, addr)
+func (p *Proxy) GetListener(port string) (net.Listener, error) {
+	portCfg, ok := p.config.Ports[port]
+	if !ok {
+		return nil, ErrProxyPortNotFound
 	}
 
-	return p.tsServer.ListenTLS(network, addr)
+	network := portCfg.ProxyProtocol
+	if portCfg.ProxyProtocol == "http" || portCfg.ProxyProtocol == "https" {
+		network = "tcp"
+	}
+	addr := ":" + strconv.Itoa(portCfg.ProxyPort)
+
+	if portCfg.Tailscale.Funnel {
+		return p.tsServer.ListenFunnel(network, addr)
+	}
+	if portCfg.ProxyProtocol == "https" {
+		return p.tsServer.ListenTLS(network, addr)
+	}
+	return p.tsServer.Listen(network, addr)
 }
 
 func (p *Proxy) WatchEvents() chan proxyproviders.ProxyEvent {

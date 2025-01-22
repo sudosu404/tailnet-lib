@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"net"
 	"net/url"
-	"strconv"
 	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/model"
@@ -61,8 +60,7 @@ func NewProxy(log zerolog.Logger,
 	ctx, cancel := context.WithCancel(context.Background())
 
 	p := &Proxy{
-		log: log,
-		// targetProvider: targetprovider,
+		log:           log,
 		Config:        pcfg,
 		ctx:           ctx,
 		cancel:        cancel,
@@ -135,28 +133,9 @@ func (proxy *Proxy) initPorts() {
 	}
 }
 
-func (proxy *Proxy) getListener(protocol string, port int) (net.Listener, error) {
-	proto := protocol
-	if protocol == "http" || protocol == "https" {
-		proto = "tcp"
-	}
-
-	addr := ":" + strconv.Itoa(port)
-
-	var l net.Listener
-	var err error
-
-	if protocol == "https" {
-		l, err = proxy.providerProxy.NewTLSListener(proto, addr)
-	} else {
-		l, err = proxy.providerProxy.NewListener(proto, addr)
-	}
-	return l, err
-}
-
 // Start method is a method that starts the proxy.
 func (proxy *Proxy) start() {
-	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("starting proxy")
+	proxy.log.Info().Msg("starting proxy")
 
 	proxy.mtx.Lock()
 	portsConfig := proxy.Config.Ports
@@ -182,7 +161,7 @@ func (proxy *Proxy) start() {
 	for k, v := range portsConfig {
 		proxy.log.Debug().Str("port", k).Msg("Starting proxy port")
 
-		l, err = proxy.getListener(v.ProxyProtocol, v.ProxyPort)
+		l, err = proxy.providerProxy.GetListener(k)
 		if err != nil {
 			proxy.log.Error().Err(err).Str("port", k).Msg("Error adding listener")
 		}

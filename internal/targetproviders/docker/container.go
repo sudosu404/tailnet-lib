@@ -163,8 +163,8 @@ func (c *container) getTailscaleConfig() (*model.Tailscale, error) {
 		Ephemeral:    c.getLabelBool(LabelEphemeral, model.DefaultTailscaleEphemeral),
 		RunWebClient: c.getLabelBool(LabelRunWebClient, model.DefaultTailscaleRunWebClient),
 		Verbose:      c.getLabelBool(LabelTsnetVerbose, model.DefaultTailscaleVerbose),
-		Funnel:       c.getLabelBool(LabelFunnel, model.DefaultTailscaleFunnel),
-		AuthKey:      authKey,
+		// TODO: Funnel:       c.getLabelBool(LabelFunnel, model.DefaultTailscaleFunnel),
+		AuthKey: authKey,
 	}, nil
 }
 

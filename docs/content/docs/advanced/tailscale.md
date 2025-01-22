@@ -3,13 +3,11 @@ title: Tailscale
 next: /docs/scenarios
 ---
 
-## Authentication
-
-### OAuth
+## OAuth
 
 {{% steps %}}
 
-#### Disable AuthKey
+### Disable AuthKey
 
 OAuth authentication mode is enable if no AuthKey is set in the configuration
 for Tailscale provider.
@@ -26,10 +24,13 @@ tailscale:
 
 When the proxy starts, it will wait to be authenticated with the Tailscale.
 
-#### Authenticate
+### Go Dashboard
 
-Go to TSDProxy Dashboard and click on the Proxy that should show "Authentication"
-status.
+Go to TSDProxy Dashboard (example: <http://192.168.1.1:8080>).
+
+### Authenticate
+
+Click on the Proxy that should show "Authentication" status.
 
 >[!TIP]
 > Set "Ephemeral" to false in the Tailscale provider to avoid the need of
@@ -38,11 +39,11 @@ or [Proxy List configuration](../../list/#proxy-list-file-options)
 
 {{% /steps %}}
 
-### AuthKey
+## AuthKey
 
 {{% steps %}}
 
-#### Generate Authkey
+### Generate Authkey
 
 1. Go to [https://login.tailscale.com/admin/settings/keys](https://login.tailscale.com/admin/settings/keys)
 2. Click in "Generate auth key"
@@ -58,7 +59,7 @@ or [Proxy List configuration](../../list/#proxy-list-file-options)
 > Add a new Tailscale provider to the configuration if
 > you need to use different)
 
-#### Add to configuration
+### Add to configuration
 
 Add you key to the configuration as follow:
 
@@ -70,13 +71,13 @@ tailscale:
       authKeyFile: ""
 ```
 
-#### Restart
+### Restart
 
 Restart TSDProxy
-gg
+
 {{% /steps %}}
 
 ## Funnel
 
 Beside adding the TSDProxy configuration to activate Funnel to a proxy, you also
-should give permissions on Tailscale ACL. See [here](../../troubleshooting/#funnel-doesnt-work) to more detail.
+should give permissions on Tailscale ACL. See [here](.././troubleshooting/#funnel-doesnt-work) to more detail.

@@ -158,7 +158,7 @@ func (proxy *Proxy) start() {
 	var l net.Listener
 	var err error
 
-	for k, v := range portsConfig {
+	for k := range portsConfig {
 		proxy.log.Debug().Str("port", k).Msg("Starting proxy port")
 
 		l, err = proxy.providerProxy.GetListener(k)

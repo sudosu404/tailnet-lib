@@ -1,11 +1,100 @@
-nas2:
-  ports:
-    "444/https":
-      targets:
-        - "http://google.com"
-    "80/http":
-      redirectUrl: "https://google.com"
-      tlsValidate: false
-nas3:
-  dashboard:
-    visible: true
+# nas12:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas13:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas14:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas15:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas16:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas2:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas3:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas4:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas5:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"
+# nas6:
+#   ports:
+#     "443/https":
+#       targets:
+#         - "http://google.com"
+#     "80/http":
+#       isRedirect: true
+#       tlsValidate: false
+#       targets:
+#         - "https://google.com"

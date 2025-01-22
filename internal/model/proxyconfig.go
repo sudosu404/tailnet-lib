@@ -5,7 +5,6 @@ package model
 import (
 	"fmt"
 	"net/url"
-	"sync"
 
 	"github.com/creasty/defaults"
 )
@@ -50,4 +49,3 @@ func NewConfig() (*Config, error) {
 
 	return config, nil
 }
-

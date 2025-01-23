@@ -11,7 +11,7 @@ const (
 	DefaultTLSValidate    = true
 
 	// tailscale defaults
-	DefaultTailscaleEphemeral    = true
+	DefaultTailscaleEphemeral    = false
 	DefaultTailscaleRunWebClient = false
 	DefaultTailscaleVerbose      = false
 	DefaultTailscaleFunnel       = false

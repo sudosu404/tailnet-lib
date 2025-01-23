@@ -114,10 +114,6 @@ func (c *container) newProxyConfig() (*model.Config, error) {
 	}
 
 	// Get the proxy URL
-	targetURL, err := c.getTargetURL(c.defaultTargetHostname)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing target hostname: %w", err)
-	}
 
 	// Get the Tailscale configuration
 	tailscale, err := c.getTailscaleConfig()
@@ -131,7 +127,6 @@ func (c *container) newProxyConfig() (*model.Config, error) {
 	}
 
 	pcfg.TargetID = c.container.ID
-	pcfg.TargetURL = targetURL
 	pcfg.Hostname = proxyURL.Hostname()
 	pcfg.TargetProvider = c.targetProviderName
 	pcfg.Tailscale = *tailscale

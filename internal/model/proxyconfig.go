@@ -4,7 +4,6 @@ package model
 
 import (
 	"fmt"
-	"net/url"
 
 	"github.com/creasty/defaults"
 )
@@ -13,7 +12,6 @@ type (
 
 	// Config struct stores all the configuration for the proxy
 	Config struct {
-		TargetURL      *url.URL
 		Ports          PortConfigList `validate:"dive"`
 		TargetProvider string
 		TargetID       string

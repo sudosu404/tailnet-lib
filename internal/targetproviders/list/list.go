@@ -24,7 +24,7 @@ type (
 	// Client struct implements TargetProvider
 	Client struct {
 		log           zerolog.Logger
-		file          *config.File
+		file          *config.ConfigFile
 		configProxies configProxyList
 		proxies       configProxyList
 		eventsChan    chan targetproviders.TargetEvent
@@ -70,7 +70,7 @@ func New(log zerolog.Logger, name string, provider *config.ListTargetProviderCon
 
 	proxiesList := configProxyList{}
 
-	file := config.NewFile(newlog, provider.Filename, proxiesList)
+	file := config.NewConfigFile(newlog, provider.Filename, proxiesList)
 	err := file.Load()
 	if err != nil {
 		return nil, fmt.Errorf("error reading config: %w", err)

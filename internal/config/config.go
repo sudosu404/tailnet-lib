@@ -83,7 +83,7 @@ func InitializeConfig() error {
 	file := flag.String("config", "/config/tsdproxy.yaml", "loag configuration from file")
 	flag.Parse()
 
-	fileConfig := NewFile(log.Logger, *file, Config)
+	fileConfig := NewConfigFile(log.Logger, *file, Config)
 
 	println("loading configuration from:", *file)
 

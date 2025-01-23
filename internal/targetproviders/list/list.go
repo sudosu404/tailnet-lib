@@ -242,8 +242,8 @@ func (c *Client) addTarget(cfg proxyConfig, name string) {
 }
 
 // getPorts returns a map of PortConfig from the config
-func (c *Client) getPorts(l map[string]port) map[string]model.PortConfig {
-	ports := make(map[string]model.PortConfig)
+func (c *Client) getPorts(l map[string]port) model.PortConfigList {
+	ports := make(model.PortConfigList)
 	for k, v := range l {
 		port, err := model.NewPortShortLabel(k)
 		if err != nil {

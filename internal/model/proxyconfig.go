@@ -13,8 +13,8 @@ type (
 
 	// Config struct stores all the configuration for the proxy
 	Config struct {
-		Ports          map[string]PortConfig `validate:"dive"`
 		TargetURL      *url.URL
+		Ports          PortConfigList `validate:"dive"`
 		TargetProvider string
 		TargetID       string
 		ProxyProvider  string
@@ -37,6 +37,8 @@ type (
 		Icon    string `default:"tsdproxy" validate:"string" yaml:"icon"`
 		Visible bool   `default:"true" validate:"boolean" yaml:"visible"`
 	}
+
+	PortConfigList map[string]PortConfig
 )
 
 func NewConfig() (*Config, error) {

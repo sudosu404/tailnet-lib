@@ -30,7 +30,7 @@ type (
 		eventsChan    chan targetproviders.TargetEvent
 		errChan       chan error
 		name          string
-		config        config.FilesTargetProviderConfig
+		config        config.ListTargetProviderConfig
 		mtx           sync.Mutex
 	}
 
@@ -65,7 +65,7 @@ func (s *proxyConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
 }
 
 // New function returns a new Files TargetProvider
-func New(log zerolog.Logger, name string, provider *config.FilesTargetProviderConfig) (*Client, error) {
+func New(log zerolog.Logger, name string, provider *config.ListTargetProviderConfig) (*Client, error) {
 	newlog := log.With().Str("file", name).Logger()
 
 	proxiesList := configProxyList{}

@@ -97,7 +97,7 @@ func (pm *ProxyManager) addTargetProviders() {
 
 		pm.addTargetProvider(p, name)
 	}
-	for name, file := range config.Config.Files {
+	for name, file := range config.Config.Lists {
 		p, err := list.New(pm.log, name, file)
 		if err != nil {
 			pm.log.Error().Err(err).Msg("Error creating Files provider")

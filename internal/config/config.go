@@ -21,7 +21,7 @@ type (
 		DefaultProxyProvider string `validate:"required" default:"default" yaml:"defaultProxyProvider"`
 
 		Docker    map[string]*DockerTargetProviderConfig `validate:"dive,required" yaml:"docker"`
-		Files     map[string]*FilesTargetProviderConfig  `validate:"dive,required" yaml:"files"`
+		Lists     map[string]*ListTargetProviderConfig   `validate:"dive,required" yaml:"lists"`
 		Tailscale TailscaleProxyProviderConfig           `yaml:"tailscale"`
 
 		HTTP HTTPConfig `yaml:"http"`
@@ -62,8 +62,8 @@ type (
 		ControlURL  string `default:"https://controlplane.tailscale.com" validate:"uri" yaml:"controlUrl"`
 	}
 
-	// filesConfig struct stores File target provider configuration.
-	FilesTargetProviderConfig struct {
+	// ListTargetProviderConfig struct stores a proxy list target provider configuration.
+	ListTargetProviderConfig struct {
 		Filename              string `validate:"required,file" yaml:"filename"`
 		DefaultProxyProvider  string `validate:"omitempty" yaml:"defaultProxyProvider,omitempty"`
 		DefaultProxyAccessLog bool   `default:"true" validate:"boolean" yaml:"defaultProxyAccessLog"`
@@ -78,7 +78,7 @@ func InitializeConfig() error {
 	Config = &config{}
 	Config.Tailscale.Providers = make(map[string]*TailscaleServerConfig)
 	Config.Docker = make(map[string]*DockerTargetProviderConfig)
-	Config.Files = make(map[string]*FilesTargetProviderConfig)
+	Config.Lists = make(map[string]*ListTargetProviderConfig)
 
 	file := flag.String("config", "/config/tsdproxy.yaml", "loag configuration from file")
 	flag.Parse()

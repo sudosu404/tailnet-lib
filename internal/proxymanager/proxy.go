@@ -172,10 +172,12 @@ func (proxy *Proxy) Start() {
 	go func() {
 		go proxy.start()
 		for {
-			event := <-proxy.providerProxy.WatchEvents()
-			proxy.state.Store(int32(event.State))
-
-			// TODO
+			select {
+			case event := <-proxy.providerProxy.WatchEvents():
+				proxy.state.Store(int32(event.State))
+			case <-proxy.ctx.Done():
+				return
+			}
 		}
 	}()
 }

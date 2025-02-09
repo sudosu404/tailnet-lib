@@ -75,6 +75,10 @@ func (r *LogRecord) Hijack() (net.Conn, *bufio.ReadWriter, error) {
 	return h.Hijack()
 }
 
+func (r *LogRecord) Flush() {
+	r.ResponseWriter.(http.Flusher).Flush()
+}
+
 // LoggerMiddleware is a middleware function that logs incoming HTTP requests.
 func LoggerMiddleware(l zerolog.Logger, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

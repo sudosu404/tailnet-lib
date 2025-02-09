@@ -35,7 +35,10 @@ func InitializeApp() (*WebApp, error) {
 		return nil, err
 	}
 	logger := core.NewLog()
+
 	httpServer := core.NewHTTPServer(logger)
+	httpServer.Use(core.SessionMiddleware)
+
 	health := core.NewHealthHandler(httpServer, logger)
 
 	// Start ProxyManager

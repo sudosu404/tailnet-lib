@@ -97,6 +97,7 @@ func LoggerMiddleware(l zerolog.Logger, next http.Handler) http.Handler {
 				Int("status", lw.status).
 				Str("method", r.Method).
 				Str("host", r.Host).
+				Str("client", r.RemoteAddr).
 				Str("url", r.URL.String()).
 				Msg("error")
 		} else {
@@ -104,6 +105,7 @@ func LoggerMiddleware(l zerolog.Logger, next http.Handler) http.Handler {
 				Int("status", lw.status).
 				Str("method", r.Method).
 				Str("host", r.Host).
+				Str("client", r.RemoteAddr).
 				Str("url", r.URL.String()).
 				Msg("request")
 		}

@@ -151,16 +151,23 @@ func parseTargetSegment(segment string, config *PortConfig) error {
 		return ErrInvalidTargetConfig
 	}
 
-	// TODO: Add support for target port
-	// targetPort, err := strconv.Atoi(targetParts[0])
-	// if err != nil {
-	// 	return fmt.Errorf("invalid target port: %w", err)
-	// }
-	// config.TargetPort = targetPort
+	_, err := strconv.Atoi(targetParts[0])
+	if err != nil {
+		return fmt.Errorf("invalid target port: %w", err)
+	}
+
+	targetProtocol := "http"
 
 	if len(targetParts) == 2 { //nolint:mnd
-		// config.TargetProtocol = targetParts[1]
+		targetProtocol = targetParts[1]
 	}
+
+	urlParsed, err := url.Parse(targetProtocol + "://0.0.0.0:" + targetParts[0])
+	if err != nil {
+		return fmt.Errorf("error to parse url: %w", err)
+	}
+
+	config.targets = []*url.URL{urlParsed}
 
 	return nil
 }

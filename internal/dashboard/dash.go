@@ -4,12 +4,11 @@
 package dashboard
 
 import (
-	"net/http"
+	"sync"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
 	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/internal/proxymanager"
-	"github.com/almeidapaulopt/tsdproxy/internal/ui"
 	"github.com/almeidapaulopt/tsdproxy/internal/ui/pages"
 	"github.com/almeidapaulopt/tsdproxy/web"
 
@@ -17,64 +16,88 @@ import (
 )
 
 type Dashboard struct {
-	Log     zerolog.Logger
-	HTTP    *core.HTTPServer
-	proxies proxymanager.ProxyList
+	Log        zerolog.Logger
+	HTTP       *core.HTTPServer
+	proxies    proxymanager.ProxyList
+	sseClients map[string]*sseClient
+	mtx        sync.RWMutex
 }
 
 func NewDashboard(http *core.HTTPServer, log zerolog.Logger, pl proxymanager.ProxyList) *Dashboard {
 	return &Dashboard{
-		Log:     log.With().Str("module", "dashboard").Logger(),
-		HTTP:    http,
-		proxies: pl,
+		Log:        log.With().Str("module", "dashboard").Logger(),
+		HTTP:       http,
+		proxies:    pl,
+		sseClients: make(map[string]*sseClient),
 	}
 }
 
 // AddRoutes method add dashboard related routes to the http server
 func (dash *Dashboard) AddRoutes() {
-	dash.HTTP.Get("/r/list", dash.list())
+	dash.HTTP.Get("/stream", dash.streamHandler())
 	dash.HTTP.Get("/", web.Static)
 }
 
 // index is the HandlerFunc to index page of dashboard
-func (dash *Dashboard) list() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		data := make(map[string]pages.ListData)
+func (dash *Dashboard) renderList(ch chan SSEMessage) {
+	dash.mtx.RLock()
+	defer dash.mtx.RUnlock()
 
-		for name, p := range dash.proxies {
-			if p.Config.Dashboard.Visible {
-				status := p.GetStatus()
+	ch <- SSEMessage{
+		Type:    EventMergeMessage,
+		Message: "<div id='proxy-list'></div>",
+	}
 
-				url := p.GetURL()
-				if status == model.ProxyStatusAuthenticating {
-					url = p.GetAuthURL()
-				}
-
-				icon := p.Config.Dashboard.Icon
-				if icon == "" {
-					icon = model.DefaultDashboardIcon
-				}
-
-				label := p.Config.Dashboard.Label
-				if label == "" {
-					label = name
-				}
-
-				enabled := status == model.ProxyStatusAuthenticating || status == model.ProxyStatusRunning
-
-				data[name] = pages.ListData{
-					Enabled:     enabled,
-					URL:         url,
-					ProxyStatus: status,
-					Icon:        icon,
-					Label:       label,
-				}
-			}
+	for name, p := range dash.proxies {
+		if p.Config.Dashboard.Visible {
+			dash.renderProxy(ch, name)
 		}
+	}
+}
 
-		err := ui.Render(w, r, pages.List(data))
-		if err != nil {
-			dash.Log.Error().Err(err).Msg("Render failed")
-		}
+func (dash *Dashboard) renderProxy(ch chan SSEMessage, name string) {
+	p, ok := dash.proxies[name]
+	if !ok {
+		return
+	}
+	status := p.GetStatus()
+
+	url := p.GetURL()
+	if status == model.ProxyStatusAuthenticating {
+		url = p.GetAuthURL()
+	}
+
+	icon := p.Config.Dashboard.Icon
+	if icon == "" {
+		icon = model.DefaultDashboardIcon
+	}
+
+	label := p.Config.Dashboard.Label
+	if label == "" {
+		label = name
+	}
+
+	ports := make([]model.PortConfig, len(p.Config.Ports))
+	i := 0
+	for _, target := range p.Config.Ports {
+		ports[i] = target
+		i++
+	}
+
+	enabled := status == model.ProxyStatusAuthenticating || status == model.ProxyStatusRunning
+
+	a := pages.ProxyData{
+		Enabled:     enabled,
+		Name:        name,
+		URL:         url,
+		ProxyStatus: status,
+		Icon:        icon,
+		Label:       label,
+		Ports:       ports,
+	}
+
+	ch <- SSEMessage{
+		Type: EventAppend,
+		Comp: pages.Proxy(a),
 	}
 }

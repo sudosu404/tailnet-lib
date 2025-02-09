@@ -8,7 +8,8 @@ export default defineConfig({
 
   server: {
     proxy: {
-      '/r': 'http://localhost:8080'
+      '/list': 'http://localhost:8080',
+      '/stream': 'http://localhost:8080'
     }
   },
   plugins: [

@@ -1,35 +1,45 @@
 package pages
 
 import (
-	"github.com/almeidapaulopt/tsdproxy/internal/model"
-	"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
+"fmt"
+"github.com/almeidapaulopt/tsdproxy/internal/model"
+"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
 )
 
-type ListData struct {
-	Enabled     bool
-	Icon        string
-	URL         string
-	Label       string
-	ProxyStatus model.ProxyStatus
+type ProxyData struct {
+Enabled bool
+Name string
+Icon string
+URL string
+Label string
+ProxyStatus model.ProxyStatus
+Ports []model.PortConfig
 }
 
-templ List(l map[string]ListData) {
-	<div class="proxy-list">
-		for _, item := range l {
-			<a
-				href={ templ.URL(item.URL) }
-				class={ templ.KV("disabled", !item.Enabled) }
-				target="_blank"
-				rel="noopener noreferrer"
-			>
-				<div class="icon">
-					<img src={ components.IconURL(item.Icon) }/>
-				</div>
-				<div class="text">
-					<p>{ item.Label }</p>
-					<span>{ item.ProxyStatus.String() }</span>
-				</div>
-			</a>
-		}
-	</div>
+type Port struct {
+ID string
+}
+
+templ Proxy(item ProxyData) {
+<div class="proxy">
+  <div class="tooltip-content">
+    for _,port := range item.Ports {
+    if port.IsRedirect {
+    <div>{ fmt.Sprintf("%d:%s -> %s", port.ProxyPort, port.ProxyProtocol, port.GetFirstTarget().String()) }</div>
+    } else {
+    <div>{ fmt.Sprintf("%d:%s", port.ProxyPort, port.ProxyProtocol) }</div>
+    }
+    }
+  </div>
+  <a id={ item.Name } href={ templ.URL(item.URL) } target="_blank" rel="noopener noreferrer" class={
+    templ.KV("disabled", !item.Enabled) }>
+    <figure>
+      <img src={ components.IconURL(item.Icon) } />
+    </figure>
+    <div class="card-body">
+      <h2 class="card-title">{ item.Label }</h2>
+      <div class="status">{ item.ProxyStatus.String() }</div>
+    </div>
+  </a>
+</div>
 }

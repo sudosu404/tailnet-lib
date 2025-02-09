@@ -76,8 +76,7 @@ func NewProxy(log zerolog.Logger,
 func (proxy *Proxy) Start() {
 	go func() {
 		go proxy.start()
-		for {
-			event := <-proxy.providerProxy.WatchEvents()
+		for event := range proxy.providerProxy.WatchEvents() {
 			proxy.setStatus(event.Status)
 		}
 	}()
@@ -89,6 +88,7 @@ func (proxy *Proxy) Close() {
 
 	// cancel context
 	proxy.cancel()
+
 	// make sure all listeners are closed
 	proxy.close()
 

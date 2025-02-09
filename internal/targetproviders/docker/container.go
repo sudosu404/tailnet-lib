@@ -4,7 +4,6 @@
 package docker
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -21,43 +20,6 @@ import (
 	"github.com/almeidapaulopt/tsdproxy/web"
 )
 
-const (
-	// Constants to be used in container labels
-	LabelPrefix    = "tsdproxy."
-	LabelIsEnabled = LabelEnable + "=true"
-
-	// Container config labels.
-	LabelEnable             = LabelPrefix + "enable"
-	LabelName               = LabelPrefix + "name"
-	LabelContainerPort      = LabelPrefix + "container_port"
-	LabelEphemeral          = LabelPrefix + "ephemeral"
-	LabelRunWebClient       = LabelPrefix + "runwebclient"
-	LabelTsnetVerbose       = LabelPrefix + "tsnet_verbose"
-	LabelFunnel             = LabelPrefix + "funnel"
-	LabelAuthKey            = LabelPrefix + "authkey"
-	LabelAuthKeyFile        = LabelPrefix + "authkeyfile"
-	LabelContainerAccessLog = LabelPrefix + "containeraccesslog"
-	LabelProxyProvider      = LabelPrefix + "proxyprovider"
-	LabelAutoDetect         = LabelPrefix + "autodetect"
-	LabelScheme             = LabelPrefix + "scheme"
-	LabelTLSValidate        = LabelPrefix + "tlsvalidate"
-
-	// Dashboard config labels
-	LabelDashboardPrefix  = LabelPrefix + "dash."
-	LabelDashboardVisible = LabelDashboardPrefix + "visible"
-	LabelDashboardLabel   = LabelDashboardPrefix + "label"
-	LabelDashboardIcon    = LabelDashboardPrefix + "icon"
-
-	// docker only defaults
-	DefaultAutoDetect   = true
-	DefaultTargetScheme = "http"
-
-	// auto detect
-	dialTimeout     = 2 * time.Second
-	autoDetectTries = 5
-	autoDetectSleep = 5 * time.Second
-)
-
 // container struct stores the data from the docker container.
 type container struct {
 	log                   zerolog.Logger
@@ -70,20 +32,6 @@ type container struct {
 	autodetect            bool
 }
 
-type NoValidTargetFoundError struct {
-	containerName string
-}
-
-func (n *NoValidTargetFoundError) Error() string {
-	return "no valid target found for " + n.containerName
-}
-
-var (
-	ErrNoPortFoundInContainer             = errors.New("no port found in container")
-	ErrNoValidTargetFoundForInternalPorts = errors.New("no valid target found for internal ports ")
-	ErrNoValidTargetFoundForExposedPorts  = errors.New("no valid target found for exposed ports ")
-)
-
 // newContainer function returns a new container.
 func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageInfo types.ImageInspect,
 	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string,
@@ -94,8 +42,8 @@ func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageIn
 		container:             dcontainer,
 		image:                 imageInfo,
 		defaultTargetHostname: defaultTargetHostname,
-		defaultBridgeAddress:  defaultBridgeAddress,
-		targetProviderName:    targetproviderName,
+		// defaultBridgeAddress:  defaultBridgeAddress,
+		targetProviderName: targetproviderName,
 	}
 
 	c.autodetect = c.getLabelBool(LabelAutoDetect, DefaultAutoDetect)
@@ -112,8 +60,6 @@ func (c *container) newProxyConfig() (*model.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error parsing Hostname: %w", err)
 	}
-
-	// Get the proxy URL
 
 	// Get the Tailscale configuration
 	tailscale, err := c.getTailscaleConfig()
@@ -132,8 +78,6 @@ func (c *container) newProxyConfig() (*model.Config, error) {
 	pcfg.Tailscale = *tailscale
 	pcfg.ProxyProvider = c.getLabelString(LabelProxyProvider, model.DefaultProxyProvider)
 	pcfg.ProxyAccessLog = c.getLabelBool(LabelContainerAccessLog, model.DefaultProxyAccessLog)
-	// TODO: TLSValidate may be removed
-	// pcfg.TLSValidate = c.getLabelBool(LabelTLSValidate, proxyconfig.DefaultTLSValidate)
 	pcfg.Dashboard.Visible = c.getLabelBool(LabelDashboardVisible, model.DefaultDashboardVisible)
 	pcfg.Dashboard.Label = c.getLabelString(LabelDashboardLabel, pcfg.Hostname)
 
@@ -142,7 +86,82 @@ func (c *container) newProxyConfig() (*model.Config, error) {
 		pcfg.Dashboard.Icon = web.GuessIcon(c.container.Config.Image)
 	}
 
+	pcfg.Ports = c.getPorts()
+
+	// add port from legacy labels if no port configured
+	if len(pcfg.Ports) == 0 {
+		if legacyPort, err := c.getLegacyPort(); err == nil {
+			pcfg.Ports["legacy"] = legacyPort
+		}
+	}
+
 	return pcfg, nil
+}
+
+func (c *container) getPorts() model.PortConfigList {
+	ports := make(model.PortConfigList)
+	for k, v := range c.container.Config.Labels {
+		if !strings.HasPrefix(k, LabelPort) {
+			continue
+		}
+
+		parts := strings.Split(v, ",")
+
+		port, err := model.NewPortLongLabel(parts[0])
+		if err != nil {
+			c.log.Error().Err(err).Str("port", k).Msg("error creating port config")
+			continue
+		}
+
+		for _, v := range parts[1:] {
+			v = strings.TrimSpace(v)
+			switch v {
+			case PortOptionNoTLSValidate:
+				port.TLSValidate = false
+			case PortOptionTailscaleFunnel:
+				port.Tailscale.Funnel = true
+			}
+		}
+
+		if !port.IsRedirect {
+			// multiple targets not supported in this TargetProvider
+			p := port.GetFirstTarget()
+
+			targetURL, err := c.getTargetURL(c.defaultTargetHostname, p.Port())
+			if err != nil {
+				c.log.Error().Err(err).Msg("error parsing target hostname")
+				return ports
+			}
+
+			port.AddTarget(targetURL)
+		}
+
+		ports[k] = port
+	}
+
+	return ports
+}
+
+func (c *container) getLegacyPort() (model.PortConfig, error) {
+	cPort := c.container.Config.Labels[LabelContainerPort]
+	if cPort == "" {
+		cPort = c.getIntenalPort()
+	}
+
+	cProtocol, hasProtocol := c.container.Config.Labels[LabelScheme]
+	if !hasProtocol {
+		cProtocol = "http"
+	}
+
+	port, err := model.NewPortLongLabel("443/https:" + cPort + "/" + cProtocol)
+	if err != nil {
+		return port, err
+	}
+
+	port.TLSValidate = c.getLabelBool(LabelTLSValidate, model.DefaultTLSValidate)
+	port.Tailscale.Funnel = c.getLabelBool(LabelFunnel, model.DefaultTailscaleFunnel)
+
+	return port, nil
 }
 
 // getTailscaleConfig method returns the tailscale configuration.
@@ -158,8 +177,7 @@ func (c *container) getTailscaleConfig() (*model.Tailscale, error) {
 		Ephemeral:    c.getLabelBool(LabelEphemeral, model.DefaultTailscaleEphemeral),
 		RunWebClient: c.getLabelBool(LabelRunWebClient, model.DefaultTailscaleRunWebClient),
 		Verbose:      c.getLabelBool(LabelTsnetVerbose, model.DefaultTailscaleVerbose),
-		// TODO: Funnel:       c.getLabelBool(LabelFunnel, model.DefaultTailscaleFunnel),
-		AuthKey: authKey,
+		AuthKey:      authKey,
 	}, nil
 }
 
@@ -222,16 +240,14 @@ func (c *container) getIntenalPort() string {
 }
 
 // getExposedPort method returns the container port
-func (c *container) getExposedPort() string {
-	// If Label is defined, get the container port
-	if customContainerPort, ok := c.container.Config.Labels[LabelContainerPort]; ok {
-		for p, b := range c.container.HostConfig.PortBindings {
-			if p.Port() == customContainerPort {
-				return b[0].HostPort
-			}
+func (c *container) getExposedPort(internalPort string) string {
+	for p, b := range c.container.HostConfig.PortBindings {
+		if p.Port() == internalPort {
+			return b[0].HostPort
 		}
 	}
 
+	// return the first exposed port
 	for _, bindings := range c.container.HostConfig.PortBindings {
 		if len(bindings) > 0 {
 			return bindings[0].HostPort
@@ -268,9 +284,11 @@ func (c *container) getName() string {
 }
 
 // getTargetURL method returns the container target URL
-func (c *container) getTargetURL(hostname string) (*url.URL, error) {
-	exposedPort := c.getExposedPort()
-	internalPort := c.getIntenalPort()
+func (c *container) getTargetURL(hostname, internalPort string) (*url.URL, error) {
+	if internalPort == "" {
+		internalPort = c.getIntenalPort()
+	}
+	exposedPort := c.getExposedPort(internalPort)
 	imagePort := c.getImagePort()
 
 	if exposedPort == "" && internalPort == "" && imagePort == "" {

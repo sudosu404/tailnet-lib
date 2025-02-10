@@ -28,6 +28,13 @@ type port struct {
 	mtx        sync.Mutex
 }
 
+func ProviderUserMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// TODO:
+		next.ServeHTTP(w, r)
+	})
+}
+
 func newPortProxy(ctx context.Context, pconfig model.PortConfig, log zerolog.Logger, accessLog bool) *port {
 	log = log.With().Str("port", pconfig.String()).Logger()
 
@@ -54,6 +61,8 @@ func newPortProxy(ctx context.Context, pconfig model.PortConfig, log zerolog.Log
 		handler = core.LoggerMiddleware(log, handler)
 	}
 
+	handler = ProviderUserMiddleware(handler)
+
 	// main http Server
 	httpServer := &http.Server{
 		Handler:           handler,
@@ -67,13 +76,6 @@ func newPortProxy(ctx context.Context, pconfig model.PortConfig, log zerolog.Log
 		cancel:     cancel,
 		httpServer: httpServer,
 	}
-}
-
-// reverseProxyFunc func is a method that returns a reverse proxy handler.
-func reverseProxyFunc(p *httputil.ReverseProxy) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		p.ServeHTTP(w, r)
-	})
 }
 
 func newPortRedirect(ctx context.Context, pconfig model.PortConfig, log zerolog.Logger) *port {
@@ -94,6 +96,13 @@ func newPortRedirect(ctx context.Context, pconfig model.PortConfig, log zerolog.
 		cancel:     cancel,
 		httpServer: redirectHTTPServer,
 	}
+}
+
+// reverseProxyFunc func is a method that returns a reverse proxy handler.
+func reverseProxyFunc(p *httputil.ReverseProxy) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		p.ServeHTTP(w, r)
+	})
 }
 
 func (p *port) startWithListener(l net.Listener) error {

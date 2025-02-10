@@ -52,22 +52,6 @@ func NewProxyManager(logger zerolog.Logger) *ProxyManager {
 	}
 }
 
-// addTargetProvider method adds a TargetProvider to the ProxyManager.
-func (pm *ProxyManager) addTargetProvider(provider targetproviders.TargetProvider, name string) {
-	pm.mtx.Lock()
-	defer pm.mtx.Unlock()
-
-	pm.TargetProviders[name] = provider
-}
-
-// addProxyProvider method adds	a ProxyProvider to the ProxyManager.
-func (pm *ProxyManager) addProxyProvider(provider proxyproviders.Provider, name string) {
-	pm.mtx.Lock()
-	defer pm.mtx.Unlock()
-
-	pm.ProxyProviders[name] = provider
-}
-
 // Start method starts the ProxyManager.
 func (pm *ProxyManager) Start() {
 	// Add Providers
@@ -83,6 +67,62 @@ func (pm *ProxyManager) Start() {
 	if len(pm.TargetProviders) == 0 {
 		pm.log.Error().Msg("No Target Providers found")
 		return
+	}
+}
+
+// StopAllProxies method shuts down all proxies.
+func (pm *ProxyManager) StopAllProxies() {
+	pm.log.Info().Msg("Shutdown all proxies")
+	wg := sync.WaitGroup{}
+
+	pm.mtx.RLock()
+	for id := range pm.Proxies {
+		wg.Add(1)
+		go func() {
+			pm.removeProxy(id)
+			wg.Done()
+		}()
+	}
+	pm.mtx.RUnlock()
+
+	wg.Wait()
+}
+
+// WatchEvents method watches for events from all target providers.
+func (pm *ProxyManager) WatchEvents() {
+	for _, provider := range pm.TargetProviders {
+		go func(provider targetproviders.TargetProvider) {
+			ctx := context.Background()
+
+			eventsChan := make(chan targetproviders.TargetEvent)
+			errChan := make(chan error)
+			defer close(errChan)
+			defer close(eventsChan)
+
+			provider.WatchEvents(ctx, eventsChan, errChan)
+			for {
+				select {
+				case event := <-eventsChan:
+					go pm.HandleContainerEvent(event)
+				case err := <-errChan:
+					pm.log.Err(err).Msg("Error watching Docker events")
+					return
+				}
+			}
+		}(provider)
+	}
+}
+
+// HandleContainerEvent method handles events from a targetprovider
+func (pm *ProxyManager) HandleContainerEvent(event targetproviders.TargetEvent) {
+	switch event.Action {
+	case targetproviders.ActionStartProxy:
+		pm.eventStart(event)
+	case targetproviders.ActionStopProxy:
+		pm.eventStop(event)
+	case targetproviders.ActionRestartProxy:
+		pm.eventStop(event)
+		pm.eventStart(event)
 	}
 }
 
@@ -122,6 +162,22 @@ func (pm *ProxyManager) addProxyProviders() {
 	}
 }
 
+// addTargetProvider method adds a TargetProvider to the ProxyManager.
+func (pm *ProxyManager) addTargetProvider(provider targetproviders.TargetProvider, name string) {
+	pm.mtx.Lock()
+	defer pm.mtx.Unlock()
+
+	pm.TargetProviders[name] = provider
+}
+
+// addProxyProvider method adds	a ProxyProvider to the ProxyManager.
+func (pm *ProxyManager) addProxyProvider(provider proxyproviders.Provider, name string) {
+	pm.mtx.Lock()
+	defer pm.mtx.Unlock()
+
+	pm.ProxyProviders[name] = provider
+}
+
 // addProxy method adds a Proxy to the ProxyManager.
 func (pm *ProxyManager) addProxy(proxy *Proxy) {
 	pm.mtx.Lock()
@@ -147,22 +203,49 @@ func (pm *ProxyManager) removeProxy(hostname string) {
 	pm.log.Debug().Str("proxy", hostname).Msg("Removed proxy")
 }
 
-// StopAllProxies method shuts down all proxies.
-func (pm *ProxyManager) StopAllProxies() {
-	pm.log.Info().Msg("Shutdown all proxies")
-	wg := sync.WaitGroup{}
+// eventStart method starts a Proxy from a event trigger
+func (pm *ProxyManager) eventStart(event targetproviders.TargetEvent) {
+	pm.log.Debug().Str("targetID", event.ID).Msg("Adding target")
 
-	pm.mtx.RLock()
-	for id := range pm.Proxies {
-		wg.Add(1)
-		go func() {
-			pm.removeProxy(id)
-			wg.Done()
-		}()
+	pcfg, err := event.TargetProvider.AddTarget(event.ID)
+	if err != nil {
+		pm.log.Error().Err(err).Str("targetID", event.ID).Msg("Error adding target")
+		return
 	}
-	pm.mtx.RUnlock()
 
-	wg.Wait()
+	pm.newAndStartProxy(pcfg.Hostname, pcfg)
+}
+
+// eventStop method stops a Proxy from a event trigger
+func (pm *ProxyManager) eventStop(event targetproviders.TargetEvent) {
+	pm.log.Debug().Str("targetID", event.ID).Msg("Stopping target")
+
+	proxy := pm.getProxyByTargetID(event.ID)
+	if proxy == nil {
+		pm.log.Error().Int("action", int(event.Action)).Str("target", event.ID).Msg("No proxy found for target")
+		return
+	}
+
+	targetprovider := pm.TargetProviders[proxy.Config.TargetProvider]
+	if err := targetprovider.DeleteProxy(event.ID); err != nil {
+		pm.log.Error().Err(err).Msg("No proxy found for target")
+		return
+	}
+
+	pm.removeProxy(proxy.Config.Hostname)
+}
+
+// getProxyByTargetID method returns a Proxy by TargetID.
+func (pm *ProxyManager) getProxyByTargetID(targetID string) *Proxy {
+	pm.mtx.RLock()
+	defer pm.mtx.RUnlock()
+
+	for _, p := range pm.Proxies {
+		if p.Config.TargetID == targetID {
+			return p
+		}
+	}
+	return nil
 }
 
 // newAndStartProxy method creates a new proxy and starts it.
@@ -215,87 +298,4 @@ func (pm *ProxyManager) getProxyProvider(proxy *model.Config) (proxyproviders.Pr
 	// return the first ProxyProvider
 	//
 	return nil, ErrProxyProviderNotFound
-}
-
-// WatchEvents method watches for events from all target providers.
-func (pm *ProxyManager) WatchEvents() {
-	for _, provider := range pm.TargetProviders {
-		go func(provider targetproviders.TargetProvider) {
-			ctx := context.Background()
-
-			eventsChan := make(chan targetproviders.TargetEvent)
-			errChan := make(chan error)
-			defer close(errChan)
-			defer close(eventsChan)
-
-			provider.WatchEvents(ctx, eventsChan, errChan)
-			for {
-				select {
-				case event := <-eventsChan:
-					go pm.HandleContainerEvent(event)
-				case err := <-errChan:
-					pm.log.Err(err).Msg("Error watching Docker events")
-					return
-				}
-			}
-		}(provider)
-	}
-}
-
-// HandleContainerEvent method handles events from a targetprovider
-func (pm *ProxyManager) HandleContainerEvent(event targetproviders.TargetEvent) {
-	switch event.Action {
-	case targetproviders.ActionStartProxy:
-		pm.eventStart(event)
-	case targetproviders.ActionStopProxy:
-		pm.eventStop(event)
-	case targetproviders.ActionRestartProxy:
-		pm.eventStop(event)
-		pm.eventStart(event)
-	}
-}
-
-// eventStart method starts a Proxy from a event trigger
-func (pm *ProxyManager) eventStart(event targetproviders.TargetEvent) {
-	pm.log.Debug().Str("targetID", event.ID).Msg("Adding target")
-
-	pcfg, err := event.TargetProvider.AddTarget(event.ID)
-	if err != nil {
-		pm.log.Error().Err(err).Str("targetID", event.ID).Msg("Error adding target")
-		return
-	}
-
-	pm.newAndStartProxy(pcfg.Hostname, pcfg)
-}
-
-// eventStop method stops a Proxy from a event trigger
-func (pm *ProxyManager) eventStop(event targetproviders.TargetEvent) {
-	pm.log.Debug().Str("targetID", event.ID).Msg("Stopping target")
-
-	proxy := pm.getProxyByTargetID(event.ID)
-	if proxy == nil {
-		pm.log.Error().Int("action", int(event.Action)).Str("target", event.ID).Msg("No proxy found for target")
-		return
-	}
-
-	targetprovider := pm.TargetProviders[proxy.Config.TargetProvider]
-	if err := targetprovider.DeleteProxy(event.ID); err != nil {
-		pm.log.Error().Err(err).Msg("No proxy found for target")
-		return
-	}
-
-	pm.removeProxy(proxy.Config.Hostname)
-}
-
-// getProxyByTargetID method returns a Proxy by TargetID.
-func (pm *ProxyManager) getProxyByTargetID(targetID string) *Proxy {
-	pm.mtx.RLock()
-	defer pm.mtx.RUnlock()
-
-	for _, p := range pm.Proxies {
-		if p.Config.TargetID == targetID {
-			return p
-		}
-	}
-	return nil
 }

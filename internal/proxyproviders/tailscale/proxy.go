@@ -73,6 +73,44 @@ func (p *Proxy) GetURL() string {
 	return "https://" + p.url
 }
 
+// Close method implements proxyconfig.Proxy Close method.
+func (p *Proxy) Close() error {
+	if p.tsServer != nil {
+		return p.tsServer.Close()
+	}
+
+	return nil
+}
+
+func (p *Proxy) GetListener(port string) (net.Listener, error) {
+	portCfg, ok := p.config.Ports[port]
+	if !ok {
+		return nil, ErrProxyPortNotFound
+	}
+
+	network := portCfg.ProxyProtocol
+	if portCfg.ProxyProtocol == "http" || portCfg.ProxyProtocol == "https" {
+		network = "tcp"
+	}
+	addr := ":" + strconv.Itoa(portCfg.ProxyPort)
+
+	if portCfg.Tailscale.Funnel {
+		return p.tsServer.ListenFunnel(network, addr)
+	}
+	if portCfg.ProxyProtocol == "https" {
+		return p.tsServer.ListenTLS(network, addr)
+	}
+	return p.tsServer.Listen(network, addr)
+}
+
+func (p *Proxy) WatchEvents() chan proxyproviders.ProxyEvent {
+	return p.events
+}
+
+func (p *Proxy) GetAuthURL() string {
+	return p.authURL
+}
+
 func (p *Proxy) watchStatus() {
 	watcher, err := p.lc.WatchIPNBus(p.ctx, ipn.NotifyInitialState|ipn.NotifyNoPrivateKeys|ipn.NotifyInitialHealthState)
 	if err != nil {
@@ -137,44 +175,6 @@ func (p *Proxy) setStatus(status model.ProxyStatus, url string, authURL string) 
 	p.events <- proxyproviders.ProxyEvent{
 		Status: status,
 	}
-}
-
-// Close method implements proxyconfig.Proxy Close method.
-func (p *Proxy) Close() error {
-	if p.tsServer != nil {
-		return p.tsServer.Close()
-	}
-
-	return nil
-}
-
-func (p *Proxy) GetListener(port string) (net.Listener, error) {
-	portCfg, ok := p.config.Ports[port]
-	if !ok {
-		return nil, ErrProxyPortNotFound
-	}
-
-	network := portCfg.ProxyProtocol
-	if portCfg.ProxyProtocol == "http" || portCfg.ProxyProtocol == "https" {
-		network = "tcp"
-	}
-	addr := ":" + strconv.Itoa(portCfg.ProxyPort)
-
-	if portCfg.Tailscale.Funnel {
-		return p.tsServer.ListenFunnel(network, addr)
-	}
-	if portCfg.ProxyProtocol == "https" {
-		return p.tsServer.ListenTLS(network, addr)
-	}
-	return p.tsServer.Listen(network, addr)
-}
-
-func (p *Proxy) WatchEvents() chan proxyproviders.ProxyEvent {
-	return p.events
-}
-
-func (p *Proxy) GetAuthURL() string {
-	return p.authURL
 }
 
 func (p *Proxy) getTLSCertificates() {

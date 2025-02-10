@@ -95,12 +95,6 @@ func (proxy *Proxy) Close() {
 	proxy.setStatus(model.ProxyStatusStopped)
 }
 
-func (proxy *Proxy) setStatus(status model.ProxyStatus) {
-	proxy.mtx.Lock()
-	defer proxy.mtx.Unlock()
-	proxy.status = status
-}
-
 func (proxy *Proxy) GetStatus() model.ProxyStatus {
 	proxy.mtx.Lock()
 	defer proxy.mtx.Unlock()
@@ -202,4 +196,10 @@ func (proxy *Proxy) close() {
 	}
 
 	proxy.log.Info().Str("name", proxy.Config.Hostname).Msg("proxy stopped")
+}
+
+func (proxy *Proxy) setStatus(status model.ProxyStatus) {
+	proxy.mtx.Lock()
+	defer proxy.mtx.Unlock()
+	proxy.status = status
 }

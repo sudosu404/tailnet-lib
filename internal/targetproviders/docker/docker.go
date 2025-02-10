@@ -76,42 +76,6 @@ func (c *Client) Close() {
 	}
 }
 
-func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetproviders.TargetEvent, errChan chan error) {
-	// Filter containers with enable set to true
-	//
-	containerFilter := filters.NewArgs()
-	containerFilter.Add("label", LabelIsEnabled)
-
-	containers, err := c.docker.ContainerList(ctx, ctypes.ListOptions{
-		Filters: containerFilter,
-		All:     false,
-	})
-	if err != nil {
-		errChan <- fmt.Errorf("error listing containers: %w", err)
-		return
-	}
-
-	for _, container := range containers {
-		eventsChan <- c.getStartEvent(container.ID)
-	}
-}
-
-// newProxyConfig method returns a new proxyconfig.Config
-func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*model.Config, error) {
-	imageInfo, _, err := c.docker.ImageInspectWithRaw(context.Background(), dcontainer.Config.Image)
-	if err != nil {
-		return nil, fmt.Errorf("error getting image info: %w", err)
-	}
-	ctn := newContainer(c.log, dcontainer, imageInfo, c.name, c.defaultBridgeAdress, c.defaultTargetHostname)
-
-	pcfg, err := ctn.newProxyConfig()
-	if err != nil {
-		return nil, fmt.Errorf("error getting proxy config: %w", err)
-	}
-	c.addContainer(ctn, ctn.container.ID)
-	return pcfg, nil
-}
-
 // AddTarget method implements TargetProvider AddTarget method
 func (c *Client) AddTarget(id string) (*model.Config, error) {
 	dcontainer, err := c.docker.ContainerInspect(context.Background(), id)
@@ -171,6 +135,42 @@ func (c *Client) WatchEvents(ctx context.Context, eventsChan chan targetprovider
 	}()
 
 	go c.startAllProxies(ctx, eventsChan, errChan)
+}
+
+func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetproviders.TargetEvent, errChan chan error) {
+	// Filter containers with enable set to true
+	//
+	containerFilter := filters.NewArgs()
+	containerFilter.Add("label", LabelIsEnabled)
+
+	containers, err := c.docker.ContainerList(ctx, ctypes.ListOptions{
+		Filters: containerFilter,
+		All:     false,
+	})
+	if err != nil {
+		errChan <- fmt.Errorf("error listing containers: %w", err)
+		return
+	}
+
+	for _, container := range containers {
+		eventsChan <- c.getStartEvent(container.ID)
+	}
+}
+
+// newProxyConfig method returns a new proxyconfig.Config
+func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*model.Config, error) {
+	imageInfo, _, err := c.docker.ImageInspectWithRaw(context.Background(), dcontainer.Config.Image)
+	if err != nil {
+		return nil, fmt.Errorf("error getting image info: %w", err)
+	}
+	ctn := newContainer(c.log, dcontainer, imageInfo, c.name, c.defaultBridgeAdress, c.defaultTargetHostname)
+
+	pcfg, err := ctn.newProxyConfig()
+	if err != nil {
+		return nil, fmt.Errorf("error getting proxy config: %w", err)
+	}
+	c.addContainer(ctn, ctn.container.ID)
+	return pcfg, nil
 }
 
 // getStartEvent method returns a targetproviders.TargetEvent for a container start

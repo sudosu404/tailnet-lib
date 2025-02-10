@@ -37,6 +37,4 @@ func RenderSSE(_ http.ResponseWriter, r *http.Request, cmp templ.Component) {
 
 	writer := io.Writer(&buf)
 	_ = cmp.Render(r.Context(), writer)
-
-	// gccdash.broadcastMessage(buf.String())
 }

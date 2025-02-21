@@ -28,7 +28,7 @@ type Proxy struct {
 	lc       *tailscale.LocalClient
 	ctx      context.Context
 
-	events chan proxyproviders.ProxyEvent
+	events chan model.ProxyEvent
 
 	authURL string
 	url     string
@@ -103,7 +103,7 @@ func (p *Proxy) GetListener(port string) (net.Listener, error) {
 	return p.tsServer.Listen(network, addr)
 }
 
-func (p *Proxy) WatchEvents() chan proxyproviders.ProxyEvent {
+func (p *Proxy) WatchEvents() chan model.ProxyEvent {
 	return p.events
 }
 
@@ -172,7 +172,7 @@ func (p *Proxy) setStatus(status model.ProxyStatus, url string, authURL string) 
 	}
 	p.mtx.Unlock()
 
-	p.events <- proxyproviders.ProxyEvent{
+	p.events <- model.ProxyEvent{
 		Status: status,
 	}
 }

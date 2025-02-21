@@ -2,7 +2,16 @@
 // SPDX-License-Identifier: MIT
 package model
 
-type ProxyStatus int
+type (
+	ProxyStatus int
+
+	ProxyEvent struct {
+		ID      string
+		Port    string
+		AuthURL string
+		Status  ProxyStatus
+	}
+)
 
 const (
 	ProxyStatusInitializing ProxyStatus = iota

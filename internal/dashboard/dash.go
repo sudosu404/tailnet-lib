@@ -18,16 +18,16 @@ import (
 type Dashboard struct {
 	Log        zerolog.Logger
 	HTTP       *core.HTTPServer
-	proxies    proxymanager.ProxyList
+	pm         *proxymanager.ProxyManager
 	sseClients map[string]*sseClient
 	mtx        sync.RWMutex
 }
 
-func NewDashboard(http *core.HTTPServer, log zerolog.Logger, pl proxymanager.ProxyList) *Dashboard {
-	return &Dashboard{
+func NewDashboard(http *core.HTTPServer, log zerolog.Logger, pm *proxymanager.ProxyManager) *Dashboard {
+	dash := &Dashboard{
 		Log:        log.With().Str("module", "dashboard").Logger(),
 		HTTP:       http,
-		proxies:    pl,
+		pm:         pm,
 		sseClients: make(map[string]*sseClient),
 	}
 }

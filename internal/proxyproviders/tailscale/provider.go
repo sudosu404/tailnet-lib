@@ -84,7 +84,7 @@ func (c *Client) NewProxy(config *model.Config) (proxyproviders.ProxyInterface, 
 		log:      log,
 		config:   config,
 		tsServer: tserver,
-		events:   make(chan proxyproviders.ProxyEvent),
+		events:   make(chan model.ProxyEvent),
 	}, nil
 }
 

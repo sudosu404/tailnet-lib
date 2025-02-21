@@ -103,9 +103,9 @@ func (pm *ProxyManager) WatchEvents() {
 			for {
 				select {
 				case event := <-eventsChan:
-					go pm.HandleContainerEvent(event)
+					go pm.HandleProxyEvent(event)
 				case err := <-errChan:
-					pm.log.Err(err).Msg("Error watching Docker events")
+					pm.log.Err(err).Msg("Error watching events")
 					return
 				}
 			}
@@ -113,8 +113,8 @@ func (pm *ProxyManager) WatchEvents() {
 	}
 }
 
-// HandleContainerEvent method handles events from a targetprovider
-func (pm *ProxyManager) HandleContainerEvent(event targetproviders.TargetEvent) {
+// HandleProxyEvent method handles events from a targetprovider
+func (pm *ProxyManager) HandleProxyEvent(event targetproviders.TargetEvent) {
 	switch event.Action {
 	case targetproviders.ActionStartProxy:
 		pm.eventStart(event)

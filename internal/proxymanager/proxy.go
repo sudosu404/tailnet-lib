@@ -20,6 +20,8 @@ import (
 type (
 	// Proxy struct is a struct that contains all the information needed to run a proxy.
 	Proxy struct {
+		onUpdate func(event model.ProxyEvent)
+
 		log           zerolog.Logger
 		ctx           context.Context
 		providerProxy proxyproviders.ProxyInterface
@@ -209,4 +211,11 @@ func (proxy *Proxy) setStatus(status model.ProxyStatus) {
 
 	proxy.status = status
 	proxy.mtx.Unlock()
+
+	if proxy.onUpdate != nil {
+		proxy.onUpdate(model.ProxyEvent{
+			ID:     proxy.Config.Hostname,
+			Status: status,
+		})
+	}
 }

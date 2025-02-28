@@ -27,7 +27,7 @@ type (
 		URL           *url.URL
 		cancel        context.CancelFunc
 		ports         map[string]*port
-		mtx           sync.Mutex
+		mtx           sync.RWMutex
 		status        model.ProxyStatus
 	}
 )
@@ -96,8 +96,9 @@ func (proxy *Proxy) Close() {
 }
 
 func (proxy *Proxy) GetStatus() model.ProxyStatus {
-	proxy.mtx.Lock()
-	defer proxy.mtx.Unlock()
+	proxy.mtx.RLock()
+	defer proxy.mtx.RUnlock()
+
 	return proxy.status
 }
 
@@ -131,10 +132,10 @@ func (proxy *Proxy) initPorts() {
 func (proxy *Proxy) start() {
 	proxy.log.Info().Msg("starting proxy")
 
-	proxy.mtx.Lock()
+	proxy.mtx.RLock()
 	portsConfig := proxy.Config.Ports
 	portsCount := len(proxy.ports)
-	proxy.mtx.Unlock()
+	proxy.mtx.RUnlock()
 
 	if portsCount == 0 {
 		proxy.log.Warn().Msg("No ports configured")
@@ -165,8 +166,8 @@ func (proxy *Proxy) start() {
 }
 
 func (proxy *Proxy) startPort(name string, l net.Listener) {
-	proxy.mtx.Lock()
-	defer proxy.mtx.Unlock()
+	proxy.mtx.RLock()
+	defer proxy.mtx.RUnlock()
 
 	// make sure port exists
 	if p, ok := proxy.ports[name]; ok {
@@ -200,6 +201,12 @@ func (proxy *Proxy) close() {
 
 func (proxy *Proxy) setStatus(status model.ProxyStatus) {
 	proxy.mtx.Lock()
-	defer proxy.mtx.Unlock()
+
+	if proxy.status == status {
+		proxy.mtx.Unlock()
+		return
+	}
+
 	proxy.status = status
+	proxy.mtx.Unlock()
 }

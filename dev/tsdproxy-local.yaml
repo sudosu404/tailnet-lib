@@ -1,15 +1,16 @@
 defaultProxyProvider: default
 docker:
-  # local:
-  #   host: unix:///var/run/docker.sock
-  #   TargetHostname: 172.31.0.1
+  local:
+    host: unix:///var/run/docker.sock
+    targetHostname: 172.31.0.1
   # server:
   #   host: tcp://192.168.1.110:2375
   #   TargetHostname: 192.168.1.110
 
-files:
+lists:
   file1:
     filename: dev/file1.yaml
+
 tailscale:
   providers:
     default:

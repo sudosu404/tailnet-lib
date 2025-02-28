@@ -9,16 +9,16 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tailwindcss/vite": "^4.0.5",
-    "daisyui": "^5.0.0-beta.7",
-    "tailwindcss": "^4.0.5",
-    "vite": "^6.1.0",
+    "@tailwindcss/vite": "^4.0.9",
+    "daisyui": "^5.0.0-beta.9",
+    "tailwindcss": "^4.0.9",
+    "vite": "^6.2.0",
     "vite-plugin-compression2": "^1.3.3",
-    "vite-plugin-static-copy": "^2.2.0"
+    "vite-plugin-static-copy": "^2.3.0"
   },
   "dependencies": {
     "@mdi/svg": "^7.4.47",
-    "@starfederation/datastar": "^1.0.0-beta.4",
-    "simple-icons": "^14.6.0"
+    "@starfederation/datastar": "^1.0.0-beta.8",
+    "simple-icons": "^14.8.0"
   }
 }

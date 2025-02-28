@@ -6,45 +6,35 @@ package dashboard
 import (
 	"net/http"
 
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
+
 	"github.com/a-h/templ"
 	datastar "github.com/starfederation/datastar/sdk/go"
 )
 
 const (
-	SSEQueueSize = 5
+	chanSizeSSEQueue = 0
 
 	EventAppend EventType = iota
-	EventRemove
 	EventMerge
 	EventMergeMessage
+	EventRemoveMessage
+	EventScript
 )
 
 // sseClient represents an SSE connection
 type (
 	EventType int
 	sseClient struct {
-		channel  chan SSEMessage
-		username string
+		channel chan SSEMessage
 	}
 
 	SSEMessage struct {
-		Type    EventType
 		Comp    templ.Component
 		Message string
+		Type    EventType
 	}
 )
-
-func (dash *Dashboard) broadcastMessage(message SSEMessage) {
-	dash.mtx.RLock()
-	defer dash.mtx.RUnlock()
-	for sessionID, sseClient := range dash.sseClients {
-		select {
-		case sseClient.channel <- message:
-		default:
-			dash.removeSSEClient(sessionID)
-		}
-	}
-}
 
 // Handler for the `/stream` endpoint
 func (dash *Dashboard) streamHandler() http.HandlerFunc {
@@ -55,8 +45,7 @@ func (dash *Dashboard) streamHandler() http.HandlerFunc {
 
 		// Create a new client
 		client := &sseClient{
-			channel:  make(chan SSEMessage, SSEQueueSize),
-			username: "",
+			channel: make(chan SSEMessage, chanSizeSSEQueue),
 		}
 
 		// Register client
@@ -71,6 +60,7 @@ func (dash *Dashboard) streamHandler() http.HandlerFunc {
 		go dash.renderList(client.channel)
 
 		var err error
+
 		// Send messages to the client
 	LOOP:
 		for {
@@ -83,17 +73,27 @@ func (dash *Dashboard) streamHandler() http.HandlerFunc {
 					err = sse.MergeFragmentTempl(
 						message.Comp,
 						datastar.WithMergeMode(datastar.FragmentMergeModeAppend),
-						datastar.WithSelectorID("proxy-list"),
-						datastar.WithViewTransitions(),
+						datastar.WithSelector("#proxy-list"),
 					)
+
+				case EventMerge:
+					err = sse.MergeFragmentTempl(
+						message.Comp,
+					)
+
 				case EventMergeMessage:
-					err = sse.MergeFragments(message.Message,
-						datastar.WithViewTransitions(),
-					)
+					err = sse.MergeFragments(message.Message)
+
+				case EventRemoveMessage:
+					err = sse.RemoveFragments(message.Message)
+
+				case EventScript:
+					err = sse.ExecuteScript(message.Message)
 				}
 			}
 
 			if err != nil {
+				dash.Log.Error().Err(err).Msg("Error sending message to client")
 				break LOOP
 			}
 
@@ -103,6 +103,8 @@ func (dash *Dashboard) streamHandler() http.HandlerFunc {
 }
 
 func (dash *Dashboard) updateUser(r *http.Request) {
+	// TODO: get proxyprovider user
+	_ = r
 }
 
 func (dash *Dashboard) removeSSEClient(name string) {
@@ -113,4 +115,34 @@ func (dash *Dashboard) removeSSEClient(name string) {
 	close(client.channel)
 
 	dash.Log.Info().Msg("Client disconnected")
+}
+
+func (dash *Dashboard) streamProxyUpdates() {
+	for event := range dash.pm.SubscribeStatusEvents() {
+		dash.mtx.RLock()
+		for _, sseClient := range dash.sseClients {
+			switch event.Status {
+			case model.ProxyStatusInitializing:
+				dash.renderProxy(sseClient.channel, event.ID, EventAppend)
+				dash.streamSortList(sseClient.channel)
+
+			case model.ProxyStatusStopped:
+				sseClient.channel <- SSEMessage{
+					Type:    EventRemoveMessage,
+					Message: "#" + event.ID,
+				}
+
+			default:
+				dash.renderProxy(sseClient.channel, event.ID, EventMerge)
+			}
+		}
+		dash.mtx.RUnlock()
+	}
+}
+
+func (dash *Dashboard) streamSortList(channel chan SSEMessage) {
+	channel <- SSEMessage{
+		Type:    EventScript,
+		Message: "sortList()",
+	}
 }

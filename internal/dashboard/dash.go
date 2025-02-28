@@ -30,6 +30,10 @@ func NewDashboard(http *core.HTTPServer, log zerolog.Logger, pm *proxymanager.Pr
 		pm:         pm,
 		sseClients: make(map[string]*sseClient),
 	}
+
+	go dash.streamProxyUpdates()
+
+	return dash
 }
 
 // AddRoutes method add dashboard related routes to the http server
@@ -43,23 +47,29 @@ func (dash *Dashboard) renderList(ch chan SSEMessage) {
 	dash.mtx.RLock()
 	defer dash.mtx.RUnlock()
 
+	// force remove elements of proxy-list inn case of client reconnect
 	ch <- SSEMessage{
-		Type:    EventMergeMessage,
-		Message: "<div id='proxy-list'></div>",
+		Type:    EventRemoveMessage,
+		Message: "#proxy-list>*",
 	}
 
-	for name, p := range dash.proxies {
+	proxies := dash.pm.GetProxies()
+	_ = proxies
+	for name, p := range dash.pm.Proxies {
 		if p.Config.Dashboard.Visible {
-			dash.renderProxy(ch, name)
+			dash.renderProxy(ch, name, EventAppend)
 		}
 	}
+
+	dash.streamSortList(ch)
 }
 
-func (dash *Dashboard) renderProxy(ch chan SSEMessage, name string) {
-	p, ok := dash.proxies[name]
+func (dash *Dashboard) renderProxy(ch chan SSEMessage, name string, ev EventType) {
+	p, ok := dash.pm.GetProxy(name)
 	if !ok {
 		return
 	}
+
 	status := p.GetStatus()
 
 	url := p.GetURL()
@@ -97,7 +107,7 @@ func (dash *Dashboard) renderProxy(ch chan SSEMessage, name string) {
 	}
 
 	ch <- SSEMessage{
-		Type: EventAppend,
+		Type: ev,
 		Comp: pages.Proxy(a),
 	}
 }

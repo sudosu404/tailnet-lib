@@ -1,198 +1,73 @@
 @import "tailwindcss";
-@source "../internal/ui/*.templ";
-@source "index.html";
+@source "../internal/**/*.templ";
+@source "./index.html";
+
 @variant dark (&:where(.tsdproxy-dark, .tsdproxy-dark *, [data-theme=tsdproxy-dark], [data-theme=tsdproxy-dark] *));
 
 
 @plugin "daisyui" {
   themes: tsdproxy-light --default, tsdproxy-dark;
+  include: reset, properties, scrollbar, rootscrolllock, rootscrollgutter, rootcolor,
+    link, button, toggle, tooltip, card, card-body, badge, label, navbar, footer, menu,
+    dropdown, checkbox, radius, modal;
 }
 
 @import "./tsdproxy-light.css";
 @import "./tsdproxy-dark.css";
 
 @layer base {
-  html {
-    scroll-behavior: smooth;
+
+  html,
+  body {
     @apply h-full;
   }
 }
 
 @layer components {
   #proxy-list {
-    /* @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-rows-5 gap-4 px-4 mt-8 sm:px-7; */
     @apply flex flex-wrap gap-4 px-4 mt-8 sm:px-7;
 
     .proxy {
-      @apply grow;
 
+      @apply card card-side card-xs shadow-md bg-base-300 dark:bg-base-200 min-w-52 basis-sm grow;
 
-      &:has(.tooltip-content:not(:empty)) {
-        @apply tooltip tooltip-bottom;
+      figure {
+        @apply size-20 bg-primary p-4;
       }
 
+      .card-title button {
+        @apply m-2 p-2 btn badge badge-xs badge-info absolute right-0 top-0;
 
-      a {
-        @apply card card-side card-xs shadow-md bg-base-200 min-w-52 basis-sm grow;
+        img {
+          @apply size-[1em];
+        }
+      }
 
-        &.disabled {
-          @apply pointer-events-none;
+      .status {
+        @apply badge badge-warning badge-xs;
+
+        &.Authenticating {
+          @apply badge-info;
         }
 
-        figure {
-          @apply size-20 bg-primary p-4;
+        &.Running {
+          @apply badge-success;
         }
 
-        .status {
-          @apply badge badge-secondary badge-xs;
+        &.Error,
+        &.Stopping,
+        &.Stopped {
+          @apply badge-error;
+        }
+      }
+
+      .openbtn {
+        @apply card-actions justify-end absolute right-2 bottom-2;
+
+        a {
+          @apply btn btn-primary btn-sm;
         }
       }
     }
   }
 }
-
-/**/
-/* @layer base { */
-/*   html { */
-/*   } */
-/**/
-/*   a { */
-/*     @apply hover:text-blue-500 dark:hover:text-blue-400 rounded-md card; */
-/**/
-/*     &.disabled { */
-/*       @apply hover:text-gray-900 dark:hover:text-gray-100 pointer-events-none bg-gray-700 hover:bg-gray-700; */
-/*     } */
-/*   } */
-/**/
-/**/
-/**/
-/*   body { */
-/**/
-/*     @apply h-full bg-gradient-to-br from-gray-200 to-white dark:bg-gradient-to-br dark:from-neutral-900 dark:to-gray-800 text-gray-900 dark:text-gray-100 flex flex-col; */
-/**/
-/**/
-/**/
-/*   } */
-/**/
-/*   header { */
-/*     @apply bg-gray-100 dark:bg-gray-800 shadow p-4 flex justify-between items-center; */
-/**/
-/*     #logo { */
-/*       @apply flex items-center space-x-4; */
-/**/
-/*       a { */
-/*         @apply flex items-center space-x-2; */
-/**/
-/*         img { */
-/*           @apply w-10 h-10; */
-/*         } */
-/**/
-/*         span { */
-/*           @apply text-xl font-bold; */
-/*         } */
-/*       } */
-/*     } */
-/**/
-/*     #menu-toggle { */
-/*       @apply md:hidden flex items-center px-3 py-2 border rounded-md text-gray-500 dark:text-gray-400 border-gray-500 dark:border-gray-400 hover:text-blue-500 dark:hover:text-blue-400; */
-/*     } */
-/*   } */
-/**/
-/*   main { */
-/*     @apply p-6 flex-grow; */
-/**/
-/*   } */
-/**/
-/*   footer { */
-/*     @apply bg-gray-100 dark:bg-gray-800 p-4 text-center mt-auto; */
-/*   } */
-/**/
-/* } */
-/**/
-/**/
-/* @layer components { */
-/**/
-/*   #desktop-menu { */
-/*     @apply hidden md:flex items-center space-x-4; */
-/*   } */
-/**/
-/*   #mobile-menu { */
-/*     @apply md:hidden bg-gray-100 dark:bg-gray-800 shadow p-4; */
-/**/
-/*     a { */
-/*       @apply block py-2; */
-/*     } */
-/**/
-/*     .sponsor { */
-/*       @apply block w-full text-left; */
-/*     } */
-/*   } */
-/**/
-/*   .sponsor { */
-/*     @apply bg-blue-500 hover:bg-blue-600 dark:bg-blue-400 dark:hover:bg-blue-500 text-white px-4 py-2 rounded; */
-/*   } */
-/**/
-/**/
-/*   .theme-switcher { */
-/*     @apply relative w-20 h-8 bg-gray-300 dark:bg-gray-700 rounded-full flex items-center p-1 cursor-pointer; */
-/**/
-/*     .switch-indicator { */
-/*       @apply absolute w-7 h-7 bg-white dark:bg-black rounded-full shadow transform transition-transform; */
-/*     } */
-/**/
-/*     .sun { */
-/*       @apply absolute left-2 text-sm; */
-/*     } */
-/**/
-/*     .moon { */
-/*       @apply absolute right-2 text-sm; */
-/*     } */
-/*   } */
-/**/
-/*   #proxy-list { */
-/*     @apply grid grid-cols-1 gap-4 px-4 mt-8 sm:grid-cols-4 sm:px-8; */
-/**/
-/*     a { */
-/*       @apply flex items-center rounded-sm overflow-hidden shadow bg-gray-100 dark:bg-gray-800 dark:shadow-neutral-950 shadow-sm hover:bg-gray-200 dark:hover:bg-gray-900; */
-/**/
-/*       &.disabled { */
-/*         @apply bg-gray-700 hover:bg-gray-700; */
-/**/
-/*         .icon { */
-/*           @apply bg-gray-600 hover:bg-gray-600; */
-/**/
-/*           img { */
-/*             @apply fill-gray-500 dark:fill-gray-500 stroke-gray-500 dark:stroke-gray-500 filter grayscale contrast-50; */
-/*           } */
-/*         } */
-/*       } */
-/**/
-/*       .icon { */
-/*         @apply p-4 bg-blue-500 dark:bg-blue-400; */
-/**/
-/*         img { */
-/*           @apply h-12 w-12 text-white; */
-/*         } */
-/*       } */
-/**/
-/*       .text { */
-/*         @apply px-4; */
-/**/
-/*         span { */
-/*           @apply text-xs tracking-wider; */
-/*         } */
-/**/
-/*         p { */
-/*           @apply text-xl; */
-/*         } */
-/*       } */
-/**/
-/*       &:hover { */
-/*         .icon { */
-/*           @apply bg-blue-600 dark:bg-blue-500; */
-/*         } */
-/**/
-/*       } */
-/*     } */
-/*   } */
-/* } */

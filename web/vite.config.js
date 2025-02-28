@@ -25,6 +25,14 @@ export default defineConfig({
         {
           src: normalizePath(resolve(__dirname, 'node_modules/@mdi/svg/svg/*')),
           dest: 'icons/mdi'
+        },
+        {
+          src: normalizePath(resolve(__dirname, 'public/icons/sh/*')),
+          dest: 'icons/sh'
+        },
+        {
+          src: normalizePath(resolve(__dirname, 'public/icons/*')),
+          dest: 'icons'
         }
 
       ]

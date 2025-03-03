@@ -9,7 +9,7 @@
   themes: tsdproxy-light --default, tsdproxy-dark;
   include: reset, properties, scrollbar, rootscrolllock, rootscrollgutter, rootcolor,
     link, button, toggle, tooltip, card, card-body, badge, label, navbar, footer, menu,
-    dropdown, checkbox, radius, modal;
+    dropdown, checkbox, radius, modal, kbd, input;
 }
 
 @import "./tsdproxy-light.css";

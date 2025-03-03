@@ -12,7 +12,8 @@
 </head>
 
 <body data-signals-theme__ifmissing="false" data-persist-theme
-  data-attr-data--theme="$theme?'tsdproxy-dark':'tsdproxy-light'">
+  data-attr-data--theme="$theme?'tsdproxy-dark':'tsdproxy-light'"
+  data-on-keydown__window="evt.ctrlKey && evt.key === 'f' && (evt.preventDefault(), document.getElementById('searchInput').focus())">
   <nav class="navbar bg-base-300 dark:bg-base-200 shadow-md">
     <div class="navbar-start">
       <a href="/" class="flex-0 btn btn-ghost gap-1 px-2 md:gap-2">
@@ -31,6 +32,18 @@
       </a>
     </div>
     <div class="navbar-end gap-4">
+
+      <label class="input">
+        <svg class="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <g stroke-linejoin="round" stroke-linecap="round" stroke-width="2.5" fill="none" stroke="currentColor">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.3-4.3"></path>
+          </g>
+        </svg>
+        <input id="searchInput" data-bind-search placeholder="Search..." type="search" class="grow" tabindex="0" />
+        <kbd class="kbd kbd-sm">ctrl</kbd>
+        <kbd class="kbd kbd-sm">f</kbd>
+      </label>
       <a class="btn btn-ghost hidden sm:inline-flex"
         href="https://almeidapaulopt.github.io/tsdproxy/docs/">Documentation</a>
       <a class="btn btn-secondary btn-xs hidden sm:inline-flex" href="https://buymeacoffee.com/almeidapaulopt"

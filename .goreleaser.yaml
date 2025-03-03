@@ -133,7 +133,7 @@ changelog:
       order: 9999
 
 archives:
-  - format: tar.gz
+  - formats: tar.gz
     files:
       - README.md
       - LICENSE

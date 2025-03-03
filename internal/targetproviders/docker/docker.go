@@ -25,14 +25,15 @@ import (
 type (
 	// Client struct implements TargetProvider
 	Client struct {
-		docker                *client.Client
-		log                   zerolog.Logger
-		containers            map[string]*container
-		name                  string
-		host                  string
-		defaultTargetHostname string
-		defaultProxyProvider  string
-		defaultBridgeAdress   string
+		docker                   *client.Client
+		log                      zerolog.Logger
+		containers               map[string]*container
+		name                     string
+		host                     string
+		defaultTargetHostname    string
+		defaultProxyProvider     string
+		defaultBridgeAdress      string
+		tryDockerInternalNetwork bool
 
 		mutex sync.Mutex
 	}
@@ -53,13 +54,14 @@ func New(log zerolog.Logger, name string, provider *config.DockerTargetProviderC
 	}
 
 	c := &Client{
-		docker:                docker,
-		log:                   newlog,
-		name:                  name,
-		host:                  provider.Host,
-		defaultTargetHostname: provider.TargetHostname,
-		defaultProxyProvider:  provider.DefaultProxyProvider,
-		containers:            make(map[string]*container),
+		docker:                   docker,
+		log:                      newlog,
+		name:                     name,
+		host:                     provider.Host,
+		defaultTargetHostname:    provider.TargetHostname,
+		defaultProxyProvider:     provider.DefaultProxyProvider,
+		tryDockerInternalNetwork: provider.TryDockerInternalNetwork,
+		containers:               make(map[string]*container),
 	}
 
 	addr := c.getDefaultBridgeAddress()
@@ -163,7 +165,7 @@ func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*model.Config, 
 	if err != nil {
 		return nil, fmt.Errorf("error getting image info: %w", err)
 	}
-	ctn := newContainer(c.log, dcontainer, imageInfo, c.name, c.defaultBridgeAdress, c.defaultTargetHostname)
+	ctn := newContainer(c.log, dcontainer, imageInfo, c.name, c.defaultBridgeAdress, c.defaultTargetHostname, c.tryDockerInternalNetwork)
 
 	pcfg, err := ctn.newProxyConfig()
 	if err != nil {

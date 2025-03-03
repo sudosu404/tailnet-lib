@@ -38,7 +38,6 @@ const (
 	LabelDashboardIcon    = LabelDashboardPrefix + "icon"
 
 	// docker only defaults
-	DefaultAutoDetect   = true
 	DefaultTargetScheme = "http"
 
 	// auto detect

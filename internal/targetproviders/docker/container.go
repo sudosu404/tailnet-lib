@@ -34,7 +34,7 @@ type container struct {
 
 // newContainer function returns a new container.
 func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageInfo types.ImageInspect,
-	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string,
+	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string, autoDetect bool,
 ) *container {
 	//
 	c := &container{
@@ -46,7 +46,7 @@ func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageIn
 		targetProviderName: targetproviderName,
 	}
 
-	c.autodetect = c.getLabelBool(LabelAutoDetect, DefaultAutoDetect)
+	c.autodetect = c.getLabelBool(LabelAutoDetect, autoDetect)
 	c.scheme = c.getLabelString(LabelScheme, DefaultTargetScheme)
 
 	return c

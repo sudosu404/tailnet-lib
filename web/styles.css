@@ -29,10 +29,10 @@
 
     .proxy {
 
-      @apply card card-side card-xs shadow-md bg-base-300 dark:bg-base-200 min-w-52 basis-sm grow;
+      @apply card card-side card-xs shadow-md bg-base-300 dark:bg-base-200 basis-2xs grow;
 
       figure {
-        @apply size-20 bg-primary p-4;
+        @apply size-20 p-4;
       }
 
       .card-title button {

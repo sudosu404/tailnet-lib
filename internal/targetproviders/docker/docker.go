@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/docker/docker/api/types"
 	ctypes "github.com/docker/docker/api/types/container"
 	devents "github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
@@ -160,8 +159,8 @@ func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetprov
 }
 
 // newProxyConfig method returns a new proxyconfig.Config
-func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*model.Config, error) {
-	imageInfo, _, err := c.docker.ImageInspectWithRaw(context.Background(), dcontainer.Config.Image)
+func (c *Client) newProxyConfig(dcontainer ctypes.InspectResponse) (*model.Config, error) {
+	imageInfo, err := c.docker.ImageInspect(context.Background(), dcontainer.Config.Image)
 	if err != nil {
 		return nil, fmt.Errorf("error getting image info: %w", err)
 	}

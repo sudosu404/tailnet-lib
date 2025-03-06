@@ -7,29 +7,28 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/docker/docker/api/types"
-
-	"github.com/rs/zerolog"
-
 	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/web"
+	dcontainer "github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
+	"github.com/rs/zerolog"
 )
 
 // container struct stores the data from the docker container.
 type container struct {
 	log                   zerolog.Logger
-	container             types.ContainerJSON
+	container             dcontainer.InspectResponse
 	defaultTargetHostname string
 	defaultBridgeAddress  string
 	targetProviderName    string
-	image                 types.ImageInspect
+	image                 image.InspectResponse
 	autodetect            bool
 	scheme                string
 }
 
 // newContainer function returns a new container.
-func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageInfo types.ImageInspect,
-	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string, autoDetect bool,
+func newContainer(logger zerolog.Logger, dcontainer dcontainer.InspectResponse, imageInfo image.InspectResponse,
+	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string, providerAutoDetect bool,
 ) *container {
 	c := &container{
 		log:                   logger.With().Str("container", dcontainer.Name).Logger(),
@@ -40,7 +39,7 @@ func newContainer(logger zerolog.Logger, dcontainer types.ContainerJSON, imageIn
 		targetProviderName:    targetproviderName,
 	}
 
-	c.autodetect = c.getLabelBool(LabelAutoDetect, autoDetect)
+	c.autodetect = c.getLabelBool(LabelAutoDetect, providerAutoDetect)
 
 	return c
 }

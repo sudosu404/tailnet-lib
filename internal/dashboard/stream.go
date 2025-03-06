@@ -109,10 +109,12 @@ func (dash *Dashboard) updateUser(r *http.Request) {
 
 func (dash *Dashboard) removeSSEClient(name string) {
 	dash.mtx.Lock()
-	client := dash.sseClients[name]
-	delete(dash.sseClients, name)
+
+	if client, ok := dash.sseClients[name]; ok {
+		delete(dash.sseClients, name)
+		close(client.channel)
+	}
 	dash.mtx.Unlock()
-	close(client.channel)
 
 	dash.Log.Info().Msg("Client disconnected")
 }

@@ -197,3 +197,13 @@ func (p *PortConfig) GetFirstTarget() *url.URL {
 func (p *PortConfig) AddTarget(target *url.URL) {
 	p.targets = append(p.targets, target)
 }
+
+// ReplaceTarget replaces a target URL with a new one.
+// used mainly for updating the target URL when the container IP changes like docker provider.
+func (p *PortConfig) ReplaceTarget(origin, target *url.URL) {
+	for k, v := range p.targets {
+		if v.String() == origin.String() {
+			p.targets[k] = target
+		}
+	}
+}

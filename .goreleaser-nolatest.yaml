@@ -9,7 +9,6 @@ env:
   - GITHUB_ORG=almeidapaulopt
   - DOCKER_ORG=almeidapaulopt
   - DOCKERFILE=Dockerfile.goreleaser
-  - LATEST={{if or .Prerelease .IsDraft .IsSnapshot .IsNightly .IsSingleTarget }}next{{else}}latest{{ end }}
 
 before:
   hooks:
@@ -19,7 +18,7 @@ before:
     - go generate ./...
 
 snapshot:
-  version_template: "{{ incpatch .Version }}-{{ .Env.LATEST }}"
+  version_template: "{{ incpatch .Version }}"
 
 gomod:
   proxy: false
@@ -133,7 +132,7 @@ changelog:
       order: 9999
 
 archives:
-  - format: tar.gz
+  - formats: tar.gz
     files:
       - README.md
       - LICENSE
@@ -145,10 +144,8 @@ dockers:
     goarch: amd64
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version  }}-amd64"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major  }}-amd64"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-amd64"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major   }}-amd64"
     build_flag_templates:
@@ -170,10 +167,8 @@ dockers:
     goarch: arm64
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}-arm64v8"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-arm64v8"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-arm64v8"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major  }}-arm64v8"
     build_flag_templates:
@@ -196,10 +191,8 @@ dockers:
     goarm: 6
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version  }}-armv6"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major  }}-armv6"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-armv6"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv6"
     build_flag_templates:
@@ -222,10 +215,8 @@ dockers:
     goarm: 7
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}-armv7"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv7"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-armv7"
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv7"
     build_flag_templates:
@@ -244,12 +235,6 @@ dockers:
       - "--platform=linux/arm/v7"
 
 docker_manifests:
-  - name_template: "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}"
-    image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64"
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8"
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6"
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7"
   - name_template: "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}"
     image_templates:
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}-amd64"
@@ -262,12 +247,6 @@ docker_manifests:
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-arm64v8"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv6"
       - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv7"
-  - name_template: "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}"
-    image_templates:
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7
   - name_template: ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version  }}
     image_templates:
       - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version  }}-amd64

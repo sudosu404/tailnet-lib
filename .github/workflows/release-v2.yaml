@@ -3,9 +3,9 @@ name: goreleaser
 
 on:
   push:
-    # run only against v1 tags
+    # run only against v2 tags
     tags:
-      - "v1.*"
+      - v2.*
 
 permissions:
   contents: write
@@ -53,8 +53,8 @@ jobs:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           # 'latest', 'nightly', or a semver
-          version: "~> v2"
-          args: release --clean
+          version: "latest"
+          args: release -f .goreleaser-nolatest.yaml --skip validate --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_PASSWORD: $${{ secrets.DOCKER_PASSWORD }}

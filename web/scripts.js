@@ -2,15 +2,6 @@ import { load } from "./node_modules/@starfederation/datastar/dist/bundles/datas
 load();
 
 
-
-
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js").then(() => {
-    console.log("Service Worker registered!");
-  });
-}
-
-
 window.sortList = function() {
   const list = document.getElementById("proxy-list");
   if (!list) return;

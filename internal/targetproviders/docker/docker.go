@@ -63,9 +63,7 @@ func New(log zerolog.Logger, name string, provider *config.DockerTargetProviderC
 		containers:               make(map[string]*container),
 	}
 
-	addr := c.getDefaultBridgeAddress()
-
-	c.defaultBridgeAdress = strings.TrimSpace(addr)
+	c.setDefaultBridgeAddress()
 
 	return c, nil
 }
@@ -212,24 +210,23 @@ func (c *Client) deleteContainer(name string) {
 	delete(c.containers, name)
 }
 
-// getDefaultBridgeAddress method returns the default bridge network address
-func (c *Client) getDefaultBridgeAddress() string {
+// setDefaultBridgeAddress method returns the default bridge network address
+func (c *Client) setDefaultBridgeAddress() {
 	filter := filters.NewArgs()
 	networks, err := c.docker.NetworkList(context.Background(), network.ListOptions{
 		Filters: filter,
 	})
 	if err != nil {
 		c.log.Error().Err(err).Msg("Error listing Docker networks")
-		return ""
+		return
 	}
 
 	for _, network := range networks {
 		if network.Options["com.docker.network.bridge.default_bridge"] == "true" {
 			c.log.Info().Str("defaultIPAdress", network.IPAM.Config[0].Gateway).Msg("Default Network found")
 
-			return network.IPAM.Config[0].Gateway
+			c.defaultBridgeAdress = strings.TrimSpace(network.IPAM.Config[0].Gateway)
+			return
 		}
 	}
-
-	return ""
 }

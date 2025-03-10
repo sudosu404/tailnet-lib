@@ -1,6 +1,8 @@
 services:
   dev:
-    image: devimage
+    build:
+      context: ..
+      dockerfile: dev/Dockerfile.dev
     ports:
       - "8080:8080"
       - "7331:7331"
@@ -13,7 +15,6 @@ services:
       - tsdproxy.enable=true
       - tsdproxy.name=dash-dev
       - tsdproxy.dash.visible=false
-    restart: unless-stopped
     secrets:
       - authkey
 

@@ -5,35 +5,36 @@ package docker
 
 import (
 	"fmt"
+	"net/url"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/model"
 	"github.com/almeidapaulopt/tsdproxy/web"
-	dcontainer "github.com/docker/docker/api/types/container"
-	"github.com/docker/docker/api/types/image"
+
+	ctypes "github.com/docker/docker/api/types/container"
 	"github.com/rs/zerolog"
 )
 
 // container struct stores the data from the docker container.
 type container struct {
 	log                   zerolog.Logger
-	container             dcontainer.InspectResponse
+	container             ctypes.InspectResponse
 	defaultTargetHostname string
 	defaultBridgeAddress  string
 	targetProviderName    string
-	image                 image.InspectResponse
 	autodetect            bool
-	scheme                string
 }
 
 // newContainer function returns a new container.
-func newContainer(logger zerolog.Logger, dcontainer dcontainer.InspectResponse, imageInfo image.InspectResponse,
+func newContainer(logger zerolog.Logger, dcontainer ctypes.InspectResponse,
 	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string, providerAutoDetect bool,
 ) *container {
+	//
 	c := &container{
 		log:                   logger.With().Str("container", dcontainer.Name).Logger(),
 		container:             dcontainer,
-		image:                 imageInfo,
 		defaultTargetHostname: defaultTargetHostname,
 		defaultBridgeAddress:  defaultBridgeAddress,
 		targetProviderName:    targetproviderName,
@@ -119,13 +120,13 @@ func (c *container) getPorts() model.PortConfigList {
 			// multiple targets not supported in this TargetProvider
 			p := port.GetFirstTarget()
 
-			targetURL, err := c.getTargetURL(c.defaultTargetHostname, p)
+			targetURL, err := c.getTargetURL(p)
 			if err != nil {
 				c.log.Error().Err(err).Msg("error parsing target hostname")
 				return ports
 			}
 
-			port.AddTarget(targetURL)
+			port.ReplaceTarget(p, targetURL)
 		}
 
 		ports[k] = port
@@ -154,4 +155,67 @@ func (c *container) getTailscaleConfig() (*model.Tailscale, error) {
 // getName method returns the name of the container
 func (c *container) getName() string {
 	return strings.TrimLeft(c.container.Name, "/")
+}
+
+// getTargetURL method returns the container target URL
+func (c *container) getTargetURL(iPort *url.URL) (*url.URL, error) {
+
+	internalPort := iPort.Port()
+	publishedPort := c.getPublishedPort(internalPort)
+
+	if internalPort == "" && publishedPort == "" {
+		return nil, ErrNoPortFoundInContainer
+	}
+
+	// return localhost if container same as host to serve the dashboard
+	if osname, err := os.Hostname(); err == nil && strings.HasPrefix(c.container.ID, osname) {
+		return url.Parse("http://127.0.0.1:" + internalPort)
+	}
+
+	// set autodetect
+	if c.autodetect {
+		// repeat auto detect in case the container is not ready
+		for try := range autoDetectTries {
+			c.log.Info().Int("try", try).Msg("Trying to auto detect target URL")
+			if port, err := c.tryConnectContainer(iPort.Scheme, internalPort, publishedPort); err == nil {
+				return port, nil
+			}
+			// wait to container get ready in case of startup
+			time.Sleep(autoDetectSleep)
+		}
+	}
+
+	// auto detect failed or disabled, use published port
+	if publishedPort == "" {
+		return nil, ErrNoPortFoundInContainer
+	}
+
+	return url.Parse(iPort.Scheme + "://" + c.defaultTargetHostname + ":" + publishedPort)
+}
+
+// getPublishedPort method returns the container port
+func (c *container) getPublishedPort(internalPort string) string {
+
+	for p, b := range c.container.HostConfig.PortBindings {
+		if p.Port() == internalPort {
+			return b[0].HostPort
+		}
+	}
+
+	return ""
+}
+
+// getProxyHostname method returns the proxy URL from the container label.
+func (c *container) getProxyHostname() (string, error) {
+
+	// Set custom proxy URL if present the Label in the container
+	if customName, ok := c.container.Config.Labels[LabelName]; ok {
+		// validate url
+		if _, err := url.Parse("https://" + customName); err != nil {
+			return "", err
+		}
+		return customName, nil
+	}
+
+	return c.getName(), nil
 }

@@ -158,11 +158,7 @@ func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetprov
 
 // newProxyConfig method returns a new proxyconfig.Config
 func (c *Client) newProxyConfig(dcontainer ctypes.InspectResponse) (*model.Config, error) {
-	imageInfo, err := c.docker.ImageInspect(context.Background(), dcontainer.Config.Image)
-	if err != nil {
-		return nil, fmt.Errorf("error getting image info: %w", err)
-	}
-	ctn := newContainer(c.log, dcontainer, imageInfo, c.name, c.defaultBridgeAdress, c.defaultTargetHostname, c.tryDockerInternalNetwork)
+	ctn := newContainer(c.log, dcontainer, c.name, c.defaultBridgeAdress, c.defaultTargetHostname, c.tryDockerInternalNetwork)
 
 	pcfg, err := ctn.newProxyConfig()
 	if err != nil {

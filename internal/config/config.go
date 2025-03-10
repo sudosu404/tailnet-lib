@@ -44,9 +44,10 @@ type (
 
 	// DockerTargetProviderConfig struct stores Docker target provider configuration.
 	DockerTargetProviderConfig struct {
-		Host                 string `validate:"required,uri" default:"unix:///var/run/docker.sock" yaml:"host"`
-		TargetHostname       string `validate:"ip|hostname" default:"172.31.0.1" yaml:"targetHostname"`
-		DefaultProxyProvider string `validate:"omitempty" yaml:"defaultProxyProvider,omitempty"`
+		Host                     string `validate:"required,uri" default:"unix:///var/run/docker.sock" yaml:"host"`
+		TargetHostname           string `validate:"ip|hostname" default:"172.31.0.1" yaml:"targetHostname"`
+		DefaultProxyProvider     string `validate:"omitempty" yaml:"defaultProxyProvider,omitempty"`
+		TryDockerInternalNetwork bool   `validate:"boolean" default:"false" yaml:"tryDockerInternalNetwork"`
 	}
 
 	// TailscaleProxyProviderConfig struct stores Tailscale ProxyProvider configuration

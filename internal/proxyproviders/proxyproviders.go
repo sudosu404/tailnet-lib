@@ -23,11 +23,6 @@ type (
 		GetListener(port string) (net.Listener, error)
 		GetURL() string
 		GetAuthURL() string
-		WatchEvents() chan ProxyEvent
-	}
-
-	ProxyEvent struct {
-		AuthURL string
-		Status  model.ProxyStatus
+		WatchEvents() chan model.ProxyEvent
 	}
 )

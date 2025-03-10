@@ -16,7 +16,7 @@ func (n *NoValidTargetFoundError) Error() string {
 }
 
 var (
-	ErrNoPortFoundInContainer             = errors.New("no port found in container")
-	ErrNoValidTargetFoundForInternalPorts = errors.New("no valid target found for internal ports")
-	ErrNoValidTargetFoundForExposedPorts  = errors.New("no valid target found for exposed ports")
+	ErrNoPortFoundInContainer              = errors.New("no port found in container")
+	ErrNoValidTargetFoundForInternalPorts  = errors.New("no valid target found for internal ports")
+	ErrNoValidTargetFoundForPublishedPorts = errors.New("no valid target found for exposed ports")
 )

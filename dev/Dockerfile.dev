@@ -1,24 +1,26 @@
 # Dockerfile.dev
 #
-FROM golang:1.23.4
+FROM golang:1.24-alpine
 
 WORKDIR /app
 
-#ARG UID=1000
-#ARG GID=1000
-
-#RUN groupadd -g $GID appgroup && useradd -l -m -u $UID -g appgroup appuser
-
+# ARG UID=1000
+# ARG GID=1000
+#
+# RUN groupadd -g $GID appgroup && useradd -l -m -u $UID -g appgroup appuser
+#
 
 #USER appuser
-RUN go install github.com/bokwoon95/wgo@latest && go install github.com/a-h/templ/cmd/templ@latest
 
-COPY go.mod go.sum /app/
+RUN go install github.com/air-verse/air@latest && go install github.com/a-h/templ/cmd/templ@latest
+
+COPY go.mod go.sum ./
 
 RUN go mod download
 
 EXPOSE 8080
 EXPOSE 7331
 
-CMD ["make", "run_in_docker" ]
+# CMD ["make", "server_start"]
 
+CMD ["air", "-c", ".air.toml"]

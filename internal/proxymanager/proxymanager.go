@@ -33,6 +33,8 @@ type (
 		TargetProviders TargetProviderList
 		ProxyProviders  ProxyProviderList
 
+		statusSubscribers map[chan model.ProxyEvent]struct{}
+
 		mtx sync.RWMutex
 	}
 )
@@ -44,12 +46,15 @@ var (
 
 // NewProxyManager function creates a new ProxyManager.
 func NewProxyManager(logger zerolog.Logger) *ProxyManager {
-	return &ProxyManager{
-		Proxies:         make(ProxyList),
-		TargetProviders: make(TargetProviderList),
-		ProxyProviders:  make(ProxyProviderList),
-		log:             logger.With().Str("module", "proxymanager").Logger(),
+	pm := &ProxyManager{
+		Proxies:           make(ProxyList),
+		TargetProviders:   make(TargetProviderList),
+		ProxyProviders:    make(ProxyProviderList),
+		statusSubscribers: make(map[chan model.ProxyEvent]struct{}),
+		log:               logger.With().Str("module", "proxymanager").Logger(),
 	}
+
+	return pm
 }
 
 // Start method starts the ProxyManager.
@@ -103,9 +108,9 @@ func (pm *ProxyManager) WatchEvents() {
 			for {
 				select {
 				case event := <-eventsChan:
-					go pm.HandleContainerEvent(event)
+					go pm.HandleProxyEvent(event)
 				case err := <-errChan:
-					pm.log.Err(err).Msg("Error watching Docker events")
+					pm.log.Err(err).Msg("Error watching events")
 					return
 				}
 			}
@@ -113,8 +118,8 @@ func (pm *ProxyManager) WatchEvents() {
 	}
 }
 
-// HandleContainerEvent method handles events from a targetprovider
-func (pm *ProxyManager) HandleContainerEvent(event targetproviders.TargetEvent) {
+// HandleProxyEvent method handles events from a targetprovider
+func (pm *ProxyManager) HandleProxyEvent(event targetproviders.TargetEvent) {
 	switch event.Action {
 	case targetproviders.ActionStartProxy:
 		pm.eventStart(event)
@@ -124,6 +129,54 @@ func (pm *ProxyManager) HandleContainerEvent(event targetproviders.TargetEvent) 
 		pm.eventStop(event)
 		pm.eventStart(event)
 	}
+}
+
+// SubscribeStatusEvents return a channel of proxy events.
+// This events are sent by Proxies and Ports.
+func (pm *ProxyManager) SubscribeStatusEvents() <-chan model.ProxyEvent {
+	ch := make(chan model.ProxyEvent)
+
+	pm.mtx.Lock()
+	pm.statusSubscribers[ch] = struct{}{}
+	pm.mtx.Unlock()
+
+	return ch
+}
+
+// UnsubscribeStatusEvents remove the channel subscrived in SubscribeStatusEvents
+func (pm *ProxyManager) UnsubscribeStatusEvents(ch chan model.ProxyEvent) {
+	pm.mtx.Lock()
+	delete(pm.statusSubscribers, ch)
+	pm.mtx.Unlock()
+	close(ch)
+}
+
+func (pm *ProxyManager) GetProxies() ProxyList {
+	pm.mtx.RLock()
+	defer pm.mtx.RUnlock()
+
+	return pm.Proxies
+}
+
+func (pm *ProxyManager) GetProxy(name string) (*Proxy, bool) {
+	pm.mtx.RLock()
+	defer pm.mtx.RUnlock()
+
+	proxy, ok := pm.Proxies[name]
+
+	return proxy, ok
+}
+
+// broadcastStatusEvents broadcasts proxy status event to all SubscribeStatusEvents
+func (pm *ProxyManager) broadcastStatusEvents(event model.ProxyEvent) {
+	pm.mtx.RLock()
+	for ch := range pm.statusSubscribers {
+		select {
+		case ch <- event:
+		default:
+		}
+	}
+	pm.mtx.RUnlock()
 }
 
 // addTargetProviders method adds TargetProviders from configuration file.
@@ -264,7 +317,19 @@ func (pm *ProxyManager) newAndStartProxy(name string, proxyConfig *model.Config)
 		return
 	}
 
+	// any status change in proxy will be broadcasted
+	p.onUpdate = func(event model.ProxyEvent) {
+		pm.broadcastStatusEvents(event)
+	}
+
 	pm.addProxy(p)
+
+	// broadcasts ProxyStatusInitializing
+	pm.broadcastStatusEvents(model.ProxyEvent{
+		ID:     p.Config.Hostname,
+		Status: model.ProxyStatusInitializing,
+	})
+
 	p.Start()
 }
 

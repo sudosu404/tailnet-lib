@@ -9,7 +9,6 @@ env:
   - GITHUB_ORG=almeidapaulopt
   - DOCKER_ORG=almeidapaulopt
   - DOCKERFILE=Dockerfile.goreleaser
-  - LATEST=dev
 
 before:
   hooks:
@@ -18,18 +17,27 @@ before:
     - go install github.com/a-h/templ/cmd/templ@latest
     - go generate ./...
 
+snapshot:
+  version_template: "{{ incpatch .Version }}"
+
 gomod:
   proxy: false
 
 report_sizes: true
 
+milestones:
+  - close: true
+
+metadata:
+  mod_timestamp: "{{ .CommitTimestamp }}"
+
 release:
-  make_latest: false
+  name_template: "{{.ProjectName}}-v{{.Version}}"
   mode: replace
-  prerelease: true
-  draft: true
-  replace_existing_draft: true
-  skip_upload: true
+  target_commitish: "{{ .Commit }}"
+  discussion_category_name: General
+  prerelease: auto
+  make_latest: "{{ if .Prerelease }}false{{ else }}true{{ end }}"
 
 builds:
   - id: server
@@ -57,7 +65,7 @@ builds:
       - -tags=prod
     ldflags:
       - -s -w
-      - -X "github.com/almeidapaulopt/tsdproxy/internal/core.version={{ incpatch .Version }}-{{ .Env.LATEST  }}"
+      - -X "github.com/almeidapaulopt/tsdproxy/internal/core.version={{ .Version  }}"
       - -X "github.com/almeidapaulopt/tsdproxy/internal/core.BuildDate={{ .Date }}"
       - -X "github.com/almeidapaulopt/tsdproxy/internal/core.GitCommit={{ .ShortCommit }}"
 
@@ -90,7 +98,38 @@ checksum:
   name_template: "checksums.txt"
 
 changelog:
-  disable: true
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^test:"
+      - "^chore"
+      - "merge conflict"
+      - Merge pull request
+      - Merge remote-tracking branch
+      - Merge branch
+      - go mod tidy
+  groups:
+    - title: Dependency updates
+      regexp: '^.*?(feat|fix)\(deps\)!?:.+$'
+      order: 300
+    - title: "New Features"
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 100
+    - title: "Security updates"
+      regexp: '^.*?sec(\([[:word:]]+\))??!?:.+$'
+      order: 150
+    - title: "Bug fixes"
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 200
+    - title: "Documentation updates"
+      regexp: ^.*?docs(\([[:word:]]+\))??!?:.+$
+      order: 400
+    - title: "Build process updates"
+      regexp: ^.*?build(\([[:word:]]+\))??!?:.+$
+      order: 400
+    - title: Other work
+      order: 9999
 
 archives:
   - formats: tar.gz
@@ -105,8 +144,10 @@ dockers:
     goarch: amd64
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version  }}-amd64"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major  }}-amd64"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-amd64"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major   }}-amd64"
     build_flag_templates:
       - "--pull"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
@@ -114,20 +155,22 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{ incpatch .Version }}-{{ .Env.LATEST}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description={{ .ProjectName }}"
       - "--label=org.opencontainers.image.url=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
       - "--label=org.opencontainers.image.source=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
-      - "--label=org.opencontainers.image.version={{incpatch .Version }}-{{ .Env.LATEST }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--platform=linux/amd64"
   - use: buildx
     goos: linux
     goarch: arm64
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}-arm64v8"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-arm64v8"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-arm64v8"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major  }}-arm64v8"
     build_flag_templates:
       - "--pull"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
@@ -135,12 +178,12 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{ incpatch .Version }}-{{ .Env.LATEST}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description={{ .ProjectName }}"
       - "--label=org.opencontainers.image.url=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
       - "--label=org.opencontainers.image.source=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
-      - "--label=org.opencontainers.image.version={{incpatch .Version }}-{{ .Env.LATEST }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--platform=linux/arm64/v8"
   - use: buildx
     goos: linux
@@ -148,8 +191,10 @@ dockers:
     goarm: 6
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version  }}-armv6"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major  }}-armv6"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-armv6"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv6"
     build_flag_templates:
       - "--pull"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
@@ -157,12 +202,12 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{ incpatch .Version }}-{{ .Env.LATEST}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description={{ .ProjectName }}"
       - "--label=org.opencontainers.image.url=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
       - "--label=org.opencontainers.image.source=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
-      - "--label=org.opencontainers.image.version={{incpatch .Version }}-{{ .Env.LATEST }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--platform=linux/arm/v6"
   - use: buildx
     goos: linux
@@ -170,8 +215,10 @@ dockers:
     goarm: 7
     dockerfile: "{{ .Env.DOCKERFILE }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7"
-      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}-armv7"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv7"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version   }}-armv7"
+      - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv7"
     build_flag_templates:
       - "--pull"
       - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
@@ -179,27 +226,39 @@ dockers:
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
-      - "--label=org.opencontainers.image.version={{ incpatch .Version }}-{{ .Env.LATEST}}"
+      - "--label=org.opencontainers.image.version={{.Version}}"
       - "--label=org.opencontainers.image.title={{ .ProjectName }}"
       - "--label=org.opencontainers.image.description={{ .ProjectName }}"
       - "--label=org.opencontainers.image.url=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
       - "--label=org.opencontainers.image.source=https://github.com/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}"
-      - "--label=org.opencontainers.image.version={{incpatch .Version }}-{{ .Env.LATEST }}"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--platform=linux/arm/v7"
 
 docker_manifests:
-  - name_template: "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}"
+  - name_template: "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}"
     image_templates:
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64"
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8"
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6"
-      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7"
-  - name_template: "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version   }}-amd64"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version  }}-arm64v8"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version  }}-armv6"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Version  }}-armv7"
+  - name_template: "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}"
     image_templates:
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6
-      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-amd64"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-arm64v8"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv6"
+      - "{{ .Env.DOCKER_ORG }}/{{ .ProjectName }}:{{ .Major }}-armv7"
+  - name_template: ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version  }}
+    image_templates:
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version  }}-amd64
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version  }}-arm64v8
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version  }}-armv6
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Version  }}-armv7
+  - name_template: ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major  }}
+    image_templates:
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major  }}-amd64
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major  }}-arm64v8
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major  }}-armv6
+      - ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Major  }}-armv7
 
 docker_signs:
   - cmd: cosign

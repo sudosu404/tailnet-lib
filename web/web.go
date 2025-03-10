@@ -14,7 +14,7 @@ import (
 	"github.com/vearutop/statigz/brotli"
 )
 
-//go:generate wget https://github.com/selfhst/icons/archive/refs/heads/main.zip
+//go:generate wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip
 //go:generate unzip -jo main.zip icons-main/svg/* -d public/icons/sh
 //go:generate bun run build
 

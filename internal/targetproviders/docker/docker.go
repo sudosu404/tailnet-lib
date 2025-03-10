@@ -9,7 +9,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/docker/docker/api/types"
 	ctypes "github.com/docker/docker/api/types/container"
 	devents "github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
@@ -25,14 +24,15 @@ import (
 type (
 	// Client struct implements TargetProvider
 	Client struct {
-		docker                *client.Client
-		log                   zerolog.Logger
-		containers            map[string]*container
-		name                  string
-		host                  string
-		defaultTargetHostname string
-		defaultProxyProvider  string
-		defaultBridgeAdress   string
+		docker                   *client.Client
+		log                      zerolog.Logger
+		containers               map[string]*container
+		name                     string
+		host                     string
+		defaultTargetHostname    string
+		defaultProxyProvider     string
+		defaultBridgeAdress      string
+		tryDockerInternalNetwork bool
 
 		mutex sync.Mutex
 	}
@@ -43,6 +43,8 @@ var _ targetproviders.TargetProvider = (*Client)(nil)
 // New function returns a new Docker TargetProvider
 func New(log zerolog.Logger, name string, provider *config.DockerTargetProviderConfig) (*Client, error) {
 	newlog := log.With().Str("docker", name).Logger()
+	newlog.Trace().Msg("New Docker TargetProvider")
+	defer newlog.Trace().Msg("End New Docker TargetProvider")
 
 	docker, err := client.NewClientWithOpts(
 		client.WithHost(provider.Host),
@@ -53,24 +55,27 @@ func New(log zerolog.Logger, name string, provider *config.DockerTargetProviderC
 	}
 
 	c := &Client{
-		docker:                docker,
-		log:                   newlog,
-		name:                  name,
-		host:                  provider.Host,
-		defaultTargetHostname: provider.TargetHostname,
-		defaultProxyProvider:  provider.DefaultProxyProvider,
-		containers:            make(map[string]*container),
+		docker:                   docker,
+		log:                      newlog,
+		name:                     name,
+		host:                     provider.Host,
+		defaultTargetHostname:    provider.TargetHostname,
+		defaultProxyProvider:     provider.DefaultProxyProvider,
+		tryDockerInternalNetwork: provider.TryDockerInternalNetwork,
+		containers:               make(map[string]*container),
 	}
 
-	addr := c.getDefaultBridgeAddress()
-
-	c.defaultBridgeAdress = strings.TrimSpace(addr)
+	c.setDefaultBridgeAddress()
+	// c.setIsTsdproxyRunningHere()
 
 	return c, nil
 }
 
 // Close method implements TargetProvider Close method.
 func (c *Client) Close() {
+	c.log.Trace().Msg("Close Docker TargetProvider")
+	defer c.log.Trace().Msg("End Close Docker TargetProvider")
+
 	if c.docker != nil {
 		c.docker.Close()
 	}
@@ -78,6 +83,9 @@ func (c *Client) Close() {
 
 // AddTarget method implements TargetProvider AddTarget method
 func (c *Client) AddTarget(id string) (*model.Config, error) {
+	c.log.Trace().Msgf("AddTarget %s", id)
+	defer c.log.Trace().Msgf("End AddTarget %s", id)
+
 	dcontainer, err := c.docker.ContainerInspect(context.Background(), id)
 	if err != nil {
 		return nil, fmt.Errorf("error inspecting container: %w", err)
@@ -88,6 +96,9 @@ func (c *Client) AddTarget(id string) (*model.Config, error) {
 
 // DeleteProxy method implements TargetProvider DeleteProxy method
 func (c *Client) DeleteProxy(id string) error {
+	c.log.Trace().Msgf("DeleteProxy %s", id)
+	defer c.log.Trace().Msgf("End DeleteProxy %s", id)
+
 	if _, ok := c.containers[id]; !ok {
 		return fmt.Errorf("container %s not found", id)
 	}
@@ -104,6 +115,8 @@ func (c *Client) GetDefaultProxyProviderName() string {
 
 // WatchEvents method implements TargetProvider WatchEvents method
 func (c *Client) WatchEvents(ctx context.Context, eventsChan chan targetproviders.TargetEvent, errChan chan error) {
+	c.log.Trace().Msg("WatchEvents")
+	defer c.log.Trace().Msg("End WatchEvents")
 	// Filter Start/stop events for containers
 	//
 	eventsFilter := filters.NewArgs()
@@ -138,6 +151,8 @@ func (c *Client) WatchEvents(ctx context.Context, eventsChan chan targetprovider
 }
 
 func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetproviders.TargetEvent, errChan chan error) {
+	c.log.Trace().Msg("startAllProxies")
+	defer c.log.Trace().Msg("End startAllProxies")
 	// Filter containers with enable set to true
 	//
 	containerFilter := filters.NewArgs()
@@ -158,12 +173,11 @@ func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetprov
 }
 
 // newProxyConfig method returns a new proxyconfig.Config
-func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*model.Config, error) {
-	imageInfo, _, err := c.docker.ImageInspectWithRaw(context.Background(), dcontainer.Config.Image)
-	if err != nil {
-		return nil, fmt.Errorf("error getting image info: %w", err)
-	}
-	ctn := newContainer(c.log, dcontainer, imageInfo, c.name, c.defaultBridgeAdress, c.defaultTargetHostname)
+func (c *Client) newProxyConfig(dcontainer ctypes.InspectResponse) (*model.Config, error) {
+	c.log.Trace().Msg("newProxyConfig")
+	defer c.log.Trace().Msg("End newProxyConfig")
+
+	ctn := newContainer(c.log, dcontainer, c.name, c.defaultBridgeAdress, c.defaultTargetHostname, c.tryDockerInternalNetwork)
 
 	pcfg, err := ctn.newProxyConfig()
 	if err != nil {
@@ -175,6 +189,9 @@ func (c *Client) newProxyConfig(dcontainer types.ContainerJSON) (*model.Config, 
 
 // getStartEvent method returns a targetproviders.TargetEvent for a container start
 func (c *Client) getStartEvent(id string) targetproviders.TargetEvent {
+	c.log.Trace().Msgf("getStartEvent %s", id)
+	defer c.log.Trace().Msgf("End getStartEvent %s", id)
+
 	c.log.Info().Msgf("Container %s started", id)
 
 	return targetproviders.TargetEvent{
@@ -186,6 +203,9 @@ func (c *Client) getStartEvent(id string) targetproviders.TargetEvent {
 
 // getStopEvent method returns a targetproviders.TargetEvent for a container stop
 func (c *Client) getStopEvent(id string) targetproviders.TargetEvent {
+	c.log.Trace().Msgf("getStopEvent %s", id)
+	defer c.log.Trace().Msgf("End getStopEvent %s", id)
+
 	c.log.Info().Msgf("Container %s stopped", id)
 
 	return targetproviders.TargetEvent{
@@ -197,6 +217,9 @@ func (c *Client) getStopEvent(id string) targetproviders.TargetEvent {
 
 // addContainer method addContainer the containers map
 func (c *Client) addContainer(cont *container, name string) {
+	c.log.Trace().Msgf("addContainer %s", name)
+	defer c.log.Trace().Msgf("End addContainer %s", name)
+
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
@@ -205,30 +228,35 @@ func (c *Client) addContainer(cont *container, name string) {
 
 // deleteContainer method deletes a container from the containers map
 func (c *Client) deleteContainer(name string) {
+	c.log.Trace().Msgf("deleteContainer %s", name)
+	defer c.log.Trace().Msgf("End deleteContainer %s", name)
+
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	delete(c.containers, name)
 }
 
-// getDefaultBridgeAddress method returns the default bridge network address
-func (c *Client) getDefaultBridgeAddress() string {
+// setDefaultBridgeAddress method returns the default bridge network address
+func (c *Client) setDefaultBridgeAddress() {
+	c.log.Trace().Msg("getDefaultBridgeAddress")
+	defer c.log.Trace().Msg("End getDefaultBridgeAddress")
+
 	filter := filters.NewArgs()
 	networks, err := c.docker.NetworkList(context.Background(), network.ListOptions{
 		Filters: filter,
 	})
 	if err != nil {
 		c.log.Error().Err(err).Msg("Error listing Docker networks")
-		return ""
+		return
 	}
 
 	for _, network := range networks {
 		if network.Options["com.docker.network.bridge.default_bridge"] == "true" {
 			c.log.Info().Str("defaultIPAdress", network.IPAM.Config[0].Gateway).Msg("Default Network found")
 
-			return network.IPAM.Config[0].Gateway
+			c.defaultBridgeAdress = strings.TrimSpace(network.IPAM.Config[0].Gateway)
+			return
 		}
 	}
-
-	return ""
 }

@@ -1,45 +1,80 @@
 package pages
 
 import (
-"fmt"
-"github.com/almeidapaulopt/tsdproxy/internal/model"
-"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
+	"github.com/almeidapaulopt/tsdproxy/internal/model"
+	"github.com/almeidapaulopt/tsdproxy/internal/ui/components"
+	"strings"
 )
 
 type ProxyData struct {
-Enabled bool
-Name string
-Icon string
-URL string
-Label string
-ProxyStatus model.ProxyStatus
-Ports []model.PortConfig
+	Enabled     bool
+	Name        string
+	Icon        string
+	URL         string
+	Label       string
+	ProxyStatus model.ProxyStatus
+	Ports       []model.PortConfig
 }
 
 type Port struct {
-ID string
+	ID string
 }
 
 templ Proxy(item ProxyData) {
-<div class="proxy">
-  <div class="tooltip-content">
-    for _,port := range item.Ports {
-    if port.IsRedirect {
-    <div>{ fmt.Sprintf("%d:%s -> %s", port.ProxyPort, port.ProxyProtocol, port.GetFirstTarget().String()) }</div>
-    } else {
-    <div>{ fmt.Sprintf("%d:%s", port.ProxyPort, port.ProxyProtocol) }</div>
-    }
-    }
-  </div>
-  <a id={ item.Name } href={ templ.URL(item.URL) } target="_blank" rel="noopener noreferrer" class={
-    templ.KV("disabled", !item.Enabled) }>
-    <figure>
-      <img src={ components.IconURL(item.Icon) } />
-    </figure>
-    <div class="card-body">
-      <h2 class="card-title">{ item.Label }</h2>
-      <div class="status">{ item.ProxyStatus.String() }</div>
-    </div>
-  </a>
-</div>
+	<div
+		class="proxy"
+		id={ item.Name }
+		data-signals={ "{" + modalname(item.Name) + "_label: '" + item.Label + "'}" }
+		data-show={ "$" + modalname(item.Name) + "_label.toLowerCase().search($search.toLowerCase()) >-1" }
+	>
+		<figure>
+			<img src={ components.IconURL(item.Icon) } alt={ item.Icon }/>
+		</figure>
+		<div class="card-body">
+			<h2 class="card-title">
+				<span data-text={ "$" + modalname(item.Name) + "_label" }></span>
+				<button data-on-click={ modalname(item.Name) + ".showModal()" } aria-label="proxy details">
+					<img src={ components.IconURL("mdi/information-variant") } alt="details"/>
+				</button>
+			</h2>
+			<div class={ "status" , item.ProxyStatus.String() }>{ item.ProxyStatus.String() }</div>
+			<div class="openbtn">
+				<a
+					href={ templ.URL(item.URL) }
+					class={ templ.KV("btn-disabled", !item.Enabled) }
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					if item.ProxyStatus == model.ProxyStatusAuthenticating {
+						Authenticate
+					} else {
+						Open
+					}
+				</a>
+			</div>
+		</div>
+		<dialog id={ modalname(item.Name) } class="modal">
+			<div class="modal-box">
+				<form method="dialog">
+					<button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+				</form>
+				<h3 class="text-lg font-bold">{ item.Name }</h3>
+				for _, port := range item.Ports {
+					<a href={ templ.URL(item.URL) } class="py-4">
+						{ port.String() }
+					</a>
+					<!-- TODO: add more info -->
+				}
+			</div>
+			<form method="dialog" class="modal-backdrop">
+				<button>close</button>
+			</form>
+		</dialog>
+	</div>
+}
+
+func modalname(name string) string {
+	// javascript does not allow "-" in variable names
+	temp := strings.ReplaceAll(name, "-", "_")
+	return temp + "_modal"
 }

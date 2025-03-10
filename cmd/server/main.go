@@ -47,7 +47,7 @@ func InitializeApp() (*WebApp, error) {
 
 	// init Dashboard
 	//
-	dash := dashboard.NewDashboard(httpServer, logger, proxymanager.Proxies)
+	dash := dashboard.NewDashboard(httpServer, logger, proxymanager)
 
 	webApp := &WebApp{
 		Log:          logger,

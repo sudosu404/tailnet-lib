@@ -208,6 +208,10 @@ func (c *container) getTargetURL(iPort *url.URL) (*url.URL, error) {
 		}
 	}
 
+	if c.container.HostConfig.NetworkMode == "host" && c.defaultBridgeAddress != "" {
+		return url.Parse(iPort.Scheme + "://" + c.defaultTargetHostname + ":" + internalPort)
+	}
+
 	// auto detect failed or disabled, use published port
 	if publishedPort == "" {
 		return nil, ErrNoPortFoundInContainer

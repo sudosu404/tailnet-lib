@@ -38,6 +38,18 @@ func (c *container) tryConnectContainer(scheme, internalPort, publishedPort stri
 // tryInternalPort method tries to connect to the container internal ip and internal port
 func (c *container) tryInternalPort(scheme, hostname, port string) (*url.URL, error) {
 	c.log.Debug().Str("hostname", hostname).Str("port", port).Msg("trying to connect to internal port")
+
+	// if the container is running in host mode,
+	// try connecting to defaultBridgeAddress of the host and internal port.
+	if c.container.HostConfig.NetworkMode == "host" && c.defaultBridgeAddress != "" {
+		if err := c.dial(c.defaultBridgeAddress, port); err == nil {
+			c.log.Info().Str("address", c.defaultBridgeAddress).Str("port", port).Msg("Successfully connected using defaultBridgeAddress and internal port")
+			return url.Parse(scheme + "://" + c.defaultBridgeAddress + ":" + port)
+		}
+
+		c.log.Debug().Str("address", c.defaultBridgeAddress).Str("port", port).Msg("Failed to connect")
+	}
+
 	for _, network := range c.container.NetworkSettings.Networks {
 		if network.IPAddress == "" {
 			continue
@@ -50,16 +62,6 @@ func (c *container) tryInternalPort(scheme, hostname, port string) (*url.URL, er
 		}
 		c.log.Debug().Str("address", network.IPAddress).
 			Str("port", port).Msg("Failed to connect")
-	}
-	// if the container is running in host mode,
-	// try connecting to defaultBridgeAddress of the host and internal port.
-	if c.container.HostConfig.NetworkMode == "host" && c.defaultBridgeAddress != "" {
-		if err := c.dial(c.defaultBridgeAddress, port); err == nil {
-			c.log.Info().Str("address", c.defaultBridgeAddress).Str("port", port).Msg("Successfully connected using defaultBridgeAddress and internal port")
-			return url.Parse(scheme + "://" + c.defaultBridgeAddress + ":" + port)
-		}
-
-		c.log.Debug().Str("address", c.defaultBridgeAddress).Str("port", port).Msg("Failed to connect")
 	}
 
 	return nil, ErrNoValidTargetFoundForInternalPorts

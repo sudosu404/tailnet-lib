@@ -32,8 +32,12 @@ func newContainer(logger zerolog.Logger, dcontainer ctypes.InspectResponse,
 	targetproviderName string, defaultBridgeAddress string, defaultTargetHostname string, providerAutoDetect bool,
 ) *container {
 	//
+	newlog := logger.With().Str("container", dcontainer.Name).Logger()
+	newlog.Trace().Msg("New Container")
+	defer newlog.Trace().Msg("End New Container")
+
 	c := &container{
-		log:                   logger.With().Str("container", dcontainer.Name).Logger(),
+		log:                   newlog,
 		container:             dcontainer,
 		defaultTargetHostname: defaultTargetHostname,
 		defaultBridgeAddress:  defaultBridgeAddress,
@@ -47,6 +51,9 @@ func newContainer(logger zerolog.Logger, dcontainer ctypes.InspectResponse,
 
 // newProxyConfig method returns a new proxyconfig.Config.
 func (c *container) newProxyConfig() (*model.Config, error) {
+	c.log.Trace().Msg("New ProxyConfig")
+	defer c.log.Trace().Msg("End New ProxyConfig")
+
 	// Get the proxy URL
 	//
 	hostname, err := c.getProxyHostname()
@@ -92,6 +99,9 @@ func (c *container) newProxyConfig() (*model.Config, error) {
 }
 
 func (c *container) getPorts() model.PortConfigList {
+	c.log.Trace().Msg("getPorts")
+	defer c.log.Trace().Msg("End getPorts")
+
 	ports := make(model.PortConfigList)
 	for k, v := range c.container.Config.Labels {
 		if !strings.HasPrefix(k, LabelPort) {
@@ -137,6 +147,9 @@ func (c *container) getPorts() model.PortConfigList {
 
 // getTailscaleConfig method returns the tailscale configuration.
 func (c *container) getTailscaleConfig() (*model.Tailscale, error) {
+	c.log.Trace().Msg("getTailscaleConfig")
+	defer c.log.Trace().Msg("End getTailscaleConfig")
+
 	authKey := c.getLabelString(LabelAuthKey, "")
 
 	authKey, err := c.getAuthKeyFromAuthFile(authKey)
@@ -159,6 +172,8 @@ func (c *container) getName() string {
 
 // getTargetURL method returns the container target URL
 func (c *container) getTargetURL(iPort *url.URL) (*url.URL, error) {
+	c.log.Trace().Msg("getTargetURL")
+	defer c.log.Trace().Msg("End getTargetURL")
 
 	internalPort := iPort.Port()
 	publishedPort := c.getPublishedPort(internalPort)
@@ -195,6 +210,8 @@ func (c *container) getTargetURL(iPort *url.URL) (*url.URL, error) {
 
 // getPublishedPort method returns the container port
 func (c *container) getPublishedPort(internalPort string) string {
+	c.log.Trace().Msg("getPublishedPort")
+	defer c.log.Trace().Msg("End getPublishedPort")
 
 	for p, b := range c.container.HostConfig.PortBindings {
 		if p.Port() == internalPort {
@@ -207,6 +224,8 @@ func (c *container) getPublishedPort(internalPort string) string {
 
 // getProxyHostname method returns the proxy URL from the container label.
 func (c *container) getProxyHostname() (string, error) {
+	c.log.Trace().Msg("getProxyHostname")
+	defer c.log.Trace().Msg("End getProxyHostname")
 
 	// Set custom proxy URL if present the Label in the container
 	if customName, ok := c.container.Config.Labels[LabelName]; ok {

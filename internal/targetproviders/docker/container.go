@@ -140,6 +140,9 @@ func (c *container) getPorts() model.PortConfigList {
 }
 
 func (c *container) generateTargetFromFirstTarget(port model.PortConfig) (model.PortConfig, error) {
+	c.log.Trace().Msg("generateTargetFromFirstTarget")
+	defer c.log.Trace().Msg("End generateTargetFromFirstTarget")
+
 	// multiple targets not supported in this TargetProvider
 	p := port.GetFirstTarget()
 

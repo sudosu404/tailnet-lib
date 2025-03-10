@@ -6,10 +6,10 @@ package docker
 import "github.com/almeidapaulopt/tsdproxy/internal/model"
 
 func (c *container) getLegacyPort() (model.PortConfig, error) {
-	cPort := c.container.Config.Labels[LabelContainerPort]
-	if cPort == "" {
-		cPort = c.getIntenalPortLegacy()
-	}
+	c.log.Trace().Msg("getLegacyPort")
+	defer c.log.Trace().Msg("end getLegacyPort")
+
+	cPort := c.getIntenalPortLegacy()
 
 	cProtocol, hasProtocol := c.container.Config.Labels[LabelScheme]
 	if !hasProtocol {
@@ -33,6 +33,9 @@ func (c *container) getLegacyPort() (model.PortConfig, error) {
 
 // getIntenalPortLegacy method returns the container internal port
 func (c *container) getIntenalPortLegacy() string {
+	c.log.Trace().Msg("getIntenalPortLegacy")
+	defer c.log.Trace().Msg("end getIntenalPortLegacy")
+
 	// If Label is defined, get the container port
 	if customContainerPort, ok := c.container.Config.Labels[LabelContainerPort]; ok {
 		return customContainerPort

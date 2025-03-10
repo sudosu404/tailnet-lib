@@ -43,10 +43,12 @@ internal/ui/static/*
 # Node files
 # Dependency directories
 node_modules/
-
 web/dist
 web/public/icons/sh
 
+# macOS
+.DS_Store
 
+# other
 tmp
 web/main.zip

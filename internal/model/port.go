@@ -15,8 +15,8 @@ type (
 	PortConfig struct {
 		name          string `validate:"string" yaml:"name"`
 		ProxyProtocol string `validate:"string" yaml:"proxyProtocol"`
-		ProxyPort     int    `validate:"hostname_port" yaml:"proxyPort"`
 		targets       []*url.URL
+		ProxyPort     int           `validate:"hostname_port" yaml:"proxyPort"`
 		TLSValidate   bool          `validate:"boolean" yaml:"tlsValidate"`
 		IsRedirect    bool          `validate:"boolean" yaml:"isRedirect"`
 		Tailscale     TailscalePort `validate:"dive" yaml:"tailscale"`

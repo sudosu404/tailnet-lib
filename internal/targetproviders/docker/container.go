@@ -147,6 +147,7 @@ func (c *container) generateTargetFromFirstTarget(port model.PortConfig) (model.
 	if err != nil {
 		return port, err
 	}
+	c.log.Debug().Str("port", port.String()).Str("target", targetURL.String()).Msg("target URL")
 
 	port.ReplaceTarget(p, targetURL)
 

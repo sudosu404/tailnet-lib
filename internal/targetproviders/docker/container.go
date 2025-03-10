@@ -127,22 +127,30 @@ func (c *container) getPorts() model.PortConfigList {
 		}
 
 		if !port.IsRedirect {
-			// multiple targets not supported in this TargetProvider
-			p := port.GetFirstTarget()
-
-			targetURL, err := c.getTargetURL(p)
-			if err != nil {
-				c.log.Error().Err(err).Msg("error parsing target hostname")
-				return ports
+			port, err = c.generateTargetFromFirstTarget(port)
+			if err == nil {
+				ports[k] = port
+			} else {
+				c.log.Error().Err(err).Str("port", k).Msg("error generating target")
 			}
-
-			port.ReplaceTarget(p, targetURL)
 		}
-
-		ports[k] = port
 	}
 
 	return ports
+}
+
+func (c *container) generateTargetFromFirstTarget(port model.PortConfig) (model.PortConfig, error) {
+	// multiple targets not supported in this TargetProvider
+	p := port.GetFirstTarget()
+
+	targetURL, err := c.getTargetURL(p)
+	if err != nil {
+		return port, err
+	}
+
+	port.ReplaceTarget(p, targetURL)
+
+	return port, nil
 }
 
 // getTailscaleConfig method returns the tailscale configuration.

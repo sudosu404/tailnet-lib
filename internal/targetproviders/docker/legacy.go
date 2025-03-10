@@ -23,6 +23,11 @@ func (c *container) getLegacyPort() (model.PortConfig, error) {
 	port.TLSValidate = c.getLabelBool(LabelTLSValidate, model.DefaultTLSValidate)
 	port.Tailscale.Funnel = c.getLabelBool(LabelFunnel, model.DefaultTailscaleFunnel)
 
+	port, err = c.generateTargetFromFirstTarget(port)
+	if err != nil {
+		return port, err
+	}
+
 	return port, nil
 }
 

@@ -1,9 +1,26 @@
 ---
 title: Changelog
-weight: 200 
+weight: 3
 ---
 
 {{% steps %}}
+
+### 2.0.0-beta1
+
+#### New features
+
+- Multiple ports in each tailscale hosts
+- Enable and activate multiple redirects
+- Proxies can use http and https
+- Dashboard gets updated in real-time
+- Search in the dashboard
+- Dashboard proxies are sorted in alphabetically order
+
+#### Breaking changes
+
+- Files provider is now Lists ( key in /config/tsdproxy.yaml changed to **lists:** instead of files:)
+- Lists are now a different yaml file to support multiple ports and redirects,
+please [Lists](../v2/providers/list)
 
 ### 1.4.0
 

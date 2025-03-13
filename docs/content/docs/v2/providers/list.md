@@ -20,7 +20,7 @@ In your /config/tsdproxy.yaml, specify the lists you want to use, just
 like this example where the `critical` and `media` providers are defined.
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
-files:
+lists:
   critical:
     filename: /config/critical.yaml
     defaultProxyProvider: tailscale1
@@ -75,7 +75,7 @@ This configuration will create two groups of proxies:
 ### Provider Configuration options
 
 ```yaml  {filename="/config/tsdproxy.yaml"}
-files:
+lists:
   critical: # Name the target provider
     filename: /config/critical.yaml # file with the proxy list
     defaultProxyProvider: tailscale1 # (optional) default proxy provider

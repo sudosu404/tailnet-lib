@@ -22,6 +22,14 @@ weight: 3
 - Lists are now a different yaml file to support multiple ports and redirects,
 please [Lists](../v2/providers/list)
 
+#### Deprecated Docker labels
+
+- tsdproxy.autodetect
+- tsdproxy.container_port
+- tsdproxy.funnel
+- tsdproxy.scheme
+- tsdproxy.tlsvalidate
+
 ### 1.4.0
 
 #### New features

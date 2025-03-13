@@ -17,7 +17,7 @@ Docker Compose:
 ```yaml docker-compose.yml
 services:
   tsdproxy:
-    image: almeidapaulopt/tsdproxy:latest
+    image: almeidapaulopt/tsdproxy:2
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - datadir:/data
@@ -48,7 +48,7 @@ docker:
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
     targetHostname: 172.31.0.1 # hostname or IP of docker server
     defaultProxyProvider: default # name of which proxy provider to use
-files: {}
+lists: {}
 tailscale:
   providers:
     default: # name of the provider

@@ -1,9 +1,15 @@
 ---
-linkTitle: "Documentation"
+linkTitle: "Documentation v2"
 title: Introduction
 ---
 
 👋 Welcome to the TSDProxy documentation!
+
+> [!CAUTION]
+> Version 2 still in beta, but it's already available for testing.
+>
+> As a beta version, it may have some bugs, missing features, documentation errors,
+> or other issues.
 
 ## What is TSDProxy?
 

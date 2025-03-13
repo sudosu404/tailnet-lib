@@ -9,10 +9,12 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/docker/docker/api/types"
 	ctypes "github.com/docker/docker/api/types/container"
 	devents "github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/api/types/network"
+	"github.com/docker/docker/api/types/swarm"
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog"
 
@@ -86,12 +88,20 @@ func (c *Client) AddTarget(id string) (*model.Config, error) {
 	c.log.Trace().Msgf("AddTarget %s", id)
 	defer c.log.Trace().Msgf("End AddTarget %s", id)
 
-	dcontainer, err := c.docker.ContainerInspect(context.Background(), id)
+	ctx := context.Background()
+
+	dcontainer, err := c.docker.ContainerInspect(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("error inspecting container: %w", err)
 	}
 
-	return c.newProxyConfig(dcontainer)
+	var dservice swarm.Service
+
+	if serviceID, ok := dcontainer.Config.Labels["com.docker.swarm.service.id"]; ok {
+		dservice, _, _ = c.docker.ServiceInspectWithRaw(ctx, serviceID, types.ServiceInspectOptions{})
+	}
+
+	return c.newProxyConfig(dcontainer, dservice)
 }
 
 // DeleteProxy method implements TargetProvider DeleteProxy method
@@ -173,17 +183,21 @@ func (c *Client) startAllProxies(ctx context.Context, eventsChan chan targetprov
 }
 
 // newProxyConfig method returns a new proxyconfig.Config
-func (c *Client) newProxyConfig(dcontainer ctypes.InspectResponse) (*model.Config, error) {
+func (c *Client) newProxyConfig(dcontainer ctypes.InspectResponse, dservice swarm.Service) (*model.Config, error) {
 	c.log.Trace().Msg("newProxyConfig")
 	defer c.log.Trace().Msg("End newProxyConfig")
 
-	ctn := newContainer(c.log, dcontainer, c.name, c.defaultBridgeAdress, c.defaultTargetHostname, c.tryDockerInternalNetwork)
+	ctn := newContainer(c.log, dcontainer, dservice, c.tryDockerInternalNetwork,
+		withDefaultBridgeAddress(c.defaultBridgeAdress),
+		withDefaultTargetHostname(c.defaultTargetHostname),
+		withTargetProviderName(c.name),
+	)
 
 	pcfg, err := ctn.newProxyConfig()
 	if err != nil {
 		return nil, fmt.Errorf("error getting proxy config: %w", err)
 	}
-	c.addContainer(ctn, ctn.container.ID)
+	c.addContainer(ctn, ctn.id)
 	return pcfg, nil
 }
 

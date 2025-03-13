@@ -14,7 +14,7 @@ import (
 func (c *container) getLabelBool(label string, defaultValue bool) bool {
 	// Set default value
 	value := defaultValue
-	if valueString, ok := c.container.Config.Labels[label]; ok {
+	if valueString, ok := c.labels[label]; ok {
 		valueBool, err := strconv.ParseBool(valueString)
 		// set value only if no error
 		// if error, keep default
@@ -30,7 +30,7 @@ func (c *container) getLabelBool(label string, defaultValue bool) bool {
 func (c *container) getLabelString(label string, defaultValue string) string {
 	// Set default value
 	value := defaultValue
-	if valueString, ok := c.container.Config.Labels[label]; ok {
+	if valueString, ok := c.labels[label]; ok {
 		value = valueString
 	}
 
@@ -39,7 +39,7 @@ func (c *container) getLabelString(label string, defaultValue string) string {
 
 // getAuthKeyFromAuthFile method returns a auth key from a file.
 func (c *container) getAuthKeyFromAuthFile(authKey string) (string, error) {
-	authKeyFile, ok := c.container.Config.Labels[LabelAuthKeyFile]
+	authKeyFile, ok := c.labels[LabelAuthKeyFile]
 	if !ok || authKeyFile == "" {
 		return authKey, nil
 	}

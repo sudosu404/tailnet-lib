@@ -11,7 +11,7 @@ func (c *container) getLegacyPort() (model.PortConfig, error) {
 
 	cPort := c.getIntenalPortLegacy()
 
-	cProtocol, hasProtocol := c.container.Config.Labels[LabelScheme]
+	cProtocol, hasProtocol := c.labels[LabelScheme]
 	if !hasProtocol {
 		cProtocol = "http"
 	}
@@ -37,17 +37,12 @@ func (c *container) getIntenalPortLegacy() string {
 	defer c.log.Trace().Msg("end getIntenalPortLegacy")
 
 	// If Label is defined, get the container port
-	if customContainerPort, ok := c.container.Config.Labels[LabelContainerPort]; ok {
+	if customContainerPort, ok := c.labels[LabelContainerPort]; ok {
 		return customContainerPort
 	}
 
-	for p := range c.container.NetworkSettings.Ports {
-		return p.Port()
-	}
-
-	// in network_mode=host
-	for p := range c.container.HostConfig.PortBindings {
-		return p.Port()
+	for p := range c.ports {
+		return p
 	}
 
 	return ""

@@ -6,6 +6,7 @@ package dashboard
 import (
 	"net/http"
 
+	"github.com/almeidapaulopt/tsdproxy/internal/consts"
 	"github.com/almeidapaulopt/tsdproxy/internal/model"
 
 	"github.com/a-h/templ"
@@ -20,6 +21,7 @@ const (
 	EventMergeMessage
 	EventRemoveMessage
 	EventScript
+	EventUpdateSignals
 )
 
 // sseClient represents an SSE connection
@@ -57,7 +59,10 @@ func (dash *Dashboard) streamHandler() http.HandlerFunc {
 		// Ensure client is removed when disconnected
 		defer dash.removeSSEClient(sessionID)
 
-		go dash.renderList(client.channel)
+		go func() {
+			dash.renderList(client.channel)
+			dash.updateUser(r, client.channel)
+		}()
 
 		var err error
 
@@ -89,6 +94,9 @@ func (dash *Dashboard) streamHandler() http.HandlerFunc {
 
 				case EventScript:
 					err = sse.ExecuteScript(message.Message)
+
+				case EventUpdateSignals:
+					err = sse.MergeSignals([]byte(message.Message))
 				}
 			}
 
@@ -96,15 +104,23 @@ func (dash *Dashboard) streamHandler() http.HandlerFunc {
 				dash.Log.Error().Err(err).Msg("Error sending message to client")
 				break LOOP
 			}
-
-			dash.updateUser(r)
 		}
 	}
 }
 
-func (dash *Dashboard) updateUser(r *http.Request) {
-	// TODO: get proxyprovider user
-	_ = r
+func (dash *Dashboard) updateUser(r *http.Request, ch chan SSEMessage) {
+	username := r.Header.Get(consts.HeaderUsername)
+	displayName := r.Header.Get(consts.HeaderDisplayName)
+	profilePicURL := r.Header.Get(consts.HeaderProfilePicURL)
+
+	signals := `{user_username: '` + username +
+		`', user_displayName: '` + displayName +
+		`', user_profilePicUrl: '` + profilePicURL + `'}`
+
+	ch <- SSEMessage{
+		Type:    EventUpdateSignals,
+		Message: signals,
+	}
 }
 
 func (dash *Dashboard) removeSSEClient(name string) {

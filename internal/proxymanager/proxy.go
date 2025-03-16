@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"net/url"
 	"sync"
 
@@ -112,6 +113,16 @@ func (proxy *Proxy) GetAuthURL() string {
 	return proxy.providerProxy.GetAuthURL()
 }
 
+func (proxy *Proxy) ProviderUserMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		who := proxy.providerProxy.Whois(r)
+
+		ctx := model.WhoisNewContext(r.Context(), who)
+
+		next.ServeHTTP(w, r.WithContext(ctx))
+	})
+}
+
 func (proxy *Proxy) initPorts() {
 	var newPort *port
 	for k, v := range proxy.Config.Ports {
@@ -119,7 +130,7 @@ func (proxy *Proxy) initPorts() {
 		if v.IsRedirect {
 			newPort = newPortRedirect(proxy.ctx, v, log)
 		} else {
-			newPort = newPortProxy(proxy.ctx, v, log, proxy.Config.ProxyAccessLog)
+			newPort = newPortProxy(proxy.ctx, v, log, proxy.Config.ProxyAccessLog, proxy.ProviderUserMiddleware)
 		}
 
 		proxy.log.Debug().Any("port", newPort).Msg("newport")

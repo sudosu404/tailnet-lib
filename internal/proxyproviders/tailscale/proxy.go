@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"net"
+	"net/http"
 	"strconv"
 	"strings"
 	"sync"
@@ -109,6 +110,20 @@ func (p *Proxy) WatchEvents() chan model.ProxyEvent {
 
 func (p *Proxy) GetAuthURL() string {
 	return p.authURL
+}
+
+func (p *Proxy) Whois(r *http.Request) model.Whois {
+	who, err := p.lc.WhoIs(r.Context(), r.RemoteAddr)
+	if err != nil {
+		return model.Whois{}
+	}
+
+	return model.Whois{
+		DisplayName:   who.UserProfile.DisplayName,
+		Username:      who.UserProfile.LoginName,
+		ID:            who.UserProfile.ID.String(),
+		ProfilePicURL: who.UserProfile.ProfilePicURL,
+	}
 }
 
 func (p *Proxy) watchStatus() {

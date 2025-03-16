@@ -13,6 +13,7 @@ import (
 	"net/http/httputil"
 	"sync"
 
+	"github.com/almeidapaulopt/tsdproxy/internal/consts"
 	"github.com/almeidapaulopt/tsdproxy/internal/core"
 	"github.com/almeidapaulopt/tsdproxy/internal/model"
 
@@ -28,14 +29,14 @@ type port struct {
 	mtx        sync.Mutex
 }
 
-func ProviderUserMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// TODO:
-		next.ServeHTTP(w, r)
-	})
-}
-
-func newPortProxy(ctx context.Context, pconfig model.PortConfig, log zerolog.Logger, accessLog bool) *port {
+func newPortProxy(
+	ctx context.Context,
+	pconfig model.PortConfig,
+	log zerolog.Logger,
+	accessLog bool,
+	whoisFunc func(next http.Handler) http.Handler,
+) *port {
+	//
 	log = log.With().Str("port", pconfig.String()).Logger()
 
 	ctxPort, cancel := context.WithCancel(ctx)
@@ -51,17 +52,22 @@ func newPortProxy(ctx context.Context, pconfig model.PortConfig, log zerolog.Log
 			r.SetURL(pconfig.GetFirstTarget())
 			r.Out.Host = r.In.Host
 			r.Out.Header["X-Forwarded-For"] = r.In.Header["X-Forwarded-For"]
+
+			if user, ok := model.WhoisFromContext(r.In.Context()); ok {
+				r.Out.Header.Set(consts.HeaderUsername, user.Username)
+				r.Out.Header.Set(consts.HeaderDisplayName, user.DisplayName)
+				r.Out.Header.Set(consts.HeaderProfilePicURL, user.ProfilePicURL)
+			}
+
 			r.SetXForwarded()
 		},
 	}
 
-	handler := reverseProxyFunc(reverseProxy)
+	handler := whoisFunc(reverseProxy)
 	// add logger to proxy
 	if accessLog {
 		handler = core.LoggerMiddleware(log, handler)
 	}
-
-	handler = ProviderUserMiddleware(handler)
 
 	// main http Server
 	httpServer := &http.Server{
@@ -96,13 +102,6 @@ func newPortRedirect(ctx context.Context, pconfig model.PortConfig, log zerolog.
 		cancel:     cancel,
 		httpServer: redirectHTTPServer,
 	}
-}
-
-// reverseProxyFunc func is a method that returns a reverse proxy handler.
-func reverseProxyFunc(p *httputil.ReverseProxy) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		p.ServeHTTP(w, r)
-	})
 }
 
 func (p *port) startWithListener(l net.Listener) error {

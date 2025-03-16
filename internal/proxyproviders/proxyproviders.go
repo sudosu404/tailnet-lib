@@ -6,6 +6,7 @@ package proxyproviders
 import (
 	"context"
 	"net"
+	"net/http"
 
 	"github.com/almeidapaulopt/tsdproxy/internal/model"
 )
@@ -24,5 +25,6 @@ type (
 		GetURL() string
 		GetAuthURL() string
 		WatchEvents() chan model.ProxyEvent
+		Whois(r *http.Request) model.Whois
 	}
 )

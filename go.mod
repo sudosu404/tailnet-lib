@@ -2,7 +2,7 @@ module github.com/almeidapaulopt/tsdproxy
 
 go 1.24
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	github.com/a-h/templ v0.3.833
@@ -40,7 +40,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.29.1 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17 // indirect
 	github.com/aws/smithy-go v1.22.3 // indirect
-	github.com/coder/websocket v1.8.12 // indirect
+	github.com/coder/websocket v1.8.13 // indirect
 	github.com/containerd/log v0.1.0 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/dblohm7/wingoes v0.0.0-20240820181039-f2b84150679e // indirect
@@ -52,7 +52,7 @@ require (
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
-	github.com/gaissmai/bart v0.18.1 // indirect
+	github.com/gaissmai/bart v0.19.0 // indirect
 	github.com/go-json-experiment/json v0.0.0-20250116043007-0640c115aea5 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect

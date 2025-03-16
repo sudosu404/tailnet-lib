@@ -161,6 +161,7 @@ func (proxy *Proxy) start() {
 		l, err = proxy.providerProxy.GetListener(k)
 		if err != nil {
 			proxy.log.Error().Err(err).Str("port", k).Msg("Error adding listener")
+			continue
 		}
 
 		proxy.startPort(k, l)

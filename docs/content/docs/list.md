@@ -79,7 +79,7 @@ music: # Name of the proxy
   tlsValidate: false # (optional, default true) disable TLS validation
   tailscale:  # (optional) Tailscale configuration for this proxy
     authKey: asdasdas # (optional) Tailscale authkey
-    ephemeral: true # (optional) Enable ephemeral mode
+    ephemeral: false # (optional) disable ephemeral mode
     runWebClient: false # (optional) Run web client
     verbose: false # (optional) Run in verbose mode
     funnel: false # (optional) Run in funnel mode

@@ -32,15 +32,20 @@ lists:
 ```
 
 ```yaml  {filename="/config/critical.yaml"}
-dash:
+nas1:
   ports:
     443/https:
       targets:
-        - http://localhost:8080
+        - http://nas1.local:5001
     80/http:
       targets:
-        - dash.funny-name.ts.net
+        - nas1.funny-name.ts.net
       isRedirect: true
+nas2:
+  ports:
+    443/https:
+      targets:
+        - https://nas2.local:5001
 ```
 
 ```yaml  {filename="/config/media.yaml"}
@@ -90,21 +95,21 @@ proxyname: # Name of the proxy
 
   tailscale:  # (optional) Tailscale configuration for this proxy
     authKey: asdasdas # (optional) Tailscale authkey
-    ephemeral: true # (optional) Enable ephemeral mode
-    runWebClient: false # (optional) Run web client
-    verbose: false # (optional) Run in verbose mode
+    ephemeral: false # (optional) (defaults to false) Enable ephemeral mode
+    runWebClient: false # (optional) (defaults to false)  Run web client
+    verbose: false # (optional) (defaults to false) Run in verbose mode
 
   ports:
     port/protocol: #example 443/https, 80/http
     targets: # list of targets (in this version only the first will be used)
       - http://sub.domain.com:8111 # change to your target
     tailscale: # (optional)
-      funnel: true # default false, enable funnel mode
-    isRedirect: true # (optional) default false, redirect to the target 
-    tlsValidate: false # (optional) default true, disable targets TLS validation
+      funnel: true # (optional) (defaults to false), enable funnel mode
+    isRedirect: true # (optional) (defaults to false), redirect to the target 
+    tlsValidate: false # (optional) /defaults to true), disable targets TLS validation
 
   dashboard:
-    visible: false # (optional) doesn't show proxy in dashboard
+    visible: false # (optional) (defaults to true) doesn't show proxy in dashboard
     label: "" # (optional), label to be shown in dashboard
     icon: "" # (optional), icon to be shown in dashboard
 ```

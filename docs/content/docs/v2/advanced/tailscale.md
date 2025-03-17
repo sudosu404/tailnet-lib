@@ -33,9 +33,7 @@ Go to TSDProxy Dashboard (example: <http://192.168.1.1:8080>).
 Click on the Proxy that should show "Authentication" status.
 
 >[!TIP]
-> Set "Ephemeral" to false in the Tailscale provider to avoid the need of
-authentication next time. See [docker Ephemeral label](../../docker/#tsdproxyephemeral)
-or [Proxy List configuration](../../list/#proxy-list-file-options)
+> If "Ephemeral" is set to true, you will need to authenticate each TSDProxy restarts
 
 {{% /steps %}}
 
@@ -49,9 +47,8 @@ or [Proxy List configuration](../../list/#proxy-list-file-options)
 2. Click in "Generate auth key"
 3. Add a Description
 4. Enable Reusable
-5. Enable Ephemeral
-6. Add Tags if you need
-7. Click in "Generate key"
+5. Add Tags if you need
+6. Click in "Generate key"
 
 >[!WARNING]
 > If tags were added to the key, all proxies initialized with the same authkey

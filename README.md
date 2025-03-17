@@ -5,22 +5,35 @@ to your Tailscale network by automatically creating Tailscale machines for each
 tagged container. This allows services to be accessible via unique, secure URLs
 without the need for complex configurations or additional Tailscale containers.
 
+## Version 2
+
+Version 2 is already in beta. Please try and open issues if bugs detected.
+Some configurations of Version 1.x are deprecated or changed please verify it in
+ [Documentation changelog](https://almeidapaulopt.github.io/tsdproxy/docs/changelog/).
+
+Because of some breaking changes, final version 2 arrive will not set as latest
+Docker image. We will wait some weeks to give you time to update.
+
+Version 1 will not get new features.
+
+## Full Documentation
+
+- [Official Documentation](https://almeidapaulopt.github.io/tsdproxy/)
+
 ## Breaking Changes
 
-### in 1.3.0
-
-Configuration files will be case sensitive.
-If configuration files has unknown keys, they will error and tsdproxy will not run.
-
-### in 1.0.0
-
-This version changes the configuration method.
-Please read the [Documentation](https://almeidapaulopt.github.io/tsdproxy/docs)
+Please read the [Documentation changelog](https://almeidapaulopt.github.io/tsdproxy/docs/changelog/)
 for details.
+
+## Help needed
+
+Please help with documentation, tests development, new features, bug fixes.
+If you don't feel comfortable to this kind of tasks, [sponsor](https://github.com/sponsors/almeidapaulopt)
+the project.
 
 ## Docker Images
 
-1. almeidapaulopt/tsdproxy:v1.x.x  - Version 1.x.x
+1. almeidapaulopt/tsdproxy:vx.x.x  - Version x.x.x
 2. almeidapaulopt/tsdproxy:1       - Latest release of version 1.x.x
 3. almeidapaulopt/tsdproxy:2       - Latest release of version 2.x.x (beta)
 4. almeidapaulopt/tsdproxy:latest  - Latest stable
@@ -60,10 +73,6 @@ machine.
 the appropriate Docker container and port.
 6. **Dynamic Management**: As containers start and stop, TsDProxy automatically
 creates and removes the corresponding Tailscale machines and routing configurations.
-
-## Full Documentation
-
-- [Official Documentation](https://almeidapaulopt.github.io/tsdproxy/)
 
 ## Requirements
 

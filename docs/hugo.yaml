@@ -33,12 +33,12 @@ enableInlineShortcodes: true
 menu:
   main:
     - name: Documentation
-      pageRef: /docs/v1
+      pageRef: /docs
       weight: 1
     - name: About
       pageRef: /about
       weight: 2
-    - name: v2
+    - name: Try v2
       pageRef: /docs/v2
       weight: 3
     - name: Search
@@ -107,3 +107,10 @@ params:
 
 article:
   displayPagination: true
+
+taxonomies:
+  version: version
+
+services:
+  googleAnalytics:
+    ID: G-PLF0YCK3J2

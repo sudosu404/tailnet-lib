@@ -1,11 +1,11 @@
 ---
 title: Changelog
-weight: 3
+weight: 500
 ---
 
 {{% steps %}}
 
-### 2.0.0-beta1
+### 2.0.0-beta3
 
 #### New features
 
@@ -15,10 +15,14 @@ weight: 3
 - Dashboard gets updated in real-time
 - Search in the dashboard
 - Dashboard proxies are sorted in alphabetically order
+- Add support to swam stacks
+- Tailscale user profile in top-right of Dashboard
+- Pass Tailscale identity headers to destination service
 
 #### Breaking changes
 
-- Files provider is now Lists ( key in /config/tsdproxy.yaml changed to **lists:** instead of files:)
+- Files provider is now Lists ( key in /config/tsdproxy.yaml changed to
+**lists:** instead of files:)
 - Lists are now a different yaml file to support multiple ports and redirects,
 please [Lists](../v2/providers/list)
 

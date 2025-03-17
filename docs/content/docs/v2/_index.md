@@ -1,7 +1,7 @@
 ---
 linkTitle: "Documentation v2"
 title: Introduction
-weight: 2
+weight: 400 
 ---
 
 👋 Welcome to the TSDProxy documentation!

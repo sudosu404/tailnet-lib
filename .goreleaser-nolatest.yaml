@@ -9,6 +9,7 @@ env:
   - GITHUB_ORG=almeidapaulopt
   - DOCKER_ORG=almeidapaulopt
   - DOCKERFILE=Dockerfile.goreleaser
+  - TAILSCALE_VERSION="{{ .Env.TAILSCALE_VERSION }}"
 
 before:
   hooks:
@@ -68,6 +69,12 @@ builds:
       - -X "github.com/almeidapaulopt/tsdproxy/internal/core.version={{ .Version  }}"
       - -X "github.com/almeidapaulopt/tsdproxy/internal/core.BuildDate={{ .Date }}"
       - -X "github.com/almeidapaulopt/tsdproxy/internal/core.GitCommit={{ .ShortCommit }}"
+      - -X "tailscale.com/version.Short={{ .Env.TAILSCALE_VERSION  }}"
+      - -X "tailscale.com/version.Long={{ .Env.TAILSCALE_VERSION  }}-TSDProxy"
+      - -X "tailscale.com/version.GitCommit={{ .ShortCommit }}"
+      - -X "tailscale.com/version.shortStamp={{ .Env.TAILSCALE_VERSION  }}"
+      - -X "tailscale.com/version.longStamp={{ .Env.TAILSCALE_VERSION  }}-TSDProxy"
+      - -X "tailscale.com/version.gitCommitStamp={{ .ShortCommit }}"
 
   - id: healthcheck
     main: ./cmd/healthcheck/main.go

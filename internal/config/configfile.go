@@ -55,7 +55,7 @@ func (f *ConfigFile) Save() error {
 	// create config directory
 	dir, _ := filepath.Split(f.filename)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		if err1 := os.MkdirAll(dir, os.ModeDir); err1 != nil {
+		if err1 := os.MkdirAll(dir, consts.PermOwnerAll); err1 != nil {
 			return err1
 		}
 	}

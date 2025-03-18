@@ -6,12 +6,12 @@
       "dependencies": {
         "@mdi/svg": "^7.4.47",
         "@starfederation/datastar": "^1.0.0-beta.9",
-        "simple-icons": "^14.10.0",
+        "simple-icons": "^14.11.0",
       },
       "devDependencies": {
         "@tailwindcss/vite": "^4.0.14",
         "@vite-pwa/assets-generator": "^0.2.6",
-        "daisyui": "^5.0.4",
+        "daisyui": "^5.0.6",
         "tailwindcss": "^4.0.14",
         "vite": "^6.2.2",
         "vite-plugin-compression2": "^1.3.3",
@@ -459,7 +459,7 @@
 
     "crypto-random-string": ["crypto-random-string@2.0.0", "", {}, "sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA=="],
 
-    "daisyui": ["daisyui@5.0.4", "", {}, "sha512-9X3oX/k9hPBCslAECk8kYfvwgrz6Grs0lN7VI0/ZTM/hUfq1uFREHxCcBCCq0QROpN183N19B1hTNRWGipO2Eg=="],
+    "daisyui": ["daisyui@5.0.6", "", {}, "sha512-/e/9Gw/2y9oawBJlWkJMSEhRXdmfOLvcPl+6q/x2rPEdIVOtebs1t3ex2vwySl9vCRs1GGNBKCiL+P60Ps/wUw=="],
 
     "data-view-buffer": ["data-view-buffer@1.0.2", "", { "dependencies": { "call-bound": "^1.0.3", "es-errors": "^1.3.0", "is-data-view": "^1.0.2" } }, "sha512-EmKO5V3OLXh1rtK2wgXRansaK1/mtVdTUEiEI0W8RkvgT05kfxaH29PliLnpLP73yYO6142Q72QNa8Wx/A5CqQ=="],
 

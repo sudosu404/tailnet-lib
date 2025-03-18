@@ -58,9 +58,12 @@ type (
 
 	// TailscaleServerConfig struct stores Tailscale Server configuration
 	TailscaleServerConfig struct {
-		AuthKey     string `default:"" validate:"omitempty" yaml:"authKey,omitempty"`
-		AuthKeyFile string `default:"" validate:"omitempty" yaml:"authKeyFile,omitempty"`
-		ControlURL  string `default:"https://controlplane.tailscale.com" validate:"uri" yaml:"controlUrl"`
+		AuthKey      string `default:"" validate:"omitempty" yaml:"authKey,omitempty"`
+		AuthKeyFile  string `default:"" validate:"omitempty" yaml:"authKeyFile,omitempty"`
+		ClientID     string `default:"" validate:"omitempty" yaml:"clientId,omitempty"`
+		ClientSecret string `default:"" validate:"omitempty" yaml:"clientSecret,omitempty"`
+		Tags         string `default:"" validate:"omitempty" yaml:"tags,omitempty"`
+		ControlURL   string `default:"https://controlplane.tailscale.com" validate:"uri" yaml:"controlUrl"`
 	}
 
 	// ListTargetProviderConfig struct stores a proxy list target provider configuration.
@@ -113,6 +116,10 @@ func InitializeConfig() error {
 
 	// load auth keys from files
 	for _, d := range Config.Tailscale.Providers {
+		if d != nil && d.ClientSecret != "" && d.ClientID != "" {
+			continue
+		}
+
 		if d != nil && d.AuthKeyFile != "" {
 			authkey, err := Config.getAuthKeyFromFile(d.AuthKeyFile)
 			if err != nil {

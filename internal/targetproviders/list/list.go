@@ -37,9 +37,9 @@ type (
 	configProxyList map[string]proxyConfig
 
 	proxyConfig struct {
+		Dashboard     model.Dashboard `validate:"dive" yaml:"dashboard"`
 		Ports         map[string]port `yaml:"ports"`
 		ProxyProvider string          `yaml:"proxyProvider"`
-		Dashboard     model.Dashboard `validate:"dive" yaml:"dashboard"`
 		Tailscale     model.Tailscale `yaml:"tailscale"`
 	}
 
@@ -53,7 +53,7 @@ type (
 
 var _ targetproviders.TargetProvider = (*Client)(nil)
 
-func (s *proxyConfig) UnmarshalYAML(unmarshal func(interface{}) error) error {
+func (s *proxyConfig) UnmarshalYAML(unmarshal func(any) error) error {
 	_ = defaults.Set(s)
 
 	type plain proxyConfig

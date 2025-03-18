@@ -25,6 +25,7 @@ const (
 	LabelAuthKey      = LabelPrefix + "authkey"
 	LabelAuthKeyFile  = LabelPrefix + "authkeyfile"
 	LabelAutoDetect   = LabelPrefix + "autodetect"
+	LabelTags         = LabelPrefix + "tags"
 	// Legacy
 	LabelContainerPort = LabelPrefix + "container_port"
 	LabelScheme        = LabelPrefix + "scheme"

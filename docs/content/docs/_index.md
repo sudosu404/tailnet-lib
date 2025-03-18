@@ -1,5 +1,5 @@
 ---
-linkTitle: "Documentation v1"
+linkTitle: "Documentation"
 title: Introduction
 weight: 1
 ---

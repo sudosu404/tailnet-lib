@@ -121,6 +121,6 @@ proxyname: # Name of the proxy
 > You only need to restart TSDProxy if your changes are in /config/tsdproxy.yaml
 
 > [!NOTE]
-> See available icons in [icons](/advanced/icons).
+> See available icons in [icons](../../advanced/icons).
 
 {{% /steps %}}

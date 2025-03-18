@@ -5,7 +5,7 @@ weight: 500
 
 {{% steps %}}
 
-### 2.0.0-beta3
+### 2.0.0-beta4
 
 #### New features
 
@@ -26,7 +26,7 @@ weight: 500
 - Files provider is now Lists ( key in /config/tsdproxy.yaml changed to
 **lists:** instead of files:)
 - Lists are now a different yaml file to support multiple ports and redirects,
-please [Lists](../v2/providers/list)
+please [Lists](../v2/providers/lists)
 
 #### Deprecated Docker labels
 

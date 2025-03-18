@@ -3,78 +3,128 @@ title: Tailscale
 next: /docs/scenarios
 ---
 
-## OAuth
+
+This document guides you through the different authentication and configuration
+options for Tailscale with TSDProxy.
+
+## Authentication Methods
+
+TSDProxy supports three authentication methods with Tailscale: OAuth,
+OAuth (manual), and AuthKey.
+
+### OAuth
 
 {{% steps %}}
 
-### Disable AuthKey
+#### Prerequisites
 
-OAuth authentication mode is enable if no AuthKey is set in the configuration
-for Tailscale provider.
+1. Generate an OAuth client at [https://login.tailscale.com/admin/settings/oauth](https://login.tailscale.com/admin/settings/oauth).
+2. Define tags for services. Tags can be defined in the provider, applying to
+all services.
 
-Like:
+> [!Important]
+> All auth keys created from an OAuth client require **tags**. This is a Tailscale requirement.
+
+#### Configuration
+
+Add the OAuth client credentials to the TSDProxy configuration:
 
 ```yaml {filename="/config/tsdproxy.yaml"}
 tailscale:
   providers:
-    default: 
+    default:
+      clientId: "your_client_id"
+      clientSecret: "your_client_secret"
+      tags: "tag:example" # Optional if tags are defined in each proxy
+```
+
+#### Restart
+
+Restart TSDProxy to apply the changes.
+
+> [!Tip]
+> If the proxy fails to authenticate after restarting, check the error logs.
+> Ensure the tags are correct and the OAuth client is enabled.
+
+{{% /steps %}}
+
+### OAuth (Manual)
+
+{{% steps %}}
+
+#### Disable AuthKey
+
+OAuth authentication mode is enabled when no AuthKey is set in the Tailscale
+provider configuration:
+
+```yaml {filename="/config/tsdproxy.yaml"}
+tailscale:
+  providers:
+    default:
       authKey: ""
       authKeyFile: ""
 ```
 
-When the proxy starts, it will wait to be authenticated with the Tailscale.
+The proxy will wait for authentication with Tailscale during startup.
 
-### Go to your Dashboard
+#### Dashboard
 
-Go to TSDProxy Dashboard (example: <http://192.168.1.1:8080>).
+Access the TSDProxy dashboard (e.g., `http://192.168.1.1:8080`).
 
-### Authenticate
+#### Authentication
 
-Click on the Proxy that should show "Authentication" status.
+Click on the proxy with "Authentication" status.
 
->[!TIP]
-> If "Ephemeral" is set to true, you will need to authenticate each TSDProxy restarts
+> [!Tip]
+> If "Ephemeral" is set to `true`, authentication is required at each TSDProxy restart.
 
 {{% /steps %}}
 
-## AuthKey
+### AuthKey
 
 {{% steps %}}
 
-### Generate Authkey
+#### Generate AuthKey
 
-1. Go to [https://login.tailscale.com/admin/settings/keys](https://login.tailscale.com/admin/settings/keys)
-2. Click in "Generate auth key"
-3. Add a Description
-4. Enable Reusable
-5. Add Tags if you need
-6. Click in "Generate key"
+1. Go to [https://login.tailscale.com/admin/settings/keys](https://login.tailscale.com/admin/settings/keys).
+2. Click "Generate auth key".
+3. Add a description.
+4. Enable "Reusable".
+5. Add tags if needed.
+6. Click "Generate key".
 
->[!WARNING]
-> If tags were added to the key, all proxies initialized with the same authkey
-> will get the same tags.
-> Add a new Tailscale provider to the configuration if
-> you need to use different)
+> [!Warning]
+> If tags are added to the key, all proxies initialized with the same AuthKey will receive the same tags. To use different tags, add a new Tailscale provider to the configuration.
 
-### Add to configuration
+#### Configuration
 
-Add you key to the configuration as follow:
+Add the AuthKey to the TSDProxy configuration:
 
 ```yaml {filename="/config/tsdproxy.yaml"}
 tailscale:
   providers:
-    default: 
-      authKey: "GENERATED KEY HERE"
+    default:
+      authKey: "YOUR_GENERATED_KEY_HERE"
       authKeyFile: ""
 ```
 
-### Restart
+#### Restart
 
-Restart TSDProxy
+Restart TSDProxy to apply the changes.
 
 {{% /steps %}}
 
 ## Funnel
 
-Beside adding the TSDProxy configuration to activate Funnel to a proxy, you also
-should give permissions on Tailscale ACL. See [here](.././troubleshooting/#funnel-doesnt-work) to more detail.
+In addition to configuring TSDProxy to enable Funnel, you need to grant
+permissions in the Tailscale ACL. See [Troubleshooting](.././troubleshooting/#funnel-doesnt-work)
+for more details. Also read Tailscale's [Funnel documentation](https://tailscale.com/kb/1223/funnel#requirements-and-limitations)
+for requirements and limitations.
+
+## Tags
+
+- Tags are required for OAuth authentication.
+- Tags only work with OAuth authentication.
+- Tags can be configured in the provider or service.
+- If tags are defined in the provider, they apply to all services.
+- If tags are defined in the service, provider tags are ignored.

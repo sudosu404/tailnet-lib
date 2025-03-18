@@ -59,14 +59,14 @@ labels:
 
 {{% /details %}}
 
-## Port configuration
+### Port configuration
 
 To have better control over the ports you want to proxy, you can use the
 `tsdproxy.port` labels.
 TSDProxy v2 enables the possibility to define multiple ports to proxy. You can
 also define http redirects.
 
-### How to use it
+#### How to use it
 
 You can use multiple ports to proxy, just define multiple the `tsdproxy.port` label with a different index.
 
@@ -94,7 +94,7 @@ tsdproxy.port.<index>: "<proxy port>/<proxy Protocol> -> <url>"
 - **\<proxy protocol\>** is the protocol that will be used on the proxy. (Examples: http,https)
 - **\<url\>** is the url that will be redirected to.
 
-### Examples
+#### Examples
 
 ```yaml
 labels:
@@ -114,7 +114,7 @@ labels:
   tsdproxy.port.4: "82/http->https://othersite.com"
 ```
 
-### Port options
+#### Port options
 
 | Option | Description |
 |-----|---|
@@ -185,9 +185,23 @@ labels:
   tsdproxy.authkey: "/run/secrets/authkey"
 ```
 
-## Dashboard Labels
+{{% /details %}}
+
+{{% details title="tsdproxy.tags" %}}
+
+Use it to apply tags to your proxy. tsdproxy.tags is as comma separated list
+of tags.
+
+```yaml
+labels:
+  tsdproxy.enable: "true"
+  tsdproxy.tags: "tag:example,tag:server,tag:web"
+```
 
 {{% /details %}}
+
+## Dashboard Labels
+
 {{% details title="tsdproxy.dash.visible" %}}
 
 Defaults to true, set to false to hide on Dashboard.

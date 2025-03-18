@@ -12,6 +12,8 @@ weight: 500
 - Multiple ports in each tailscale hosts
 - Enable and activate multiple redirects
 - Proxies can use http and https
+- OAuth autentication without using the dashboard
+- Assign Tags on Tailscale hosts
 - Dashboard gets updated in real-time
 - Search in the dashboard
 - Dashboard proxies are sorted in alphabetically order

@@ -98,6 +98,8 @@ proxyname: # Name of the proxy
     ephemeral: false # (optional) (defaults to false) Enable ephemeral mode
     runWebClient: false # (optional) (defaults to false)  Run web client
     verbose: false # (optional) (defaults to false) Run in verbose mode
+    tags: "tag:example,tag:server" # (optional) tags to apply
+                                   # (will override the default provider tags)
 
   ports:
     port/protocol: #example 443/https, 80/http

@@ -77,7 +77,7 @@ docker compose restart
 ### Run a sample service
 
 Here we’ll use the nginx image to serve a sample service.
-The container name is `sample-nginx`, expose port 8181, and add the
+The container name is `sample-nginx`, expose port 8111, and add the
 `tsdproxy.enable` label.
 
 ```bash

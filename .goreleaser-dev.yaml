@@ -10,7 +10,6 @@ env:
   - DOCKER_ORG=almeidapaulopt
   - DOCKERFILE=Dockerfile.goreleaser
   - LATEST=dev
-  - TAILSCALE_VERSION="{{ .Env.TAILSCALE_VERSION }}"
 
 before:
   hooks:

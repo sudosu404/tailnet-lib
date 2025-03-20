@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	github.com/a-h/templ v0.3.833
 	github.com/creasty/defaults v1.8.0
-	github.com/docker/docker v28.0.1+incompatible
+	github.com/docker/docker v28.0.2+incompatible
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/go-playground/validator/v10 v10.25.0
 	github.com/google/uuid v1.6.0

@@ -11,7 +11,7 @@ require (
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/go-playground/validator/v10 v10.25.0
 	github.com/google/uuid v1.6.0
-	github.com/rs/zerolog v1.33.0
+	github.com/rs/zerolog v1.34.0
 	github.com/starfederation/datastar v0.21.4
 	github.com/vearutop/statigz v1.4.3
 	go.opentelemetry.io/otel v1.35.0

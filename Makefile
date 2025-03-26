@@ -91,10 +91,8 @@ dev: docker_start
 ## server_start: start the server
 .PHONY: server_start
 server_start:
-	# wgo run -race -debounce="500ms" -file=.go -file=.env -file=.json ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
 	templ generate --proxy="http://localhost:5173" --watch --cmd="echo RELOAD" & 
 	air
-	# wgo -debounce="500ms" -file=.go -file=.templ -xfile=_templ.go templ generate --notify-proxy :: go run -race ${MAIN_PACKAGE_PATH} -config ./dev/tsdproxy-local.yaml
 
 .PHONY: assets
 assets:
@@ -142,13 +140,12 @@ docker_image:
 .PHONY: docs
 docs:
 	cd docs && hugo server --disableFastRender
-##	cd docs && hugo server --buildDrafts --disableFastRender
 
 
 .PHONY: run_in_docker
 run_in_docker:
-	templ generate --proxy="http://localhost:5173" --watch --cmd="echo RELOAD" &
-	wgo -debounce="500ms" -file=.go -file=.templ -xfile=_templ.go templ generate --notify-proxy :: go run ${MAIN_PACKAGE_PATH}
+	templ generate --proxy="http://localhost:5173" --watch --cmd="echo RELOAD" & 
+	air
 
 ## audit: run quality control checks
 .PHONY: audit
@@ -169,15 +166,7 @@ audit:
 
 ## push: push changes to the remote Git repository
 .PHONY: push
-push: gen tidy audit no-dirty
+push: tidy audit no-dirty
 	git push
 	git push --tags
-
-## info: print version info
-.PHONY: info
-info:
-	 @echo "Version:           ${VERSION}"
-	 @echo "Git Tag:           ${GIT_TAG}"
-	 @echo "Git Commit:        ${GIT_COMMIT}"
-	 @echo "Git Tree State:    ${GIT_TREE_STATE}"
 

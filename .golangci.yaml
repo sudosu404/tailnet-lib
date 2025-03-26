@@ -1,78 +1,89 @@
+version: "2"
 run:
-  timeout: 5m
   modules-download-mode: readonly
-
 linters:
-  disable-all: true
-  fast: false
+  default: none
   enable:
     - bodyclose
+    - copyloopvar
+    - cyclop
     - dogsled
+    - dupl
     - durationcheck
     - errcheck
-    - copyloopvar
-    - govet
-    - gosimple
-    - gofmt
-    - gofumpt
+    - errname
+    - errorlint
     - goconst
-    - goimports
-    - mnd
     - gocyclo
+    - goheader
+    - gosec
+    - govet
+    - grouper
     - ineffassign
     - lll
-    - prealloc
-    - revive
-    - staticcheck
-    - typecheck
-    - unused
-    - whitespace
-    - wastedassign
-    - unconvert
+    - makezero
     - misspell
-    - errorlint
-    - errname
-    - goheader
-    - zerologlint
-    - tagliatelle
-    - spancheck
-    - perfsprint
-    - promlinter
-    - predeclared
+    - mnd
     - nestif
     - nilnil
-    - makezero
-    - grouper
-    - gosec
-    - dupl
-    - cyclop
-    - copyloopvar
-
-linters-settings:
-  govet:
-    enable-all: true
-  whitespace:
-    multi-func: true
-  lll:
-    line-length: 160
-  # mnd:
-  #   checks:
-  #     - case
-  #     - condition
-  #     - return
-  goconst:
-    ignore-tests: true
-  gocyclo:
-    # recommend 10-20
-    min-complexity: 50
-  goimports:
-    local-prefixes: github.com/almeidapaulopt/tsdproxy # Put imports beginning with prefix after 3rd-party packages
-  misspell: # Finds commonly misspelled English words in comments
-    locale: US
-  goheader:
-    values:
-      const:
-        AUTHOR: Paulo Almeida <almeidapaulopt@gmail.com>
-    template: |-
-      SPDX-FileCopyrightText: {{ YEAR }} {{ AUTHOR }}
-      SPDX-License-Identifier: MIT
+    - perfsprint
+    - prealloc
+    - predeclared
+    - promlinter
+    - revive
+    - spancheck
+    - staticcheck
+    - tagliatelle
+    - unconvert
+    - unused
+    - wastedassign
+    - whitespace
+    - zerologlint
+  settings:
+    gocyclo:
+      min-complexity: 50
+    goheader:
+      values:
+        const:
+          AUTHOR: Paulo Almeida <almeidapaulopt@gmail.com>
+      template: |-
+        SPDX-FileCopyrightText: {{ YEAR }} {{ AUTHOR }}
+        SPDX-License-Identifier: MIT
+    govet:
+      enable-all: true
+    lll:
+      line-length: 160
+    misspell:
+      locale: US
+    whitespace:
+      multi-func: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - goconst
+        path: (.+)_test\.go
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/almeidapaulopt/tsdproxy
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

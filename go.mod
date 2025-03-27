@@ -1,7 +1,6 @@
 module github.com/almeidapaulopt/tsdproxy
 
 go 1.24
-
 toolchain go1.24.1
 
 require (
@@ -18,7 +17,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.35.0
 	golang.org/x/oauth2 v0.28.0
 	gopkg.in/yaml.v3 v3.0.1
-	tailscale.com v1.80.3
+	tailscale.com v1.82.0
 )
 
 require (
@@ -42,7 +41,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.17 // indirect
 	github.com/aws/smithy-go v1.22.3 // indirect
 	github.com/coder/websocket v1.8.13 // indirect
-	github.com/containerd/log v0.1.0 // indirect
 	github.com/coreos/go-iptables v0.8.0 // indirect
 	github.com/dblohm7/wingoes v0.0.0-20240820181039-f2b84150679e // indirect
 	github.com/delaneyj/gostar v0.8.0 // indirect
@@ -54,7 +52,7 @@ require (
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/gaissmai/bart v0.20.0 // indirect
-	github.com/go-json-experiment/json v0.0.0-20250116043007-0640c115aea5 // indirect
+	github.com/go-json-experiment/json v0.0.0-20250223041408-d3c622f1b874 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -71,7 +69,7 @@ require (
 	github.com/gorilla/securecookie v1.1.2 // indirect
 	github.com/hdevalence/ed25519consensus v0.2.0 // indirect
 	github.com/igrmk/treemap/v2 v2.0.1 // indirect
-	github.com/illarion/gonotify/v2 v2.0.8 // indirect
+	github.com/illarion/gonotify/v3 v3.0.2 // indirect
 	github.com/insomniacslk/dhcp v0.0.0-20250109001534-8abf58130905 // indirect
 	github.com/jsimonetti/rtnetlink v1.4.2 // indirect
 	github.com/klauspost/compress v1.18.0 // indirect
@@ -126,8 +124,6 @@ require (
 	golang.org/x/tools v0.31.0 // indirect
 	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
 	golang.zx2c4.com/wireguard/windows v0.5.3 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241007155032-5fefd90f89a9 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241007155032-5fefd90f89a9 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
-	gvisor.dev/gvisor v0.0.0-20240722211153-64c016c92987 // indirect
+	gvisor.dev/gvisor v0.0.0-20250205023644-9414b50a5633 // indirect
 )

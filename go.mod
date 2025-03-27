@@ -1,7 +1,6 @@
 module github.com/almeidapaulopt/tsdproxy
 
-go 1.24
-toolchain go1.24.1
+go 1.24.1
 
 require (
 	github.com/a-h/templ v0.3.857

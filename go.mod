@@ -14,9 +14,9 @@ require (
 	github.com/vearutop/statigz v1.4.3
 	go.opentelemetry.io/otel v1.35.0
 	go.opentelemetry.io/otel/trace v1.35.0
-	golang.org/x/oauth2 v0.28.0
 	gopkg.in/yaml.v3 v3.0.1
 	tailscale.com v1.82.0
+	tailscale.com/client/tailscale/v2 v2.0.0-20250311144508-3a768d66e695
 )
 
 require (
@@ -115,6 +115,7 @@ require (
 	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
 	golang.org/x/mod v0.24.0 // indirect
 	golang.org/x/net v0.37.0 // indirect
+	golang.org/x/oauth2 v0.28.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/term v0.30.0 // indirect

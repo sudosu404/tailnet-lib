@@ -14,8 +14,7 @@ import (
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 
 	"github.com/rs/zerolog"
-	"golang.org/x/oauth2/clientcredentials"
-	"tailscale.com/client/tailscale"
+	"tailscale.com/client/tailscale/v2"
 	"tailscale.com/tsnet"
 )
 
@@ -42,8 +41,6 @@ var _ proxyproviders.Provider = (*Client)(nil)
 
 func New(log zerolog.Logger, name string, provider *config.TailscaleServerConfig) (*Client, error) {
 	datadir := filepath.Join(config.Config.Tailscale.DataDir, name)
-
-	tailscale.I_Acknowledge_This_API_Is_Unstable = true
 
 	return &Client{
 		log:          log.With().Str("tailscale", name).Logger(),
@@ -121,8 +118,6 @@ func (c *Client) getAuthkey(config *model.Config, path string) string {
 }
 
 func (c *Client) getOAuth(cfg *model.Config, dir string) string {
-	baseURL := "https://api.tailscale.com"
-
 	data := new(oauth)
 
 	file := config.NewConfigFile(c.log, path.Join(dir, "tsdproxy.yaml"), data)
@@ -132,17 +127,17 @@ func (c *Client) getOAuth(cfg *model.Config, dir string) string {
 		}
 	}
 
-	credentials := clientcredentials.Config{
-		ClientID:     c.clientID,
-		ClientSecret: c.clientSecret,
-		TokenURL:     baseURL + "/api/v2/oauth/token",
-	}
-
 	ctx := context.Background()
-	tsClient := tailscale.NewClient("-", nil)
-	tsClient.UserAgent = "tsdproxy"
-	tsClient.HTTPClient = credentials.Client(ctx)
-	tsClient.BaseURL = baseURL
+
+	tsclient := &tailscale.Client{
+		Tailnet:   "-",
+		UserAgent: "tsdproxy",
+		HTTP: tailscale.OAuthConfig{
+			ClientID:     c.clientID,
+			ClientSecret: c.clientSecret,
+			Scopes:       []string{"all:write"},
+		}.HTTPClient(),
+	}
 
 	temptags := strings.Trim(strings.TrimSpace(cfg.Tailscale.Tags), "\"")
 	if temptags == "" {
@@ -154,26 +149,27 @@ func (c *Client) getOAuth(cfg *model.Config, dir string) string {
 		return ""
 	}
 
-	caps := tailscale.KeyCapabilities{
-		Devices: tailscale.KeyDeviceCapabilities{
-			Create: tailscale.KeyDeviceCreateCapabilities{
-				Reusable:  false,
-				Ephemeral: cfg.Tailscale.Ephemeral,
-				Tags:      strings.Split(temptags, ","),
-			},
-		},
+	capabilities := tailscale.KeyCapabilities{}
+	capabilities.Devices.Create.Ephemeral = cfg.Tailscale.Ephemeral
+	capabilities.Devices.Create.Reusable = false
+	capabilities.Devices.Create.Preauthorized = true
+	capabilities.Devices.Create.Tags = strings.Split(temptags, ",")
+
+	ckr := tailscale.CreateKeyRequest{
+		Capabilities: capabilities,
+		Description:  "tsdproxy",
 	}
 
-	authkey, _, err := tsClient.CreateKey(ctx, caps)
+	authkey, err := tsclient.Keys().Create(ctx, ckr)
 	if err != nil {
 		c.log.Error().Err(err).Msg("unable to get Oauth token")
 		return ""
 	}
 
-	data.Authkey = authkey
+	data.Authkey = authkey.Key
 	if err := file.Save(); err != nil {
 		c.log.Error().Err(err).Msg("unable to save oauth file")
 	}
 
-	return authkey
+	return authkey.Key
 }

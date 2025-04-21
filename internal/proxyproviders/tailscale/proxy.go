@@ -16,7 +16,7 @@ import (
 	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
 
 	"github.com/rs/zerolog"
-	"tailscale.com/client/tailscale"
+	"tailscale.com/client/local"
 	"tailscale.com/ipn"
 	"tailscale.com/tsnet"
 )
@@ -26,7 +26,7 @@ type Proxy struct {
 	log      zerolog.Logger
 	config   *model.Config
 	tsServer *tsnet.Server
-	lc       *tailscale.LocalClient
+	lc       *local.Client
 	ctx      context.Context
 
 	events chan model.ProxyEvent
@@ -48,7 +48,7 @@ var (
 func (p *Proxy) Start(ctx context.Context) error {
 	var (
 		err error
-		lc  *tailscale.LocalClient
+		lc  *local.Client
 	)
 
 	if err = p.tsServer.Start(); err != nil {

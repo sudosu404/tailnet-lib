@@ -17,6 +17,8 @@ services:
       - tsdproxy.dash.visible=false
     secrets:
       - authkey
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 secrets:
   authkey:

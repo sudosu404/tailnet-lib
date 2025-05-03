@@ -25,7 +25,8 @@ services:
     restart: unless-stopped
     ports:
       - "8080:8080"
-
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 volumes:
   datadir:
 ```
@@ -46,7 +47,7 @@ defaultProxyProvider: default
 docker:
   local: # name of the docker target provider
     host: unix:///var/run/docker.sock # host of the docker socket or daemon
-    targetHostname: 172.31.0.1 # hostname or IP of docker server
+    targetHostname: host.docker.internal # hostname or IP of docker server (ex: host.docker.internal or 172.31.0.1)
     defaultProxyProvider: default # name of which proxy provider to use
 lists: {}
 tailscale:

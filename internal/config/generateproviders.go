@@ -5,6 +5,7 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 
 	"github.com/creasty/defaults"
@@ -40,6 +41,12 @@ func (c *config) generateDockerConfig() {
 
 	if os.Getenv("TSDPROXY_HOSTNAME") != "" {
 		docker.TargetHostname = os.Getenv("TSDPROXY_HOSTNAME")
+	}
+
+	// Check whether the hostname host.docker.internal can be resolved. This allows avoiding updates to the TargetHostname field in the configuration file.
+	ip, err := net.LookupIP("host.docker.internal")
+	if err == nil || len(ip) > 0 {
+		docker.TargetHostname = "host.docker.internal"
 	}
 
 	c.Docker[DockerDefaultName] = docker

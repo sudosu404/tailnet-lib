@@ -45,6 +45,8 @@ internal/ui/static/*
 node_modules/
 web/dist
 web/public/icons/sh
+web/public/icons/si
+web/public/icons/mdi
 
 # macOS
 .DS_Store

@@ -1,9 +1,45 @@
-import { defineConfig, normalizePath } from `vite`;
+import { defineConfig } from `vite`;
+import { cpSync, mkdirSync, existsSync } from 'fs';
 import { resolve } from 'path';
 import tailwindcss from '@tailwindcss/vite';
 import { compression } from 'vite-plugin-compression2';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
 import { VitePWA } from 'vite-plugin-pwa'
+
+
+function copyIconsToPublic() {
+  let isBuild = false;
+
+  return {
+    name: 'copy-icons-to-public',
+
+    config(config, { command }) {
+      isBuild = command === 'build';
+    },
+
+    buildStart() {
+      if (!isBuild) return;
+
+      const targets = [
+        {
+          src: resolve(__dirname, 'node_modules/simple-icons/icons'),
+          dest: resolve(__dirname, 'public/icons/si'),
+        },
+        {
+          src: resolve(__dirname, 'node_modules/@mdi/svg/svg'),
+          dest: resolve(__dirname, 'public/icons/mdi'),
+        },
+      ];
+
+      for (const { src, dest } of targets) {
+        if (!existsSync(dest)) {
+          mkdirSync(dest, { recursive: true });
+        }
+        cpSync(src, dest, { recursive: true });
+      }
+    }
+  };
+}
+
 
 export default defineConfig({
 
@@ -14,10 +50,17 @@ export default defineConfig({
     }
   },
   plugins: [
-    tailwindcss(),
+    copyIconsToPublic(),
 
-    compression(),
-    compression({ algorithm: 'brotliCompress' }),
+    compression({
+      filter: /\.(js|css|html|svg|ico|json|txt|woff2?|ttf)$/,
+    }),
+    compression({
+      algorithm: 'brotliCompress',
+      filter: /\.(js|css|html|svg|ico|json|txt|woff2?|ttf)$/,
+    }),
+
+    tailwindcss(),
 
     VitePWA({
       registerType: 'autoUpdate',
@@ -48,31 +91,8 @@ export default defineConfig({
         type: 'module',
       },
     }),
-
-
-    viteStaticCopy({
-      targets: [
-        {
-          src: normalizePath(resolve(__dirname, 'node_modules/simple-icons/icons/*')),
-          dest: 'icons/si'
-        },
-        {
-          src: normalizePath(resolve(__dirname, 'node_modules/@mdi/svg/svg/*')),
-          dest: 'icons/mdi'
-        },
-        {
-          src: normalizePath(resolve(__dirname, 'public/icons/sh/*')),
-          dest: 'icons/sh'
-        },
-        {
-          src: normalizePath(resolve(__dirname, 'public/icons/*')),
-          dest: 'icons'
-        }
-
-      ]
-    }),
-
   ],
+
   build: {
     rollupOptions: {
       output: {

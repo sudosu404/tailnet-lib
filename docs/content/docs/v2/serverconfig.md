@@ -22,7 +22,7 @@ defaultProxyProvider: default
 docker:
   local: # Name of the Docker target provider
     host: unix:///var/run/docker.sock # Docker socket or daemon address
-    targetHostname: 172.31.0.1 # Docker server hostname or IP
+    targetHostname: host.docker.internal # hostname or IP of docker server (ex: host.docker.internal or 172.31.0.1)
     defaultProxyProvider: default # Default proxy provider for this Docker server
 lists:
   critical: # Name of the target list provider

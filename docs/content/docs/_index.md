@@ -30,15 +30,15 @@ virtual hosts in Tailscale network.
 
 ## What's different with TSDProxy?
 
-TSDProxy differs from other Tailscale proxies in that it does not require a separate Tailscale.
+TSDProxy differs from other Tailscale proxies in that it does not require a separate Tailscale container per service.
 
 ![how tsdproxy works](/images/tsdproxy-compare.svg)
 
 ## Features
 
-- **Easy to Use** - creates virtual Tailscale addresses using Docker container labels
-- **Really Easy to Use** - creates virtual Tailscale addresses using a proxy list
-- **Lightweight** -No need to spin up a dedicated Tailscale container for every service.
+- **Easy to Use** - Creates virtual Tailscale addresses using Docker container labels.
+- **Really Easy to Use** - Creates virtual Tailscale addresses using a proxy list.
+- **Lightweight** - No need to spin up a dedicated Tailscale container for every service.
 - **Quick deploy** - No need to configure virtual hosts in Tailscale network.
 - **Automatically supports TLS** - Automatically supports Tailscale/LetsEncrypt certificates
 with MagicDNS.

@@ -26,7 +26,7 @@ var Static http.Handler
 const DefaultIcon = "tailnet"
 
 func init() {
-	staticFS, err := fs.Sub(dist, "dist")
+	staticFS, err := fs.Sub(dist, ".")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to open dist directory")
 	}

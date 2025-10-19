@@ -48,7 +48,7 @@ linters:
           AUTHOR: Hector sudosu404 <hector@email.gnx>
       template: |-
         SPDX-FileCopyrightText: {{ YEAR }} {{ AUTHOR }}
-        SPDX-License-Identifier: MIT
+        SPDX-License-Identifier: AGPL3
     govet:
       enable-all: true
     lll:

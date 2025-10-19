@@ -4,6 +4,8 @@
 FROM oven/bun:1 AS frontend
 
 WORKDIR /src
+COPY web/package.json web/bun.lock ./web/
+RUN bun install --cwd web
 COPY web ./web
 
 # Install minimal deps: wget, unzip, ca-certificates
@@ -11,14 +13,13 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends wget unzip ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# Install frontend deps, download icons, build
-RUN bun install --cwd web \
- && mkdir -p web/public/icons/sh \
+RUN mkdir -p web/public/icons/sh \
  && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P web \
- && unzip -jo web/main.zip web/icons-main/svg/* -d web/public/icons/sh \
+ && unzip -jo web/main.zip 'icons-main/svg/*' -d web/public/icons/sh \
  && rm -f web/main.zip \
  && bun run build --cwd web
 
+RUN rm -rf /var/lib/apt/lists/* /src/web/node_modules/.cache
 # ----------------------------
 # Stage 2: Go builder
 # ----------------------------

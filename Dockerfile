@@ -6,6 +6,11 @@ FROM oven/bun:1 AS frontend
 WORKDIR /src
 COPY web ./web
 
+# Install minimal deps: wget, unzip, ca-certificates
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends wget unzip ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
 # Install frontend deps, download icons, build
 RUN bun install --cwd web \
  && mkdir -p web/public/icons/sh \

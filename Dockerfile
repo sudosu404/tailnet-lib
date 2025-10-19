@@ -6,6 +6,12 @@ FROM oven/bun:1 AS frontend
 WORKDIR /web
 COPY web/ .
 
+# install wget and unzip
+RUN apt-get update && apt-get install -y --no-install-recommends wget unzip \
+ && rm -rf /var/lib/apt/lists/*
+
+RUN wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip
+RUN unzip -jo main.zip icons-main/svg/* -d public/icons/sh
 # Install deps & build frontend
 RUN bun install && bun run build
 

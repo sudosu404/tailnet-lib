@@ -7,6 +7,8 @@ services:
       - datadir:/data
       - ./config:/config
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   datadir:

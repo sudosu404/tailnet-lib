@@ -3,25 +3,28 @@
 # ----------------------------
 FROM oven/bun:1 AS frontend
 
-WORKDIR /src
-COPY web/package.json web/bun.lock ./web/
-RUN bun install --cwd web
-COPY web ./web
+WORKDIR /src/web
 
-# Install minimal deps for asset prep
+# Copy everything at once
+COPY web ./ 
+
+# Install minimal deps: wget, unzip, ca-certificates
 RUN apt-get update \
  && apt-get install -y --no-install-recommends wget unzip ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 # Prepare icons
-RUN mkdir -p web/public/icons/sh \
- && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P web \
- && unzip -jo web/main.zip 'icons-main/svg/*' -d web/public/icons/sh \
- && rm -f web/main.zip
+RUN mkdir -p public/icons/sh \
+ && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P . \
+ && unzip -jo main.zip 'icons-main/svg/*' -d public/icons/sh \
+ && rm -f main.zip
 
-# Build frontend
-RUN bun run build --cwd web \
- && rm -rf /src/web/node_modules/.cache
+# Install dependencies and build
+RUN bun install \
+ && bun run build
+
+# Clean cache
+RUN rm -rf node_modules/.cache
 
 # ----------------------------
 # Stage 2: Go builder

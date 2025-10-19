@@ -5,25 +5,28 @@ FROM oven/bun:1 AS frontend
 
 WORKDIR /src/web
 
-# Copy only package.json and bun.lock first for dependency install
+# Copy package.json and bun.lock first
 COPY web/package.json web/bun.lock ./
 
 # Install dependencies
 RUN bun install
 
-# Now copy the rest of the frontend source
+# Copy the rest of the frontend code
 COPY web .
 
-# Install minimal deps for icons extraction
+# Install minimal tools for icons
 RUN apt-get update \
  && apt-get install -y --no-install-recommends wget unzip ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 # Download and extract icons
 RUN mkdir -p public/icons/sh \
- && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip \
+ && wget -q -O main.zip https://github.com/selfhst/icons/archive/refs/heads/main.zip \
  && unzip -jo main.zip 'icons-main/svg/*' -d public/icons/sh \
  && rm -f main.zip
+
+# Ensure package.json is there and list scripts for debugging
+RUN cat package.json && bun run | tee bun-scripts.log
 
 # Build frontend
 RUN bun run build

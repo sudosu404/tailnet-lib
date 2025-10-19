@@ -14,18 +14,11 @@ import (
 	"github.com/vearutop/statigz/brotli"
 )
 
-// --- Build frontend icons and dist ---
-//go:generate wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip
-//go:generate unzip -jo main.zip icons-main/svg/* -d web/public/icons/sh
-//go:generate bun install
-//go:generate bun run build
-
-// --- Embed final assets ---
-//go:embed web/dist/*
+// --- Embed prebuilt frontend assets and icons ---
+//go:embed web/dist/* web/public/icons/*
 var dist embed.FS
 
 var Static http.Handler
-
 const DefaultIcon = "tailnet"
 
 func init() {

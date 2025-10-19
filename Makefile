@@ -117,7 +117,7 @@ dev_docker_stop:
 ## dev_image: generate docker development image
 .PHONY: dev_image
 dev_image:
-	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -f dev/Dockerfile.dev -t devimage .
+	docker build --build-arg UID=$(shell id -u) --build-arg GID=$(shell id -g) -f dev/Dockerfile.dev -t ghcr.io/sudosu404/tailnet-lib:latest .
 
 ## docker_stop: stop the docker containers
 .PHONY: docker_stop

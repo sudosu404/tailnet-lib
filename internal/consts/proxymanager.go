@@ -4,7 +4,7 @@
 package consts
 
 const (
-	HeaderUsername      = "X-Tailnet-username"
-	HeaderDisplayName   = "x-Tailnet-displayName"
-	HeaderProfilePicURL = "x-Tailnet-profilePicUrl"
+	HeaderUsername      = "X-tailnet-username"
+	HeaderDisplayName   = "x-tailnet-displayName"
+	HeaderProfilePicURL = "x-tailnet-profilePicUrl"
 )

@@ -67,10 +67,10 @@ builds:
       - -X "github.com/sudosu404/tailnet-lib/internal/core.BuildDate={{ .Date }}"
       - -X "github.com/sudosu404/tailnet-lib/internal/core.GitCommit={{ .ShortCommit }}"
       - -X "tailscale.com/version.Short={{ .Env.TAILSCALE_VERSION  }}"
-      - -X "tailscale.com/version.Long={{ .Env.TAILSCALE_VERSION  }}-Tailnet"
+      - -X "tailscale.com/version.Long={{ .Env.TAILSCALE_VERSION  }}-tailnet"
       - -X "tailscale.com/version.GitCommit={{ .ShortCommit }}"
       - -X "tailscale.com/version.shortStamp={{ .Env.TAILSCALE_VERSION  }}"
-      - -X "tailscale.com/version.longStamp={{ .Env.TAILSCALE_VERSION  }}-Tailnet"
+      - -X "tailscale.com/version.longStamp={{ .Env.TAILSCALE_VERSION  }}-tailnet"
       - -X "tailscale.com/version.gitCommitStamp={{ .ShortCommit }}"
 
   - id: healthcheck

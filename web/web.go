@@ -23,7 +23,7 @@ var dist embed.FS
 
 var Static http.Handler
 
-const DefaultIcon = "Tailnet"
+const DefaultIcon = "tailnet"
 
 func init() {
 	staticFS, err := fs.Sub(dist, "dist")

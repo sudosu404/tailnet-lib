@@ -1,4 +1,4 @@
-# SPDX-FileCopyrightText: 2024 Paulo Almeida <almeidapaulopt@gmail.com>
+# SPDX-FileCopyrightText: 2024 Hector sudosu404 <hector@email.gnx>
 # SPDX-License-Identifier: MIT
 
 version: 2
@@ -6,8 +6,6 @@ version: 2
 env:
   - GO111MODULE=on
   - CGO_ENABLED=0
-  - GITHUB_ORG=almeidapaulopt
-  - DOCKER_ORG=almeidapaulopt
   - DOCKERFILE=Dockerfile.goreleaser
   - LATEST=dev
 
@@ -34,7 +32,7 @@ release:
 builds:
   - id: server
     main: ./cmd/server/main.go
-    binary: tsdproxyd
+    binary: tailnetd
     env:
       - CGO_ENABLED=0
     goos:
@@ -57,14 +55,14 @@ builds:
       - -tags=prod
     ldflags:
       - -s -w
-      - -X "github.com/almeidapaulopt/tsdproxy/internal/core.version={{ incpatch .Version }}-{{ .Env.LATEST  }}"
-      - -X "github.com/almeidapaulopt/tsdproxy/internal/core.BuildDate={{ .Date }}"
-      - -X "github.com/almeidapaulopt/tsdproxy/internal/core.GitCommit={{ .ShortCommit }}"
+      - -X "github.com/sudosu404/tailnet-lib/internal/core.version={{ incpatch .Version }}-{{ .Env.LATEST  }}"
+      - -X "github.com/sudosu404/tailnet-lib/internal/core.BuildDate={{ .Date }}"
+      - -X "github.com/sudosu404/tailnet-lib/internal/core.GitCommit={{ .ShortCommit }}"
       - -X "tailscale.com/version.Short={{ .Env.TAILSCALE_VERSION  }}"
-      - -X "tailscale.com/version.Long={{ .Env.TAILSCALE_VERSION  }}-TSDProxy"
+      - -X "tailscale.com/version.Long={{ .Env.TAILSCALE_VERSION  }}-Tailnet"
       - -X "tailscale.com/version.GitCommit={{ .ShortCommit }}"
       - -X "tailscale.com/version.shortStamp={{ .Env.TAILSCALE_VERSION  }}"
-      - -X "tailscale.com/version.longStamp={{ .Env.TAILSCALE_VERSION  }}-TSDProxy"
+      - -X "tailscale.com/version.longStamp={{ .Env.TAILSCALE_VERSION  }}-Tailnet"
       - -X "tailscale.com/version.gitCommitStamp={{ .ShortCommit }}"
 
   - id: healthcheck
@@ -115,7 +113,7 @@ dockers:
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-amd64"
     build_flag_templates:
       - "--pull"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
+      - '--label=io.artifacthub.package.maintainers=[{"name":"Hector sudosu404","email":"hector@email.gnx"}]'
       - "--label=io.artifacthub.package.license=MIT"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
@@ -136,7 +134,7 @@ dockers:
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-arm64v8"
     build_flag_templates:
       - "--pull"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
+      - '--label=io.artifacthub.package.maintainers=[{"name":"Hector sudosu404","email":"hector@email.gnx"}]'
       - "--label=io.artifacthub.package.license=MIT"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
@@ -158,7 +156,7 @@ dockers:
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv6"
     build_flag_templates:
       - "--pull"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
+      - '--label=io.artifacthub.package.maintainers=[{"name":"Hector sudosu404","email":"hector@email.gnx"}]'
       - "--label=io.artifacthub.package.license=MIT"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"
@@ -180,7 +178,7 @@ dockers:
       - "ghcr.io/{{ .Env.GITHUB_ORG }}/{{ .ProjectName }}:{{ .Env.LATEST }}-armv7"
     build_flag_templates:
       - "--pull"
-      - '--label=io.artifacthub.package.maintainers=[{"name":"Paulo Almeida","email":"almeidapaulopt@gmail.com"}]'
+      - '--label=io.artifacthub.package.maintainers=[{"name":"Hector sudosu404","email":"hector@email.gnx"}]'
       - "--label=io.artifacthub.package.license=MIT"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.name={{.ProjectName}}"

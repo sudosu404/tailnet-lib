@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package proxymanager
 
@@ -10,13 +10,13 @@ import (
 
 	"github.com/rs/zerolog"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/model"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders/tailscale"
-	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders"
-	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders/docker"
-	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders/list"
+	"github.com/sudosu404/tailnet-lib/internal/config"
+	"github.com/sudosu404/tailnet-lib/internal/model"
+	"github.com/sudosu404/tailnet-lib/internal/proxyproviders"
+	"github.com/sudosu404/tailnet-lib/internal/proxyproviders/tailscale"
+	"github.com/sudosu404/tailnet-lib/internal/targetproviders"
+	"github.com/sudosu404/tailnet-lib/internal/targetproviders/docker"
+	"github.com/sudosu404/tailnet-lib/internal/targetproviders/list"
 )
 
 type (

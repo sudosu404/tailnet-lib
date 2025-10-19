@@ -4,24 +4,24 @@ prev: /docs/advanced
 weight: 300
 ---
 
-## How to troubleshoot TSDProxy
+## How to troubleshoot Tailnet
 
 ### Global
 
-1. Verify your tsdproxy.yaml file. Configuration files are Case sensitive.
+1. Verify your tailnet.yaml file. Configuration files are Case sensitive.
 [Verify your files](../serverconfig/#sample-configuration-file)
 
 ### Docker provider
 
-1. Verify if you added the label with tsdproxy.enable=true
-2. Force use of the port adding tsdproxy.container_port=xxx to the container
-3. If your container is using https add tsdproxy.scheme="https" to your container
-4. If case of self certificates also add tsdproxy.tlsvalidate=false
+1. Verify if you added the label with tailnet.enable=true
+2. Force use of the port adding tailnet.container_port=xxx to the container
+3. If your container is using https add tailnet.scheme="https" to your container
+4. If case of self certificates also add tailnet.tlsvalidate=false
 5. Check if your firewall isn't blocking the traffic
-6. Add your container to the same TSDProxy docker network
-7. Disable autodetection with tsdproxy.autodetect="false" in your container
+6. Add your container to the same Tailnet docker network
+7. Disable autodetection with tailnet.autodetect="false" in your container
 8. Verify if your case isn't in the next [Common errors](#common-errors)
-9. Still having problems? Send a [Bug report](https://github.com/almeidapaulopt/tsdproxy/issues/new/choose)
+9. Still having problems? Send a [Bug report](https://github.com/sudosu404/tailnet-lib/issues/new/choose)
 
 ### Proxies List provider
 
@@ -37,9 +37,9 @@ The actual error is a TLS error. The most common cause is that the target has a
 self-signed certificate.
 
 ```yaml
-tsdproxy.enable: true
-tsdproxy.scheme: https
-tsdproxy.tlsvalidate: false
+tailnet.enable: true
+tailnet.scheme: https
+tailnet.tlsvalidate: false
 ```
 
 ### http: proxy error: dial tcp 172.18.0.1:8001: i/o timeout
@@ -60,9 +60,9 @@ Try to disable autodetection and define the port:
 
 ```yaml
 labels:
-  tsdproxy.enable: "true"
-  tsdproxy.autodetect: "false"
-  tsdproxy.container_port: 8001
+  tailnet.enable: "true"
+  tailnet.autodetect: "false"
+  tailnet.container_port: 8001
 ```
 
 ### Funnel doesn't work

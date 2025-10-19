@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package docker
 
@@ -9,7 +9,7 @@ import (
 
 const (
 	// Constants to be used in container labels
-	LabelPrefix    = "tsdproxy."
+	LabelPrefix    = "tailnet."
 	LabelIsEnabled = LabelEnable + "=true"
 
 	// Container config labels.

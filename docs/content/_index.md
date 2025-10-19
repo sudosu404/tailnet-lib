@@ -1,8 +1,8 @@
 ---
-title: TSDPRoxy
+title: Tailnet
 layout: hextra-home
 ---
-{{< hextra/hero-container image="/images/tsdproxy.svg" >}}
+{{< hextra/hero-container image="/images/tailnet.svg" >}}
 {{< hextra/hero-badge >}}
   <div class="hx-w-2 hx-h-2 hx-rounded-full hx-bg-primary-400"></div>
   <span>Free, open source</span>
@@ -48,7 +48,7 @@ layout: hextra-home
   >}}
   {{< hextra/feature-card
     title="Free"
-    subtitle="TSDPRoxy is free, open source and always will be."
+    subtitle="Tailnet is free, open source and always will be."
   >}}
   {{< hextra/feature-card
     title="And More..."

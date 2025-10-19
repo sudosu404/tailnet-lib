@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package main
 
@@ -14,10 +14,10 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/rs/zerolog"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/core"
-	"github.com/almeidapaulopt/tsdproxy/internal/dashboard"
-	pm "github.com/almeidapaulopt/tsdproxy/internal/proxymanager"
+	"github.com/sudosu404/tailnet-lib/internal/config"
+	"github.com/sudosu404/tailnet-lib/internal/core"
+	"github.com/sudosu404/tailnet-lib/internal/dashboard"
+	pm "github.com/sudosu404/tailnet-lib/internal/proxymanager"
 )
 
 type WebApp struct {

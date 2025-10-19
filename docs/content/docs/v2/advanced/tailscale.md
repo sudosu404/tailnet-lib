@@ -5,11 +5,11 @@ next: /docs/scenarios
 
 
 This document guides you through the different authentication and configuration
-options for Tailscale with TSDProxy.
+options for Tailscale with Tailnet.
 
 ## Authentication Methods
 
-TSDProxy supports three authentication methods with Tailscale: OAuth,
+Tailnet supports three authentication methods with Tailscale: OAuth,
 OAuth (manual), and AuthKey.
 
 ### OAuth
@@ -27,9 +27,9 @@ all services.
 
 #### Configuration
 
-Add the OAuth client credentials to the TSDProxy configuration:
+Add the OAuth client credentials to the Tailnet configuration:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 tailscale:
   providers:
     default:
@@ -40,7 +40,7 @@ tailscale:
 
 #### Restart
 
-Restart TSDProxy to apply the changes.
+Restart Tailnet to apply the changes.
 
 > [!Tip]
 > If the proxy fails to authenticate after restarting, check the error logs.
@@ -57,7 +57,7 @@ Restart TSDProxy to apply the changes.
 OAuth authentication mode is enabled when no AuthKey is set in the Tailscale
 provider configuration:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 tailscale:
   providers:
     default:
@@ -69,14 +69,14 @@ The proxy will wait for authentication with Tailscale during startup.
 
 #### Dashboard
 
-Access the TSDProxy dashboard (e.g., `http://192.168.1.1:8080`).
+Access the Tailnet dashboard (e.g., `http://192.168.1.1:8080`).
 
 #### Authentication
 
 Click on the proxy with "Authentication" status.
 
 > [!Tip]
-> If "Ephemeral" is set to `true`, authentication is required at each TSDProxy restart.
+> If "Ephemeral" is set to `true`, authentication is required at each Tailnet restart.
 
 {{% /steps %}}
 
@@ -98,9 +98,9 @@ Click on the proxy with "Authentication" status.
 
 #### Configuration
 
-Add the AuthKey to the TSDProxy configuration:
+Add the AuthKey to the Tailnet configuration:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 tailscale:
   providers:
     default:
@@ -110,13 +110,13 @@ tailscale:
 
 #### Restart
 
-Restart TSDProxy to apply the changes.
+Restart Tailnet to apply the changes.
 
 {{% /steps %}}
 
 ## Funnel
 
-In addition to configuring TSDProxy to enable Funnel, you need to grant
+In addition to configuring Tailnet to enable Funnel, you need to grant
 permissions in the Tailscale ACL. See [Troubleshooting](.././troubleshooting/#funnel-doesnt-work)
 for more details. Also read Tailscale's [Funnel documentation](https://tailscale.com/kb/1223/funnel#requirements-and-limitations)
 for requirements and limitations.

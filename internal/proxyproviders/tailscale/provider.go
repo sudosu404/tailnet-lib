@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package tailscale
 
@@ -9,9 +9,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/model"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxyproviders"
+	"github.com/sudosu404/tailnet-lib/internal/config"
+	"github.com/sudosu404/tailnet-lib/internal/model"
+	"github.com/sudosu404/tailnet-lib/internal/proxyproviders"
 
 	"github.com/rs/zerolog"
 	"tailscale.com/client/tailscale/v2"
@@ -120,7 +120,7 @@ func (c *Client) getAuthkey(config *model.Config, path string) string {
 func (c *Client) getOAuth(cfg *model.Config, dir string) string {
 	data := new(oauth)
 
-	file := config.NewConfigFile(c.log, path.Join(dir, "tsdproxy.yaml"), data)
+	file := config.NewConfigFile(c.log, path.Join(dir, "tailnet.yaml"), data)
 	if err := file.Load(); err == nil {
 		if data.Authkey != "" {
 			return data.Authkey
@@ -131,7 +131,7 @@ func (c *Client) getOAuth(cfg *model.Config, dir string) string {
 
 	tsclient := &tailscale.Client{
 		Tailnet:   "-",
-		UserAgent: "tsdproxy",
+		UserAgent: "Tailnet",
 		HTTP: tailscale.OAuthConfig{
 			ClientID:     c.clientID,
 			ClientSecret: c.clientSecret,
@@ -157,7 +157,7 @@ func (c *Client) getOAuth(cfg *model.Config, dir string) string {
 
 	ckr := tailscale.CreateKeyRequest{
 		Capabilities: capabilities,
-		Description:  "tsdproxy",
+		Description:  "Tailnet",
 	}
 
 	authkey, err := tsclient.Keys().Create(ctx, ckr)

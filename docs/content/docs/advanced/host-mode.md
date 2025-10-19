@@ -2,9 +2,9 @@
 title: Service with host network_mode
 ---
 
-If you want to run a service in `network_mode: host`, TSDProxy tries to detect how
+If you want to run a service in `network_mode: host`, Tailnet tries to detect how
 to proxy the container. In case of not autodetection work for your case, you need
-to specify a port in the `tsdproxy.container_port` option.
+to specify a port in the `tailnet.container_port` option.
 
 {{% steps %}}
 
@@ -14,7 +14,7 @@ In your service, add the following label, with the port you want to use in the c
 
 ```yaml
 labels:
-  tsdproxy.container_port: 8080
+  tailnet.container_port: 8080
 ```
 
 ### Restart your service

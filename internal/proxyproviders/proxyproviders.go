@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package proxyproviders
 
@@ -8,7 +8,7 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/model"
+	"github.com/sudosu404/tailnet-lib/internal/model"
 )
 
 type (

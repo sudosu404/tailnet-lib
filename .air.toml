@@ -17,7 +17,7 @@ exclude_dir = [
   "dist",
 ]
 args_bin = []
-bin = "./tmp/main -config dev/tsdproxy-local.yaml"
+bin = "./tmp/main -config dev/tailnet-local.yaml"
 cmd = "templ generate --notify-proxy & go build -o ./tmp/main cmd/server/main.go"
 delay = 1000
 exclude_file = []

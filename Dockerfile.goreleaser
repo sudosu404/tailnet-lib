@@ -5,9 +5,9 @@ FROM scratch
 
 COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-COPY tsdproxyd /
+COPY tailnetd /
 COPY healthcheck /
 
-ENTRYPOINT ["/tsdproxyd"]
+ENTRYPOINT ["/tailnetd"]
 EXPOSE 8080
 HEALTHCHECK --interval=1m --timeout=2s CMD [ "/healthcheck" ]

@@ -1,6 +1,6 @@
 services:
   tailscale-docker-proxy:
-    image: tsdproxy:latest
+    image: ghcr.io/sudosu404/tailnet-lib:latest
     container_name: tailscale-docker-proxy
     # network_mode: host
     user: root
@@ -14,14 +14,14 @@ services:
       # - /run/user/1000/docker.sock:/var/run/docker.sock
     restart: unless-stopped
     # environment:
-    # - TSDPROXY_AUTHKEYFILE=/run/secrets/authkey
+    # - TAILNET_AUTHKEYFILE=/run/secrets/authkey
     # - DOCKER_HOST=unix:///run/user/1000/docker.sock
-    # - TSDPROXY_LOG_LEVEL=trace
+    # - TAILNET_LOG_LEVEL=trace
     secrets:
       - authkey
     labels:
-      - tsdproxy.enable=true
-      - tsdproxy.name=dash-dev
+      - tailnet.enable=true
+      - tailnet.name=dash-dev
     networks:
       c1:
 
@@ -30,8 +30,8 @@ services:
     ports:
       - 81:80
     labels:
-      - tsdproxy.enable=true
-      - tsdproxy.name=teste
+      - tailnet.enable=true
+      - tailnet.name=teste
     networks:
       c1:
 
@@ -42,7 +42,7 @@ services:
     networks:
       c2:
     labels:
-      - tsdproxy.enable=true
+      - tailnet.enable=true
 
   c3:
     image: nginx
@@ -51,7 +51,7 @@ services:
     networks:
       c3:
     labels:
-      - tsdproxy.enable=true
+      - tailnet.enable=true
 
 volumes:
   tsdata:

@@ -1,6 +1,6 @@
-# TsDProxy - Tailscale Proxy
+# Tailnet - Tailscale Proxy
 
-TsDProxy simplifies the process of securely exposing services and Docker containers
+Tailnet simplifies the process of securely exposing services and Docker containers
 to your Tailscale network by automatically creating Tailscale machines for each
 tagged container. This allows services to be accessible via unique, secure URLs
 without the need for complex configurations or additional Tailscale containers.
@@ -9,7 +9,7 @@ without the need for complex configurations or additional Tailscale containers.
 
 Version 2 is already in beta. Please try and open issues if bugs detected.
 Some configurations of Version 1.x are deprecated or changed please verify it in
- [Documentation changelog](https://almeidapaulopt.github.io/tsdproxy/docs/changelog/).
+ [Documentation changelog](https://sudosu404.github.io/tailnet/docs/changelog/).
 
 Because of some breaking changes, final version 2 arrive will not set as latest
 Docker image. We will wait some weeks to give you time to update.
@@ -18,31 +18,31 @@ Version 1 will not get new features.
 
 ## Full Documentation
 
-- [Official Documentation](https://almeidapaulopt.github.io/tsdproxy/)
+- [Official Documentation](https://sudosu404.github.io/tailnet/)
 
 ## Breaking Changes
 
-Please read the [Documentation changelog](https://almeidapaulopt.github.io/tsdproxy/docs/changelog/)
+Please read the [Documentation changelog](https://sudosu404.github.io/tailnet/docs/changelog/)
 for details.
 
 ## Help needed
 
 Please help with documentation, tests development, new features, bug fixes.
-If you don't feel comfortable to this kind of tasks, [sponsor](https://github.com/sponsors/almeidapaulopt)
+If you don't feel comfortable to this kind of tasks, [sponsor](https://github.com/sponsors/sudosu404)
 the project.
 
 ## Docker Images
 
-1. almeidapaulopt/tsdproxy:vx.x.x  - Version x.x.x
-2. almeidapaulopt/tsdproxy:1       - Latest release of version 1.x.x
-3. almeidapaulopt/tsdproxy:2       - Latest release of version 2.x.x (beta)
-4. almeidapaulopt/tsdproxy:latest  - Latest stable
-5. almeidapaulopt/tsdproxy:dev     - Latest Development Build
+1. sudosu404/tailnet-lib:vx.x.x  - Version x.x.x
+2. sudosu404/tailnet-lib:1       - Latest release of version 1.x.x
+3. sudosu404/tailnet-lib:2       - Latest release of version 2.x.x (beta)
+4. sudosu404/tailnet-lib:latest  - Latest stable
+5. sudosu404/tailnet-lib:dev     - Latest Development Build
 
 ## Core Functionality
 
 - **Automatic Tailscale Machine Creation**: For each Docker container tagged
-with the appropriate labels, TsDProxy creates a new Tailscale machine.
+with the appropriate labels, Tailnet creates a new Tailscale machine.
 - **Default Serving**: By default, each service is accessible via
 `https://{machine-name}.funny-name.ts.net`, where `{machine-name}` is derived
 from your container name or custom label.
@@ -58,20 +58,20 @@ container for each service.
 
 ## How It Works
 
-TsDProxy operates by creating a seamless integration between your Docker
+Tailnet operates by creating a seamless integration between your Docker
 containers and Tailscale network:
 
-1. **Container Scanning**: TsDProxy continuously monitors your Docker
-environment for containers with the `tsdproxy.enable=true` label.
-2. **Tailscale Machine Creation**: When a tagged container is detected, TsDProxy
+1. **Container Scanning**: Tailnet continuously monitors your Docker
+environment for containers with the `tailnet.enable=true` label.
+2. **Tailscale Machine Creation**: When a tagged container is detected, Tailnet
 automatically creates a new Tailscale machine for that container.
 3. **Hostname Assignment**: The Tailscale machine is assigned a hostname based
-on the `tsdproxy.name` label or the container's name.
-4. **Port Mapping**: TsDProxy maps the container's internal port to the Tailscale
+on the `tailnet.name` label or the container's name.
+4. **Port Mapping**: Tailnet maps the container's internal port to the Tailscale
 machine.
 5. **Traffic Routing**: Incoming requests to the Tailscale machine are routed to
 the appropriate Docker container and port.
-6. **Dynamic Management**: As containers start and stop, TsDProxy automatically
+6. **Dynamic Management**: As containers start and stop, Tailnet automatically
 creates and removes the corresponding Tailscale machines and routing configurations.
 
 ## Requirements

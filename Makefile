@@ -2,8 +2,8 @@ default: dev
 
 # Change these variables as necessary.
 MAIN_PACKAGE_PATH := "cmd/server/main.go"
-BINARY_NAME := tsdproxy
-PACKAGE := github.com/almeidapaulopt/tsdproxy
+BINARY_NAME := tailnet
+PACKAGE := github.com/sudosu404/tailnet-lib
 
 
 
@@ -133,7 +133,7 @@ stop: docker_stop
 ## docker_image: Create docker image
 .PHONY: docker_image
 docker_image:
-	docker buildx build  -t "tsdproxy:latest" .
+	docker buildx build  -t "ghcr.io/sudosu404/tailnet-lib:latest" .
 
 
 ## docs local server

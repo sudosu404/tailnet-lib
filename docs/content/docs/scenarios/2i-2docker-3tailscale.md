@@ -1,5 +1,5 @@
 ---
-title: Two TSDProxy instances, two Docker servers and three Tailscale providers
+title: Two Tailnet instances, two Docker servers and three Tailscale providers
 next: changelog
 ---
 ## Description
@@ -7,7 +7,7 @@ next: changelog
 In this scenario, we will have :
 
 1. two Docker servers.
-2. one TSDProxy instance in each docker server.
+2. one Tailnet instance in each docker server.
 3. three Tailscale providers.
 4. Containers in SRV1 will use the 'default' provider.
 5. Containers in SRV2 will use the 'account2' provider.
@@ -16,14 +16,14 @@ In this scenario, we will have :
 
 ## Scenario
 
-![2 tsdproxy instances, 2 Docker servers and 3 Tailscale providers](2i-2docker-3tailscale.svg)
+![2 Tailnet instances, 2 Docker servers and 3 Tailscale providers](2i-2docker-3tailscale.svg)
 
 ### Server 1
 
 ```yaml  {filename="docker-compose.yaml"}
 services:
-  tsdproxy:
-    image: tsdproxy:latest
+  Tailnet:
+    image: ghcr.io/sudosu404/tailnet-lib:latest
     user: root
     ports:
       - "8080:8080"
@@ -38,9 +38,9 @@ services:
     ports:
       - 81:80
     labels:
-      tsdproxy.enable: true
-      tsdproxy.name: webserver1
-      tsdproxy.provider: withtags
+      tailnet.enable: true
+      tailnet.name: webserver1
+      tailnet.provider: withtags
     
 
   portainer:
@@ -53,9 +53,9 @@ services:
       - portainer_data:/data
       - /var/run/docker.sock:/var/run/docker.sock
     labels:
-      tsdproxy.enable: true
-      tsdproxy.name: portainer
-      tsdproxy.container_port: 9000
+      tailnet.enable: true
+      tailnet.name: portainer
+      tailnet.container_port: 9000
 
 volumes:
   data:
@@ -71,8 +71,8 @@ services:
     ports:
       - 81:80
     labels:
-      - tsdproxy.enable=true
-      - tsdproxy.name=webserver2
+      - tailnet.enable=true
+      - tailnet.name=webserver2
 
   memos:
     image: neosmemo/memos:stable
@@ -82,18 +82,18 @@ services:
     ports:
       - 5230:5230
     labels:
-      tsdproxy.enable: true
-      tsdproxy.name: memos
-      tsdproxy.container_port: 5230
-      tsdproxy.provider: withtags
+      tailnet.enable: true
+      tailnet.name: memos
+      tailnet.container_port: 5230
+      tailnet.provider: withtags
 
 volumes:
   memos:
 ```
 
-## TSDProxy Configuration of SRV1
+## Tailnet Configuration of SRV1
 
-```yaml  {filename="/config/tsdproxy.yaml"}
+```yaml  {filename="/config/tailnet.yaml"}
 defaultProxyProvider: default
 docker:
   srv1: 
@@ -109,9 +109,9 @@ tailscale:
       authKey: "nnnnnnndndnddd"
 ```
 
-## TSDProxy Configuration of SRV2
+## Tailnet Configuration of SRV2
 
-```yaml  {filename="/config/tsdproxy.yaml"}
+```yaml  {filename="/config/tailnet.yaml"}
 defaultProxyProvider: default
 docker:
   srv2: 

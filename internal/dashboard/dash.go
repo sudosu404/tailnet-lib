@@ -1,16 +1,16 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package dashboard
 
 import (
 	"sync"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/core"
-	"github.com/almeidapaulopt/tsdproxy/internal/model"
-	"github.com/almeidapaulopt/tsdproxy/internal/proxymanager"
-	"github.com/almeidapaulopt/tsdproxy/internal/ui/pages"
-	"github.com/almeidapaulopt/tsdproxy/web"
+	"github.com/sudosu404/tailnet-lib/internal/core"
+	"github.com/sudosu404/tailnet-lib/internal/model"
+	"github.com/sudosu404/tailnet-lib/internal/proxymanager"
+	"github.com/sudosu404/tailnet-lib/internal/ui/pages"
+	"github.com/sudosu404/tailnet-lib/web"
 
 	"github.com/rs/zerolog"
 )

@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package core
 
@@ -16,8 +16,8 @@ var (
 )
 
 const (
-	AppName   = "TSDProxy"
-	AppAuthor = "Paulo Almeida <almeidapaulopt@gmail.com>"
+	AppName   = "Tailnet"
+	AppAuthor = "Hector sudosu404 <hector@email.gnx>"
 )
 
 func GetVersion() string {

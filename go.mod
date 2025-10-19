@@ -1,4 +1,4 @@
-module github.com/almeidapaulopt/tsdproxy
+module github.com/sudosu404/tailnet-lib
 
 go 1.24.2
 

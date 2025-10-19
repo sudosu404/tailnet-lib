@@ -4,11 +4,11 @@ title: Introduction
 weight: 1
 ---
 
-👋 Welcome to the TSDProxy documentation!
+👋 Welcome to the Tailnet documentation!
 
-## What is TSDProxy?
+## What is Tailnet?
 
-TSDProxy is an application that automatically creates a proxy to
+Tailnet is an application that automatically creates a proxy to
 virtual addresses in your Tailscale network.
 Easy to configure and deploy, based on Docker container labels or a simple proxy
 list file.
@@ -16,23 +16,23 @@ It simplifies traffic redirection to services running inside Docker containers,
 without the need for a separate Tailscale container for each service.
 
 > [!NOTE]
-> TSDProxy just needs a label in your new docker service or a proxy list file and
+> Tailnet just needs a label in your new docker service or a proxy list file and
 > it will be automatically created in your Tailscale network and the proxy will be
 > ready to be used.
 
 ## Why another proxy?
 
-TSDProxy was created to address the need for a proxy that can handle multiple services
+Tailnet was created to address the need for a proxy that can handle multiple services
 without the need for a dedicated Tailscale container for each service and without configuring
 virtual hosts in Tailscale network.
 
-![how tsdproxy works](/images/tsdproxy.svg)
+![how Tailnet works](/images/tailnet.svg)
 
-## What's different with TSDProxy?
+## What's different with Tailnet?
 
-TSDProxy differs from other Tailscale proxies in that it does not require a separate Tailscale container per service.
+Tailnet differs from other Tailscale proxies in that it does not require a separate Tailscale container per service.
 
-![how tsdproxy works](/images/tsdproxy-compare.svg)
+![how Tailnet works](/images/Tailnet-compare.svg)
 
 ## Features
 
@@ -46,8 +46,8 @@ with MagicDNS.
 ## Questions or Feedback?
 
 > [!IMPORTANT]
-  TSDProxy is still in active development.
-  Have a question or feedback? Feel free to [open an issue](https://github.com/almeidapaulopt/tsdproxy/issues)!
+  Tailnet is still in active development.
+  Have a question or feedback? Feel free to [open an issue](https://github.com/sudosu404/tailnet-lib/issues)!
 
 ## Next
 
@@ -55,6 +55,6 @@ Dive right into the following section to get started:
 
 {{< cards >}}
   {{< card link="getting-started" title="Getting Started" icon="document-text"
-    subtitle="Learn how to get started with TSDProxy"
+    subtitle="Learn how to get started with Tailnet"
   >}}
 {{< /cards >}}

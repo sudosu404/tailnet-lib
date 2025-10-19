@@ -72,9 +72,9 @@ export default defineConfig({
       },
 
       manifest: {
-        name: 'TSDProxy',
-        short_name: 'TSDProxy',
-        description: 'TSDProxy',
+        name: 'Tailnet',
+        short_name: 'Tailnet',
+        description: 'Tailnet',
         theme_color: '#ffffff',
       },
 

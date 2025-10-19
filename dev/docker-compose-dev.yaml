@@ -12,9 +12,9 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - data:/data
     labels:
-      - tsdproxy.enable=true
-      - tsdproxy.name=dash-dev
-      - tsdproxy.dash.visible=false
+      - tailnet.enable=true
+      - tailnet.name=dash-dev
+      - tailnet.dash.visible=false
     secrets:
       - authkey
     extra_hosts:

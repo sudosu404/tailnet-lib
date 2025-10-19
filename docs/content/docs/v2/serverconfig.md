@@ -4,7 +4,7 @@ weight: 2
 next: /providers
 ---
 
- TSDProxy utilizes the configuration file `/config/tsdproxy.yaml` for its settings.
+ Tailnet utilizes the configuration file `/config/tailnet.yaml` for its settings.
 
  > [!IMPORTANT]
  > Environment variable configurations used in versions prior to v0.6.0 are
@@ -17,7 +17,7 @@ next: /providers
 > [!Warning]
 > Configuration files are case-sensitive.
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 defaultProxyProvider: default
 docker:
   local: # Name of the Docker target provider
@@ -76,7 +76,7 @@ Specifies the data directory used by Tailscale. Defaults to `/data/`.
 
 Defines multiple Tailscale providers. Each provider has the following options:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
   default: # Provider name
     authKey: your-authkey # Tailscale auth key
     authKeyFile: "" # Path to auth key file
@@ -85,7 +85,7 @@ Defines multiple Tailscale providers. Each provider has the following options:
 
 Example with multiple providers:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 tailscale:
   providers:
     default:
@@ -115,7 +115,7 @@ a different auth key for specific tags).
 
 Configures Docker server connections. Multiple Docker servers can be defined:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
   local: # Docker provider name
     host: unix:///var/run/docker.sock # Docker socket or daemon address
     targetHostname: 172.31.0.1 # Docker server hostname or IP
@@ -124,7 +124,7 @@ Configures Docker server connections. Multiple Docker servers can be defined:
 
 Example with multiple Docker servers:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 docker:
   local:
     host: unix:///var/run/docker.sock

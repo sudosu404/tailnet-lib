@@ -7,17 +7,17 @@ prev: /docs/advanced
 
 ### Dashboard in docker
 
-#### TSDProxy docker compose
+#### Tailnet docker compose
 
 Update docker-compose.yml with the following:
 
-```yaml  {filename="/config/tsdproxy.yaml"}
+```yaml  {filename="/config/tailnet.yaml"}
     labels:
-      - tsdproxy.enable=true
-      - tsdproxy.name=dash
+      - tailnet.enable=true
+      - tailnet.name=dash
 ```
 
-#### Restart TSDProxy
+#### Restart Tailnet
 
 ```bash
 docker compose restart
@@ -29,7 +29,7 @@ docker compose restart
 
 Configure a new files provider or configure it in any existing files provider.
 
-```yaml  {filename="/config/tsdproxy.yaml"}
+```yaml  {filename="/config/tailnet.yaml"}
 files:
   proxies:
     filename: /config/proxies.yaml

@@ -4,7 +4,7 @@ next: /docs/advanced
 weight: 4
 ---
 
-TSDProxy can be configured to proxy using a YAML configuration file.
+Tailnet can be configured to proxy using a YAML configuration file.
 Multiple lists can be used, and they are referred to as target providers.
 Each target provider could be used to group the way you decide better to help
 you manage your proxies. Or can use a single file to proxy all your targets.
@@ -16,10 +16,10 @@ you manage your proxies. Or can use a single file to proxy all your targets.
 
 ### How to enable?
 
-In your /config/tsdproxy.yaml, specify the lists you want to use, just
+In your /config/tailnet.yaml, specify the lists you want to use, just
 like this example where the `critical` and `media` providers are defined.
 
-```yaml  {filename="/config/tsdproxy.yaml"}
+```yaml  {filename="/config/tailnet.yaml"}
 lists:
   critical:
     filename: /config/critical.yaml
@@ -79,7 +79,7 @@ This configuration will create two groups of proxies:
 
 ### Provider Configuration options
 
-```yaml  {filename="/config/tsdproxy.yaml"}
+```yaml  {filename="/config/tailnet.yaml"}
 lists:
   critical: # Name the target provider
     filename: /config/critical.yaml # file with the proxy list
@@ -117,8 +117,8 @@ proxyname: # Name of the proxy
 ```
 
 > [!TIP]
-> TSDProxy will reload the proxy list when it is updated.
-> You only need to restart TSDProxy if your changes are in /config/tsdproxy.yaml
+> Tailnet will reload the proxy list when it is updated.
+> You only need to restart Tailnet if your changes are in /config/tailnet.yaml
 
 > [!NOTE]
 > See available icons in [icons](../../advanced/icons).

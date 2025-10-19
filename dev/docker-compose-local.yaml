@@ -6,13 +6,13 @@ services:
       - 92:8000
       - 93:8080
     labels:
-      - tsdproxy.enable=true
-      - tsdproxy.name=testeff
-      - tsdproxy.ephemeral=true
-      - tsdproxy.funnel=true
-      - tsdproxy.container_port=80
-      - tsdproxy.dash.visible=true
-      # - tsdproxy.port.1=443/https:80/http, no_autodetect
+      - tailnet.enable=true
+      - tailnet.name=testeff
+      - tailnet.ephemeral=true
+      - tailnet.funnel=true
+      - tailnet.container_port=80
+      - tailnet.dash.visible=true
+      # - tailnet.port.1=443/https:80/http, no_autodetect
     # networks:
     # - c1
 
@@ -21,8 +21,8 @@ services:
     ports:
       - 82:80
     labels:
-      - tsdproxy.enable=true
-      # - tsdproxy.port.1=443/https:80/http
+      - tailnet.enable=true
+      # - tailnet.port.1=443/https:80/http
     networks:
       - c2
 
@@ -31,9 +31,9 @@ services:
     ports:
       - 83:8080
     labels:
-      - tsdproxy.enable=true
-      - tsdproxy.autodetect=true
-      # - tsdproxy.port.1=443/https:8080/http
+      - tailnet.enable=true
+      - tailnet.autodetect=true
+      # - tailnet.port.1=443/https:8080/http
     # networks:
     #   - c2
 
@@ -45,12 +45,12 @@ services:
       - 103:8080
     deploy:
       labels:
-        - tsdproxy.enable=true
-        - tsdproxy.name=testeff
-        - tsdproxy.ephemeral=true
-        - tsdproxy.funnel=true
-        - tsdproxy.container_port=80
-        - tsdproxy.dash.visible=true
+        - tailnet.enable=true
+        - tailnet.name=testeff
+        - tailnet.ephemeral=true
+        - tailnet.funnel=true
+        - tailnet.container_port=80
+        - tailnet.dash.visible=true
     networks:
       - c1
 
@@ -60,7 +60,7 @@ services:
       - 112:80
     deploy:
       labels:
-        - tsdproxy.enable=true
+        - tailnet.enable=true
     networks:
       - c2
 
@@ -71,7 +71,7 @@ services:
       - 113:80
     deploy:
       labels:
-        - tsdproxy.enable=true
+        - tailnet.enable=true
 
 volumes:
   tsdata:

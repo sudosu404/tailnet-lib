@@ -1,11 +1,11 @@
 # Hugo configuration file
-title: TSDProxy
+title: Tailnet
 
 enableRobotsTXT: true
 enableGitInfo: true
 enableEmoji: true
 
-baseURL: https://almeidapaulopt.github.io/tsdproxy/
+baseURL: https://sudosu404.github.io/tailnet/
 
 defaultContentLanguage: en
 languages:
@@ -47,14 +47,9 @@ menu:
         type: search
     - name: GitHub
       weight: 5
-      url: "https://github.com/almeidapaulopt/tsdproxy"
+      url: "https://github.com/sudosu404/tailnet-lib"
       params:
         icon: github
-    - name: Twitter
-      weight: 6
-      url: "https://twitter.com/almeidapaulopt"
-      params:
-        icon: x-twitter
 
   sidebar:
     - params:
@@ -65,7 +60,7 @@ menu:
       weight: 2
 
 params:
-  description: TSDProxy is a proxy for tailscale
+  description: Tailnet is a proxy for tailscale
   navbar:
     displayTitle: true
     displayLogo: false
@@ -86,7 +81,7 @@ params:
 
   editURL:
     enable: true
-    base: "https://github.com/almeidapaulopt/tsdproxy/edit/main/docs/content"
+    base: "https://github.com/sudosu404/tailnet-lib/edit/main/docs/content"
 
   # Search
   search:

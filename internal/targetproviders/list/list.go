@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package list
 
@@ -11,9 +11,9 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/almeidapaulopt/tsdproxy/internal/config"
-	"github.com/almeidapaulopt/tsdproxy/internal/model"
-	"github.com/almeidapaulopt/tsdproxy/internal/targetproviders"
+	"github.com/sudosu404/tailnet-lib/internal/config"
+	"github.com/sudosu404/tailnet-lib/internal/model"
+	"github.com/sudosu404/tailnet-lib/internal/targetproviders"
 
 	"github.com/creasty/defaults"
 	"github.com/fsnotify/fsnotify"

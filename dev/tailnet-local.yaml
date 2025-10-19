@@ -8,8 +8,8 @@ docker:
   #   TargetHostname: 192.168.1.110
 
 lists:
-  file1:
-    filename: dev/file1.yaml
+  shares1:
+    filename: dev/shares1.yaml
 
 tailscale:
   providers:

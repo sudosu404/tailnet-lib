@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 
 package config
 
@@ -39,8 +39,8 @@ func (c *config) generateDockerConfig() {
 		docker.Host = os.Getenv("DOCKER_HOST")
 	}
 
-	if os.Getenv("TSDPROXY_HOSTNAME") != "" {
-		docker.TargetHostname = os.Getenv("TSDPROXY_HOSTNAME")
+	if os.Getenv("TAILNET_HOSTNAME") != "" {
+		docker.TargetHostname = os.Getenv("TAILNET_HOSTNAME")
 	}
 
 	// Check whether the hostname host.docker.internal can be resolved. This allows avoiding updates to the TargetHostname field in the configuration file.
@@ -60,10 +60,10 @@ func (c *config) generateTailscaleConfig() {
 		fmt.Printf("Error loading defaults: %v", err)
 	}
 
-	authKeyFile := os.Getenv("TSDPROXY_AUTHKEYFILE")
-	authKey := os.Getenv("TSDPROXY_AUTHKEY")
-	controlURL := os.Getenv("TSDPROXY_CONTROLURL")
-	dataDir := os.Getenv("TSDPROXY_DATADIR")
+	authKeyFile := os.Getenv("TAILNET_AUTHKEYFILE")
+	authKey := os.Getenv("TAILNET_AUTHKEY")
+	controlURL := os.Getenv("TAILNET_CONTROLURL")
+	dataDir := os.Getenv("TAILNET_DATADIR")
 
 	if authKeyFile != "" {
 		var err error

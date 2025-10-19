@@ -8,7 +8,7 @@ assignees: ''
 ---
 
 **Before file a bug**
-verify if you case is already known in https://almeidapaulopt.github.io/tsdproxy/docs/troubleshooting/
+verify if you case is already known in https://sudosu404.github.io/tailnet/docs/troubleshooting/
 
 **Describe the bug**
 A clear and concise description of what the bug is.
@@ -17,7 +17,7 @@ A clear and concise description of what the bug is.
 A clear and concise description of what you expected to happen.
 
 **Send config**
-Send the config tsdproxy.yaml file.
+Send the config tailnet.yaml file.
 
 **Logs**
 Always send logs

@@ -10,7 +10,7 @@ WORKDIR /app
 COPY . .
 
 # Compila a aplicação Go
-RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -o /tsdproxyd ./cmd/server/main.go
+RUN go mod tidy && CGO_ENABLED=0 GOOS=linux go build -o /tailnetd ./cmd/server/main.go
 RUN CGO_ENABLED=0 GOOS=linux go build -o /healthcheck ./cmd/healthcheck/main.go
 
 
@@ -18,10 +18,10 @@ FROM scratch
 
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
-COPY --from=builder /tsdproxyd /tsdproxyd
+COPY --from=builder /tailnetd /tailnetd
 COPY --from=builder /healthcheck /healthcheck
 
-ENTRYPOINT ["/tsdproxyd"]
+ENTRYPOINT ["/tailnetd"]
 
 EXPOSE 8080
 HEALTHCHECK CMD [ "/healthcheck" ]

@@ -8,5 +8,5 @@ export default defineConfig({
     preset: 'all',
   },
   preset,
-  images: ['public/tsdproxy.svg'],
+  images: ['public/tailnet.svg'],
 })

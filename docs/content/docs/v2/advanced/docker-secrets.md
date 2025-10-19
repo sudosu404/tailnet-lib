@@ -25,12 +25,12 @@ authkey in it. We can do that using the following command:
 printf "Your Tailscale AuthKey" | docker secret create authkey -
 ```
 
-### TsDProxy Docker compose
+### Tailnet Docker compose
 
 ```yaml docker-compose.yml
 services:
-  tsdproxy:
-    image: almeidapaulopt/tsdproxy:latest
+  Tailnet:
+    image: ghcr.io/sudosu404/tailnet-lib:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - datadir:/data
@@ -46,16 +46,16 @@ secrets:
     external: true
 ```
 
-### TsDProxy configuration
+### Tailnet configuration
 
-```yaml /config/tsdproxy.yaml
+```yaml /config/tailnet.yaml
 tailscale:
   providers:
      default: # name of the provider
       authkeyfile: "/run/secrets/authkey" 
 ```
 
-### Restart tsdproxy
+### Restart Tailnet
 
 ``` bash
 docker compose restart

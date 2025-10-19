@@ -1,5 +1,5 @@
-// SPDX-FileCopyrightText: 2025 Paulo Almeida <almeidapaulopt@gmail.com>
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
 package model
 
 import (
@@ -33,7 +33,7 @@ type (
 
 	Dashboard struct {
 		Label   string `validate:"string" yaml:"label"`
-		Icon    string `default:"tsdproxy" validate:"string" yaml:"icon"`
+		Icon    string `default:"Tailnet" validate:"string" yaml:"icon"`
 		Visible bool   `default:"true" validate:"boolean" yaml:"visible"`
 	}
 

@@ -12,12 +12,12 @@ Docker Compose:
 
 {{% steps %}}
 
-### Create a TSDProxy docker-compose.yaml
+### Create a Tailnet docker-compose.yaml
 
 ```yaml docker-compose.yml
 services:
-  tsdproxy:
-    image: almeidapaulopt/tsdproxy:1
+  Tailnet:
+    image: ghcr.io/sudosu404/tailnet-lib:1
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - datadir:/data
@@ -30,18 +30,18 @@ volumes:
   datadir:
 ```
 
-### Start the TSDProxy container
+### Start the Tailnet container
 
 ```bash
 docker compose up -d
 ```
 
-### Configure TSDProxy
+### Configure Tailnet
 
-After the TSDProxy container is started, a configuration file
-`/config/tsdproxy.yaml` is created and populated with the following:
+After the Tailnet container is started, a configuration file
+`/config/tailnet.yaml` is created and populated with the following:
 
-```yaml  {filename="/config/tsdproxy.yaml"}
+```yaml  {filename="/config/tailnet.yaml"}
 defaultProxyProvider: default
 docker:
   local: # name of the docker target provider
@@ -78,10 +78,10 @@ docker compose restart
 
 Here we’ll use the nginx image to serve a sample service.
 The container name is `sample-nginx`, expose port 8111, and add the
-`tsdproxy.enable` label.
+`tailnet.enable` label.
 
 ```bash
-docker run -d --name sample-nginx -p 8111:80 --label "tsdproxy.enable=true" nginx:latest
+docker run -d --name sample-nginx -p 8111:80 --label "tailnet.enable=true" nginx:latest
 ```
 
 ### Open Dashboard

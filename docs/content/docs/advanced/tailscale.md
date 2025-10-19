@@ -14,7 +14,7 @@ for Tailscale provider.
 
 Like:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 tailscale:
   providers:
     default: 
@@ -26,7 +26,7 @@ When the proxy starts, it will wait to be authenticated with the Tailscale.
 
 ### Go Dashboard
 
-Go to TSDProxy Dashboard (example: <http://192.168.1.1:8080>).
+Go to Tailnet Dashboard (example: <http://192.168.1.1:8080>).
 
 ### Authenticate
 
@@ -34,7 +34,7 @@ Click on the Proxy that should show "Authentication" status.
 
 >[!TIP]
 > Set "Ephemeral" to false in the Tailscale provider to avoid the need of
-authentication next time. See [docker Ephemeral label](../../docker/#tsdproxyephemeral)
+authentication next time. See [docker Ephemeral label](../../docker/#Tailnetephemeral)
 or [Proxy List configuration](../../list/#proxy-list-file-options)
 
 {{% /steps %}}
@@ -63,7 +63,7 @@ or [Proxy List configuration](../../list/#proxy-list-file-options)
 
 Add you key to the configuration as follow:
 
-```yaml {filename="/config/tsdproxy.yaml"}
+```yaml {filename="/config/tailnet.yaml"}
 tailscale:
   providers:
     default: 
@@ -73,11 +73,11 @@ tailscale:
 
 ### Restart
 
-Restart TSDProxy
+Restart Tailnet
 
 {{% /steps %}}
 
 ## Funnel
 
-Beside adding the TSDProxy configuration to activate Funnel to a proxy, you also
+Beside adding the Tailnet configuration to activate Funnel to a proxy, you also
 should give permissions on Tailscale ACL. See [here](.././troubleshooting/#funnel-doesnt-work) to more detail.

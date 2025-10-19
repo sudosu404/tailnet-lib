@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2025 Hector @sudosu404 <hector@email.gnx>
+// SPDX-License-Identifier: AGPL3
+
 package web
 
 import (
@@ -11,11 +14,12 @@ import (
 	"github.com/vearutop/statigz/brotli"
 )
 
-// --- Embed frontend assets ---
+// --- Embed frontend build artifacts ---
 //go:embed web/dist/*
 var dist embed.FS
 
 var Static http.Handler
+
 const DefaultIcon = "tailnet"
 
 func init() {

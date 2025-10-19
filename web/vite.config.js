@@ -6,19 +6,18 @@ import compression from "vite-plugin-compression2";
 import { VitePWA } from "vite-plugin-pwa";
 
 function copyIconsToPublic() {
-  let isBuild = false;
-
   return {
     name: "copy-icons-to-public",
-    config(_, { command }) {
-      isBuild = command === "build";
-    },
     buildStart() {
-      if (!isBuild) return;
-
       const targets = [
-        { src: resolve("node_modules/simple-icons/icons"), dest: resolve("public/icons/si") },
-        { src: resolve("node_modules/@mdi/svg/svg"), dest: resolve("public/icons/mdi") },
+        {
+          src: resolve("node_modules/simple-icons/icons"),
+          dest: resolve("public/icons/si"),
+        },
+        {
+          src: resolve("node_modules/@mdi/svg/svg"),
+          dest: resolve("public/icons/mdi"),
+        },
       ];
 
       for (const { src, dest } of targets) {
@@ -31,7 +30,10 @@ function copyIconsToPublic() {
 
 export default defineConfig({
   server: {
-    proxy: { "/list": "http://localhost:8080", "/stream": "http://localhost:8080" },
+    proxy: {
+      "/list": "http://localhost:8080",
+      "/stream": "http://localhost:8080",
+    },
   },
   plugins: [
     copyIconsToPublic(),
@@ -42,9 +44,23 @@ export default defineConfig({
       registerType: "autoUpdate",
       injectRegister: false,
       pwaAssets: { disabled: false, config: true },
-      manifest: { name: "tailnet", short_name: "tailnet", description: "tailnet", theme_color: "#ffffff" },
-      workbox: { globPatterns: ["**/*.{js,css,html,ico}"], cleanupOutdatedCaches: true, clientsClaim: true },
-      devOptions: { enabled: false, navigateFallback: "index.html", suppressWarnings: true, type: "module" },
+      manifest: {
+        name: "Tailnet",
+        short_name: "Tailnet",
+        description: "Tailnet",
+        theme_color: "#ffffff",
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,ico}"],
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+      },
+      devOptions: {
+        enabled: false,
+        navigateFallback: "index.html",
+        suppressWarnings: true,
+        type: "module",
+      },
     }),
   ],
   build: {

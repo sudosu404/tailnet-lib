@@ -13,11 +13,11 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends wget unzip ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p web/public/icons/sh \
- && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P web \
- && unzip -jo web/main.zip 'icons-main/svg/*' -d web/public/icons/sh \
- && rm -f web/main.zip \
- && bun run build --cwd web
+RUN mkdir -p web/public/icons/sh
+RUN wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P web
+RUN unzip -jo web/main.zip 'icons-main/svg/*' -d web/public/icons/sh
+RUN rm -f web/main.zip
+RUN bun run build --cwd web
 
 RUN rm -rf /src/web/node_modules/.cache
 

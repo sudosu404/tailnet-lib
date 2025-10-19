@@ -29,7 +29,7 @@ COPY --from=frontend /src/web/node_modules ./web/node_modules
 RUN go mod download
 
 # Generate static frontend assets (runs wget, unzip, bun build)
-RUN go generate ./internal/web
+RUN go generate ./web
 
 # Install templ and generate backend UI templates
 RUN go install github.com/a-h/templ/cmd/templ@v0.3.865

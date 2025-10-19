@@ -1,45 +1,41 @@
 # ----------------------------
-# Stage 1: Frontend build
+# Stage 1: Frontend build environment
 # ----------------------------
 FROM oven/bun:1 AS frontend
 
-WORKDIR /web
-COPY web/ .
+WORKDIR /src
+COPY web ./web
 
-## Install tools and fix SSL trust
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget unzip ca-certificates \
- && update-ca-certificates \
- && rm -rf /var/lib/apt/lists/*
-
-RUN wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip
-RUN unzip -jo main.zip icons-main/svg/* -d public/icons/sh
-# Install deps & build frontend
-RUN bun install && bun run build
+# Needed for go:generate steps in the Go stage
+RUN bun install --cwd web
 
 # ----------------------------
 # Stage 2: Go builder
 # ----------------------------
 FROM golang:1.25-alpine AS builder
-RUN apk add --no-cache bash ca-certificates git && update-ca-certificates
+
+RUN apk add --no-cache bash git ca-certificates unzip wget \
+    && update-ca-certificates
 
 WORKDIR /app
 
-# Copy Go module files first
-COPY go.mod go.sum ./
-RUN go mod download
-
-# Copy backend source
+# Copy source code
 COPY . .
 
-# Install templ CLI & generate Go code
+# Copy preinstalled frontend deps from previous stage
+COPY --from=frontend /src/web/node_modules ./web/node_modules
+
+# Download Go dependencies
+RUN go mod download
+
+# Generate static frontend assets (runs wget, unzip, bun build)
+RUN go generate ./internal/web
+
+# Install templ and generate backend UI templates
 RUN go install github.com/a-h/templ/cmd/templ@v0.3.865
 RUN templ generate -proxy='http://localhost:5173' --path=./internal/ui/
 
-# Copy built frontend from previous stage
-COPY --from=frontend /web/dist ./web/dist
-
-# Build Go static binaries
+# Build Go binaries (fully static)
 RUN CGO_ENABLED=0 GOOS=linux go build -o /tailnetd ./cmd/server/main.go
 RUN CGO_ENABLED=0 GOOS=linux go build -o /healthcheck ./cmd/healthcheck/main.go
 
@@ -47,34 +43,24 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o /healthcheck ./cmd/healthcheck/main.go
 # Stage 3: Final minimal image
 # ----------------------------
 FROM scratch
+
 LABEL org.opencontainers.image.title="Tailnet" \
       org.opencontainers.image.description="Server for handling tailnets" \
       org.opencontainers.image.version="0.0.1b1" \
       org.opencontainers.image.licenses="AGPL3" \
       org.opencontainers.image.source="https://github.com/sudosu404/tailnet-libs" \
       org.opencontainers.image.authors="Hector <hector@email.gnx> @sudosu404"
-# Copy CA certificates
+
+# Copy CA certs and binaries
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-
-# Copy binaries
-COPY --from=builder /tailnetd /tailnetd
-COPY --from=builder /healthcheck /healthcheck
-
-# Create minimal passwd entry for non-root user
+COPY --from=builder /tailnetd /healthcheck /
 COPY --from=builder /etc/passwd /etc/passwd
 
-# Writable directories
 VOLUME /data /config /tmp
 ENV TMPDIR=/tmp
 
 USER 1000
 
-# Expose ports
-EXPOSE 8080
-EXPOSE 7331
-
-# Healthcheck
+EXPOSE 8080 7331
 HEALTHCHECK CMD ["/healthcheck"]
-
-# Run the main binary
 ENTRYPOINT ["/tailnetd"]

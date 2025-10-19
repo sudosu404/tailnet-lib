@@ -14,11 +14,14 @@ import (
 	"github.com/vearutop/statigz/brotli"
 )
 
+// --- Build frontend icons and dist ---
 //go:generate wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip
-//go:generate unzip -jo main.zip icons-main/svg/* -d public/icons/sh
+//go:generate unzip -jo main.zip icons-main/svg/* -d web/public/icons/sh
+//go:generate bun install
 //go:generate bun run build
 
-//go:embed dist
+// --- Embed final assets ---
+//go:embed web/dist/*
 var dist embed.FS
 
 var Static http.Handler
@@ -26,19 +29,18 @@ var Static http.Handler
 const DefaultIcon = "tailnet"
 
 func init() {
-	staticFS, err := fs.Sub(dist, ".")
+	staticFS, err := fs.Sub(dist, "web/dist")
 	if err != nil {
 		log.Fatal().Err(err).Msg("Failed to open dist directory")
 	}
-
 	Static = statigz.FileServer(staticFS.(fs.ReadDirFS), brotli.AddEncoding)
 }
 
 func GuessIcon(name string) string {
 	nameParts := strings.Split(name, "/")
 	lastPart := nameParts[len(nameParts)-1]
-	baseName := strings.SplitN(lastPart, ":", 2)[0] //nolint
-	baseName = strings.SplitN(baseName, "@", 2)[0]  //nolint
+	baseName := strings.SplitN(lastPart, ":", 2)[0]
+	baseName = strings.SplitN(baseName, "@", 2)[0]
 
 	var foundFile string
 	err := fs.WalkDir(dist, ".", func(path string, d fs.DirEntry, err error) error {
@@ -56,6 +58,6 @@ func GuessIcon(name string) string {
 	if err != nil || foundFile == "" {
 		return DefaultIcon
 	}
-	icon := strings.TrimPrefix(foundFile, "dist/icons/")
+	icon := strings.TrimPrefix(foundFile, "web/dist/icons/")
 	return strings.TrimSuffix(icon, ".svg")
 }

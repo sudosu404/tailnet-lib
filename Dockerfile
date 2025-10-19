@@ -3,23 +3,33 @@
 # ----------------------------
 FROM oven/bun:1 AS frontend
 
-WORKDIR /src
-COPY web/package.json web/bun.lock ./web/
-RUN bun install --cwd web
-COPY web ./web
+WORKDIR /src/web
+
+# Copy only package.json and bun.lock first for dependency install
+COPY web/package.json web/bun.lock ./
+
+# Install dependencies
+RUN bun install
+
+# Now copy the rest of the frontend source
+COPY web .
 
 # Install minimal deps for icons extraction
 RUN apt-get update \
  && apt-get install -y --no-install-recommends wget unzip ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p web/public/icons/sh
-RUN wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P web
-RUN unzip -jo web/main.zip 'icons-main/svg/*' -d web/public/icons/sh
-RUN rm -f web/main.zip
-RUN bun run build --cwd web
+# Download and extract icons
+RUN mkdir -p public/icons/sh \
+ && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip \
+ && unzip -jo main.zip 'icons-main/svg/*' -d public/icons/sh \
+ && rm -f main.zip
 
-RUN rm -rf /src/web/node_modules/.cache
+# Build frontend
+RUN bun run build
+
+# Clean Bun cache
+RUN rm -rf node_modules/.cache
 
 # ----------------------------
 # Stage 2: Go builder

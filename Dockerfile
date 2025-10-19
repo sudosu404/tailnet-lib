@@ -6,8 +6,10 @@ FROM oven/bun:1 AS frontend
 WORKDIR /web
 COPY web/ .
 
-# install wget and unzip
-RUN apt-get update && apt-get install -y --no-install-recommends wget unzip \
+## Install tools and fix SSL trust
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    wget unzip ca-certificates \
+ && update-ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
 RUN wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip

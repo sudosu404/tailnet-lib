@@ -8,6 +8,11 @@ COPY web/package.json web/bun.lock* ./
 RUN bun install
 COPY web ./
 
+# Install minimal tools for icons
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends wget unzip ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+
 # Copy icons manually
 RUN mkdir -p public/icons/sh \
  && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P . \

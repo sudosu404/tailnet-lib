@@ -1,30 +1,25 @@
 # ----------------------------
-# Stage 1: Frontend build
+# Stage 1: Frontend build environment
 # ----------------------------
 FROM oven/bun:1 AS frontend
 
-WORKDIR /src/web
+WORKDIR /src
+COPY web/package.json web/bun.lock ./web/
+RUN bun install --cwd web
+COPY web ./web
 
-# Copy everything at once
-COPY web ./ 
-
-# Install minimal deps: wget, unzip, ca-certificates
+# Install minimal deps for icons extraction
 RUN apt-get update \
  && apt-get install -y --no-install-recommends wget unzip ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-# Prepare icons
-RUN mkdir -p public/icons/sh \
- && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P . \
- && unzip -jo main.zip 'icons-main/svg/*' -d public/icons/sh \
- && rm -f main.zip
+RUN mkdir -p web/public/icons/sh \
+ && wget -nc https://github.com/selfhst/icons/archive/refs/heads/main.zip -P web \
+ && unzip -jo web/main.zip 'icons-main/svg/*' -d web/public/icons/sh \
+ && rm -f web/main.zip \
+ && bun run build --cwd web
 
-# Install dependencies and build
-RUN bun install \
- && bun run build
-
-# Clean cache
-RUN rm -rf node_modules/.cache
+RUN rm -rf /src/web/node_modules/.cache
 
 # ----------------------------
 # Stage 2: Go builder
@@ -32,7 +27,7 @@ RUN rm -rf node_modules/.cache
 FROM golang:1.25-alpine AS builder
 
 RUN apk add --no-cache bash git ca-certificates unzip wget \
-    && update-ca-certificates
+ && update-ca-certificates
 
 WORKDIR /app
 
@@ -48,7 +43,7 @@ COPY --from=frontend /src/web/dist ./web/dist
 COPY --from=frontend /src/web/node_modules ./web/node_modules
 COPY --from=frontend /src/web/public/icons ./web/public/icons
 
-# Run go generate if you need (optional, no Bun commands inside)
+# Optional: run go generate if needed
 RUN go generate ./web || true
 
 # Install templ CLI & generate backend UI templates

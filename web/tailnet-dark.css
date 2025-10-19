@@ -1,5 +1,5 @@
 @plugin "daisyui/theme" {
-  name: "Tailnet-dark";
+  name: "tailnet-dark";
   default: false;
   prefersdark: false;
   color-scheme: "dark";

@@ -5,7 +5,7 @@ package components
 
 func IconURL(name string) string {
 	if name == "" {
-		name = "Tailnet"
+		name = "tailnet"
 	}
 	return "/icons/" + name + ".svg"
 }

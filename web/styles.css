@@ -2,18 +2,18 @@
 @source "../internal/**/*.templ";
 @source "./index.html";
 
-@variant dark (&:where(.Tailnet-dark, .Tailnet-dark *, [data-theme=Tailnet-dark], [data-theme=Tailnet-dark] *));
+@variant dark (&:where(.tailnet-dark, .tailnet-dark *, [data-theme=tailnet-dark], [data-theme=tailnet-dark] *));
 
 
 @plugin "daisyui" {
-  themes: Tailnet-light --default, Tailnet-dark;
+  themes: tailnet-light --default, tailnet-dark;
   include: reset, properties, scrollbar, rootscrolllock, rootscrollgutter, rootcolor,
     link, button, toggle, tooltip, card, card-body, badge, label, navbar, footer, menu,
     dropdown, checkbox, radius, modal, kbd, input;
 }
 
-@import "./Tailnet-light.css";
-@import "./Tailnet-dark.css";
+@import "./tailnet-light.css";
+@import "./tailnet-dark.css";
 
 @layer base {
 
